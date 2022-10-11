@@ -21,26 +21,25 @@
 
 
 /area
-	var
-		force_fullbright = 0
-		ambient_light = null //rgb(0.025 * 255, 0.025 * 255, 0.025 * 255)
+	var/force_fullbright = 0
+	var/ambient_light = null //rgb(0.025 * 255, 0.025 * 255, 0.025 * 255)
 
-	New()
-		..()
-		if (force_fullbright)
-			src.UpdateOverlays(new /image/fullbright, "fullbright")
-		else if (ambient_light)
-			var/image/I = new /image/ambient
-			I.color = ambient_light
-			overlays += I
+/area/New()
+	..()
+	if (force_fullbright)
+		src.UpdateOverlays(new /image/fullbright, "fullbright")
+	else if (ambient_light)
+		var/image/I = new /image/ambient
+		I.color = ambient_light
+		overlays += I
 
-	proc/update_fullbright()
-		if (force_fullbright)
-			src.UpdateOverlays(new /image/fullbright, "fullbright")
-		else
-			src.UpdateOverlays(null, "fullbright")
-			for (var/turf/T as anything in src)
-				T.RL_Init()
+/area/proc/update_fullbright()
+	if (force_fullbright)
+		src.UpdateOverlays(new /image/fullbright, "fullbright")
+	else
+		src.UpdateOverlays(null, "fullbright")
+		for (var/turf/T as anything in src)
+			T.RL_Init()
 
 /turf
 	luminosity = 1
@@ -50,7 +49,8 @@
 	var/area/A = loc
 
 	#ifdef UNDERWATER_MAP //FUCK THIS SHIT. NO FULLBRIGHT ON THE MINING LEVEL, I DONT CARE.
-	if (z == AST_ZLEVEL) return
+	if (z == AST_ZLEVEL)
+		return
 	#endif
 
 	// space handles its own lighting via simple lights which already cover the turf itself too

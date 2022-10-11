@@ -1,4 +1,5 @@
-/atom/var/ignore_simple_light_updates = 0 //to avoid double-updating on diagonal steps when we are really only taking a single step
+/// To avoid double-updating on diagonal steps when we are really only taking a single step
+/atom/var/ignore_simple_light_updates = 0
 
 /obj/overlay/simple_light
 	event_handler_flags = IMMUNE_SINGULARITY
@@ -17,7 +18,7 @@
 /atom/var/list/simple_light_rgbas = null
 /atom/var/obj/overlay/simple_light/simple_light = null
 
-/atom/proc/add_simple_light(var/id, var/list/rgba)
+/atom/proc/add_simple_light(id, list/rgba)
 	if (!simple_light_rgbas)
 		simple_light_rgbas = list()
 
@@ -31,7 +32,7 @@
 		update_simple_light_color()
 
 
-/atom/proc/remove_simple_light(var/id)
+/atom/proc/remove_simple_light(id)
 	if (!simple_light_rgbas)
 		return
 
@@ -98,28 +99,31 @@
 
 /obj/overlay/simple_light/medium
 	icon_state = "medium_dir"
-	New(loc, dir=0)
-		..()
-		src.set_dir(dir)
-		switch(dir)
-			if(NORTH)
-				pixel_y += 32
-			if(SOUTH)
-				pixel_y -= 32
-			if(EAST)
-				pixel_x += 32
-			if(WEST)
-				pixel_x -= 32
-			if(0)
-				icon_state = "medium_center"
+
+/obj/overlay/simple_light/medium/New(loc, dir=0)
+	..()
+	src.set_dir(dir)
+	switch(dir)
+		if(NORTH)
+			pixel_y += 32
+		if(SOUTH)
+			pixel_y -= 32
+		if(EAST)
+			pixel_x += 32
+		if(WEST)
+			pixel_x -= 32
+		if(0)
+			icon_state = "medium_center"
 
 /atom/var/list/medium_light_rgbas = null
 /atom/var/list/obj/overlay/simple_light/medium/medium_lights
 /atom/var/static/list/medium_light_dirs = list(0, NORTH, SOUTH, EAST, WEST)
 
-// for medium lights the light intensity keeps increasing as you increase alpha past 255
-// the upper limit is 510 but some stuff will look a bit weird
-/atom/proc/add_medium_light(var/id, var/list/rgba)
+/**
+ * For medium lights the light intensity keeps increasing as you increase alpha past 255.
+ * The upper limit is 510 but some stuff will look a bit weird.
+ */
+/atom/proc/add_medium_light(id, list/rgba)
 	if (!medium_light_rgbas)
 		medium_light_rgbas = list()
 
@@ -138,7 +142,7 @@
 		update_medium_light_color()
 
 
-/atom/proc/remove_medium_light(var/id)
+/atom/proc/remove_medium_light(id)
 	if (!medium_light_rgbas)
 		return
 
@@ -238,9 +242,11 @@
 /atom/var/list/obj/overlay/simple_light/medium/directional/mdir_lights
 /atom/var/static/list/mdir_light_dists = list(0, 2.5, 5)
 
-// for medium lights the light intensity keeps increasing as you increase alpha past 255
-// the upper limit is 510 but some stuff will look a bit weird
-/atom/proc/add_mdir_light(var/id, var/list/rgba)
+/**
+ * For medium lights the light intensity keeps increasing as you increase alpha past 255.
+ * The upper limit is 510 but some stuff will look a bit weird.
+ */
+/atom/proc/add_mdir_light(id, list/rgba)
 	if (!mdir_light_rgbas)
 		mdir_light_rgbas = list()
 
@@ -259,7 +265,7 @@
 		update_mdir_light_color()
 
 
-/atom/proc/remove_mdir_light(var/id)
+/atom/proc/remove_mdir_light(id)
 	if (!mdir_light_rgbas)
 		return
 
