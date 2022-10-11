@@ -83,7 +83,7 @@
 		for(var/i in 1 to len)
 			inserted_list.Swap(from_index++, to_index++)
 
-//// Reverses a given list within the given range
+/// Reverses a given list within the given range.
 /proc/reverse_list_range(list/inserted_list, start = 1, end = 0)
 	RETURN_TYPE(/list)
 	if(length(inserted_list))
@@ -100,7 +100,7 @@
 
 	return inserted_list
 
-///Flattens a keyed list into a list of it's contents
+/// Flattens a keyed list into a list of it's contents.
 /proc/flatten_list(list/key_list)
 	RETURN_TYPE(/list)
 	if(!islist(key_list))
@@ -159,7 +159,7 @@
 /// Checks for specific types in specifically structured (Assoc "type" = TRUE|FALSE) lists ('typecaches')
 #define is_type_in_typecache(A, L) (A && length(L) && L[(ispath(A) ? A : A:type)])
 
-/// Rurns a new list with only atoms that are in the typecache list
+/// Rurns a new list with only atoms that are in the typecache list.
 /proc/typecache_filter_list(list/atoms, list/typecache)
 	RETURN_TYPE(/list)
 	. = list()
@@ -167,7 +167,7 @@
 		if (typecache[atom_checked.type])
 			. += atom_checked
 
-/// Return a new list with atoms that are not in the typecache list
+/// Return a new list with atoms that are not in the typecache list.
 /proc/typecache_filter_list_reverse(list/atoms, list/typecache)
 	RETURN_TYPE(/list)
 	. = list()
@@ -175,7 +175,7 @@
 		if(!typecache[atom_checked.type])
 			. += atom_checked
 
-/// Similar to typecache_filter_list and typecache_filter_list_reverse but it supports an inclusion list and and exclusion list
+/// Similar to typecache_filter_list and typecache_filter_list_reverse but it supports an inclusion list and and exclusion list.
 /proc/typecache_filter_multi_list_exclusion(list/atoms, list/typecache_include, list/typecache_exclude)
 	. = list()
 	for(var/atom/atom_checked as anything in atoms)
@@ -200,7 +200,7 @@
  *
  * You should only pass integers in.
  */
-proc/weighted_pick(list/L)
+/proc/weighted_pick(list/L)
 	var/total = 0
 	var/item
 	for(item in L)
@@ -214,21 +214,21 @@ proc/weighted_pick(list/L)
 			return item
 	return null
 
-proc/keep_truthy(some_list)
+/proc/keep_truthy(some_list)
 	RETURN_TYPE(/list)
 	. = list()
 	for(var/x in some_list)
 		if(x)
 			. += x
 
-/proc/sortNames(var/list/L)
+/proc/sortNames(list/L)
 	RETURN_TYPE(/list)
 	var/list/Q = new()
 	for(var/atom/x in L)
 		Q[x.name] = x
 	. = sortList(Q, /proc/cmp_text_asc)
 
-/proc/assoc_list_to_list(var/list/l)
+/proc/assoc_list_to_list(list/l)
 	RETURN_TYPE(/list)
 	var/list/keys = list()
 	var/list/vals = list()
@@ -243,7 +243,7 @@ proc/keep_truthy(some_list)
 	for(var/i = 1,i <= length(first), i++)
 		.[first[i]] = second[i]
 
-/// Returns a list in plain english as a string
+/// Returns a list in plain english as a string.
 /proc/english_list(list/input, nothing_text = "nothing", and_text = " and ", comma_text = ", ", final_comma_text = "" )
 	var/total = length(input)
 	switch(total)
@@ -265,7 +265,7 @@ proc/keep_truthy(some_list)
 
 			return "[output][and_text][input[index]]"
 
-/proc/next_in_list(var/thing, var/list)
+/proc/next_in_list(thing, list)
 	if (thing == list[length(list)])
 		return list[1]
 	for (var/v in 1 to length(list))
@@ -273,12 +273,12 @@ proc/keep_truthy(some_list)
 			return list[v]
 	return list[1]
 
-proc/list_pop(list/L)
+/proc/list_pop(list/L)
 	. = L[length(L)]
 	L.Cut(length(L))
 
 //Based on code from Popisfizzy: http://www.byond.com/forum/?post=134331#comment750984
-proc/params2complexlist(params)
+/proc/params2complexlist(params)
 	RETURN_TYPE(/list)
 	//This is a replacement for params2list that allows grouping with parentheses, to enable
 	//storing a list in a list.
@@ -333,13 +333,13 @@ proc/params2complexlist(params)
 	//Parse the remaining param string for the last list element
 	. += params2list(copytext(params,1))
 
-/proc/list_keys(var/list/L)
+/proc/list_keys(list/L)
 	RETURN_TYPE(/list)
 	. = list()
 	for (var/K in L)
 		. += K
 
-/proc/uniquelist(var/list/L)
+/proc/uniquelist(list/L)
 	RETURN_TYPE(/list)
 	. = list()
 	for(var/item in L)

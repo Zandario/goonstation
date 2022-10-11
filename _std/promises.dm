@@ -13,21 +13,21 @@
 	var/spinlock_iters_left = SPINLOCK_COUNT
 	var/interrupted = FALSE
 
-	/**
-	 * Sleep until interrupted.
-	 *
-	 * @param isleep How long to wait. If not provided sleep indefinitely.
-	 * @return TRUE if interrupted, FALSE if not.
-	 */
-	proc/wait(time=INF_SLEEP_TIME)
-		. = TRUE
-		while(!src.interrupted && src.spinlock_iters_left > 0) // if interrupted quickly we avoid full `del`
-			sleep(SPINLOCK_SLEEP_DURATION)
-			src.spinlock_iters_left-- // decrementing here because we want it to be non-zero in the sleep
-		if(src.interrupted)
-			return
-		sleep(time - SPINLOCK_COUNT * SPINLOCK_SLEEP_DURATION)
-		. = FALSE
+/**
+ * Sleep until interrupted.
+ *
+ * @param isleep How long to wait. If not provided sleep indefinitely.
+ * @return TRUE if interrupted, FALSE if not.
+ */
+/datum/interruptible_sleep/proc/wait(time=INF_SLEEP_TIME)
+	. = TRUE
+	while(!src.interrupted && src.spinlock_iters_left > 0) // if interrupted quickly we avoid full `del`
+		sleep(SPINLOCK_SLEEP_DURATION)
+		src.spinlock_iters_left-- // decrementing here because we want it to be non-zero in the sleep
+	if(src.interrupted)
+		return
+	sleep(time - SPINLOCK_COUNT * SPINLOCK_SLEEP_DURATION)
+	. = FALSE
 
 /**
  * Interrupts an /datum/interruptible_sleep.
@@ -53,47 +53,47 @@
 	var/value = null
 	var/fulfilled = FALSE
 
-	/**
-	 * Wait for the promise to be fulfilled.
-	 *
-	 * @param timeout How long to wait for fulfillment. If not provided wait indefinitely.
-	 * @return TRUE if fulfilled, FALSE if not (due to timeout expiring).
-	 */
-	proc/wait(timeout=INF_SLEEP_TIME)
-		if(fulfilled)
-			return fulfilled
-		if(!isleep)
-			isleep = new
-		isleep.wait(timeout)
+/**
+ * Wait for the promise to be fulfilled.
+ *
+ * @param timeout How long to wait for fulfillment. If not provided wait indefinitely.
+ * @return TRUE if fulfilled, FALSE if not (due to timeout expiring).
+ */
+/datum/promise/proc/wait(timeout=INF_SLEEP_TIME)
+	if(fulfilled)
 		return fulfilled
+	if(!isleep)
+		isleep = new
+	isleep.wait(timeout)
+	return fulfilled
 
-	/**
-	 * Wait for the promise to be fulfilled and return the value.
-	 *
-	 * @param timeout How long to wait for fulfillment. If not provided wait indefinitely.
-	 * @return The value of the promise or null if unfulfilled.
-	 */
-	proc/wait_for_value(timeout=INF_SLEEP_TIME)
-		if(fulfilled)
-			return value
-		if(!isleep)
-			isleep = new
-		isleep.wait(timeout)
+/**
+ * Wait for the promise to be fulfilled and return the value.
+ *
+ * @param timeout How long to wait for fulfillment. If not provided wait indefinitely.
+ * @return The value of the promise or null if unfulfilled.
+ */
+/datum/promise/proc/wait_for_value(timeout=INF_SLEEP_TIME)
+	if(fulfilled)
 		return value
+	if(!isleep)
+		isleep = new
+	isleep.wait(timeout)
+	return value
 
-	/**
-	 * Fulfills the promise with value `value`.
-	 *
-	 * @param value The value to fulfill the promise with.
-	 * @return TRUE if the promise was not already fulfilled, FALSE if it was.
-	 */
-	proc/fulfill(val)
-		if(fulfilled)
-			return FALSE
-		value = val
-		fulfilled = TRUE
-		INTERRUPT_SLEEP(isleep)
-		return TRUE
+/**
+ * Fulfills the promise with value `value`.
+ *
+ * @param value The value to fulfill the promise with.
+ * @return TRUE if the promise was not already fulfilled, FALSE if it was.
+ */
+/datum/promise/proc/fulfill(val)
+	if(fulfilled)
+		return FALSE
+	value = val
+	fulfilled = TRUE
+	INTERRUPT_SLEEP(isleep)
+	return TRUE
 
 #undef INF_SLEEP_TIME
 

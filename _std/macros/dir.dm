@@ -5,12 +5,12 @@ var/global/list
 	modulo_angle_to_dir = list(NORTH,NORTHEAST,EAST,SOUTHEAST,SOUTH,SOUTHWEST,WEST,NORTHWEST)
 	dirnames = list("north"=NORTH, "south"=SOUTH, "east"=EAST, "west"=WEST, "northeast"=NORTHEAST, "southeast"=SOUTHEAST, "southwest"=SOUTHWEST, "northwest"=NORTHWEST)
 
-proc/dir_to_dirname(dir)
+/proc/dir_to_dirname(dir)
 	for(var/name in global.dirnames)
 		if(dirnames[name] == dir)
 			return name
 
-proc/dirname_to_dir(dir)
+/proc/dirname_to_dir(dir)
 	return global.dirnames[dir]
 
 /// returns true if a direction is cardinal
@@ -20,22 +20,22 @@ proc/dirname_to_dir(dir)
 #define angle2dir(X) (modulo_angle_to_dir[round((((X%360)+382.5)%360)/45)+1])
 
 /**
-  * Returns the vector magnitude of an x value and a y value
-  */
-proc/vector_magnitude(x,y)
+ * Returns the vector magnitude of an x value and a y value.
+ */
+/proc/vector_magnitude(x,y)
 	//can early out
 	.= sqrt(x*x + y*y);
 
 /**
-  * Transforms a supplied vector x & y to a direction
-  */
-proc/vector_to_dir(x,y)
+ * Transforms a supplied vector x & y to a direction.
+ */
+/proc/vector_to_dir(x,y)
 	.= angle_to_dir(arctan(y,x))
 
 /**
-  * Transforms a given angle to a cardinal/ordinal direction
-  */
-proc/angle_to_dir(angle)
+ * Transforms a given angle to a cardinal/ordinal direction.
+ */
+/proc/angle_to_dir(angle)
 	.= 0
 	if (angle >= 360)
 		return angle_to_dir(angle-360)
@@ -63,9 +63,9 @@ proc/angle_to_dir(angle)
 			.= SOUTH
 
 /**
-  * Transforms a cardinal/ordinal direction to an angle
-  */
-proc/dir_to_angle(dir)
+ * Transforms a cardinal/ordinal direction to an angle.
+ */
+/proc/dir_to_angle(dir)
 	.= 0
 	switch(dir)
 		if(NORTH)
@@ -86,9 +86,9 @@ proc/dir_to_angle(dir)
 			.= 315
 
 /**
-  * Transforms a given angle to vec2 in a list
-  */
-proc/angle_to_vector(ang)
+ * Transforms a given angle to vec2 in a list.
+ */
+/proc/angle_to_vector(ang)
 	.= list()
 	. += cos(ang)
 	. += sin(ang)

@@ -9,7 +9,7 @@
  *
  * You need to use [/datum/weakref/proc/deref] to get the datum from the weak reference.
  */
-proc/get_weakref(datum/dat)
+/proc/get_weakref(datum/dat)
 	RETURN_TYPE(/datum/weakref)
 	if(QDELETED(dat))
 		return null
@@ -20,16 +20,16 @@ proc/get_weakref(datum/dat)
 /datum/weakref
 	var/addr = null
 
-	New(datum/dat)
-		. = ..()
-		addr = ref(dat)
+/datum/weakref/New(datum/dat)
+	. = ..()
+	addr = ref(dat)
 
-	proc/deref()
-		RETURN_TYPE(/datum)
-		var/datum/dat = locate(addr)
-		if(!QDELETED(dat) && dat?.weakref == src)
-			return dat
+/datum/weakref/proc/deref()
+	RETURN_TYPE(/datum)
+	var/datum/dat = locate(addr)
+	if(!QDELETED(dat) && dat?.weakref == src)
+		return dat
 
-	disposing()
-		deref()?.weakref = null
-		..()
+/datum/weakref/disposing()
+	deref()?.weakref = null
+	..()

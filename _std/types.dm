@@ -64,7 +64,7 @@ var/global/list/cached_concrete_types
  * hats -= /obj/item/clothing/head/hosberet
  * ```
  */
-proc/concrete_typesof(type, cache=TRUE)
+/proc/concrete_typesof(type, cache=TRUE)
 	if(isnull(cached_concrete_types))
 		cached_concrete_types = list()
 	if(type in cached_concrete_types)
@@ -79,24 +79,24 @@ proc/concrete_typesof(type, cache=TRUE)
 var/global/list/cached_filtered_types
 
 /**
-	* The same thing but now you can filter the types using a proc. Also cached.
-	* The filter proc takes a type and should return 1 if we want to include it and 0 otherwise.
-	* That proc should also be pure (always return the same thing for the same arguments) because of the caching.
-	* If you want to use non-pure proc do the filtering manually yourself and don't use this.
-	* Note that the first call to filtered_concrete_typesof with a given type and filter will be (possibly a lot)
-	* *slower* than doing it manually. The benefit of this proc only shows itself for future calls which are
-	* very fast due to caching.
-	*
-	* Example:
-	* ```
-	* proc/filter_is_syndicate(type)
-	* 	var/obj/fake_instance = type
-	* 	return initial(fake_instance.is_syndicate)
-	*
-	* var/syndie_thing_type = pick(filtered_concrete_typesof(/obj/item, /proc/filter_is_syndicate))
-	* ```
-	*/
-proc/filtered_concrete_typesof(type, filter)
+ * The same thing but now you can filter the types using a proc. Also cached.
+ * The filter proc takes a type and should return 1 if we want to include it and 0 otherwise.
+ * That proc should also be pure (always return the same thing for the same arguments) because of the caching.
+ * If you want to use non-pure proc do the filtering manually yourself and don't use this.
+ * Note that the first call to filtered_concrete_typesof with a given type and filter will be (possibly a lot)
+ * *slower* than doing it manually. The benefit of this proc only shows itself for future calls which are
+ * very fast due to caching.
+ *
+ * Example:
+ * ```
+ * proc/filter_is_syndicate(type)
+ * 	var/obj/fake_instance = type
+ * 	return initial(fake_instance.is_syndicate)
+ *
+ * var/syndie_thing_type = pick(filtered_concrete_typesof(/obj/item, /proc/filter_is_syndicate))
+ * ```
+ */
+/proc/filtered_concrete_typesof(type, filter)
 	if(isnull(cached_filtered_types))
 		cached_filtered_types = list()
 	if((type in cached_filtered_types) && (filter in cached_filtered_types[type]))
@@ -110,7 +110,7 @@ proc/filtered_concrete_typesof(type, filter)
 	cached_filtered_types[type][filter] = .
 
 /// Gets the instance of a singleton type (or a non-singleton type if you decide to use it on one).
-proc/get_singleton(type)
+/proc/get_singleton(type)
 	RETURN_TYPE(type)
 	if(!(type in singletons))
 		singletons[type] = new type
@@ -120,7 +120,7 @@ var/global/list/singletons = list()
 
 
 /// Find predecessor of a type
-proc/predecessor_path_in_list(type, list/types)
+/proc/predecessor_path_in_list(type, list/types)
 	while(type)
 		if(type in types)
 			return type
@@ -128,9 +128,9 @@ proc/predecessor_path_in_list(type, list/types)
 	return null
 
 /**
-	* Returns the maximal subtype (i.e. the most subby) in a list of given types
-	*/
-proc/maximal_subtype(var/list/L)
+ * Returns the maximal subtype (i.e. the most subby) in a list of given types
+ */
+/proc/maximal_subtype(var/list/L)
 	if (!(length(L)))
 		.= null
 	else
@@ -295,7 +295,7 @@ var/list/list/by_cat = list()
  * 	valid_types += type
  * ```
 */
-proc/get_type_typeinfo(type)
+/proc/get_type_typeinfo(type)
 	RETURN_TYPE(/typeinfo/datum) // change to /typeinfo if we ever implement /typeinfo for non-datums for some reason
 	var/datum/type_dummy = type
 	return get_singleton(initial(type_dummy.typeinfo_type))
@@ -321,7 +321,7 @@ proc/get_type_typeinfo(type)
 
 
 /// Finds some instance of a type in the world. Returns null if none found.
-proc/find_first_by_type(type)
+/proc/find_first_by_type(type)
 	RETURN_TYPE(type)
 	var/ancestor = type
 	while(ancestor != null)
@@ -334,13 +334,13 @@ proc/find_first_by_type(type)
 	. = locate(type)
 
 /**
- *	Finds all instance of a type in the world.
- *	Returns a list of the instances if no procedure is given.
- *	Otherwise, calls the procedure for each instance and returns an assoc list of the form list(instance = procedure(instance, arguments...), ...)
- *	`procedure_src` is the src for the proc call. If it is null, a global proc is called.
- *	If it is the string "instance" the output list will be instead list(instance = instance.procedure(arguments...), ...)
+ * Finds all instance of a type in the world.
+ * Returns a list of the instances if no procedure is given.
+ * Otherwise, calls the procedure for each instance and returns an assoc list of the form list(instance = procedure(instance, arguments...), ...)
+ * `procedure_src` is the src for the proc call. If it is null, a global proc is called.
+ * If it is the string "instance" the output list will be instead list(instance = instance.procedure(arguments...), ...)
  */
-proc/find_all_by_type(type, procedure=null, procedure_src=null, arguments=null, lagcheck=TRUE)
+/proc/find_all_by_type(type, procedure=null, procedure_src=null, arguments=null, lagcheck=TRUE)
 	RETURN_TYPE(type)
 	var/ancestor = type
 	while(ancestor != null)
@@ -446,7 +446,7 @@ proc/find_all_by_type(type, procedure=null, procedure_src=null, arguments=null, 
 	#undef IT_TYPE
 
 /// istype but for checking a list of types
-proc/istypes(datum/dat, list/types)
+/proc/istypes(datum/dat, list/types)
 	// based on the size of the types list this could be optimizable later by pre-generating and caching a concatenation of typesof() of them
 	for(var/type in types)
 		if(istype(dat, type))

@@ -15,9 +15,11 @@
 /proc/random_color()
 	return rgb(rand(0, 255), rand(0, 255), rand(0, 255))
 
-// This proc converts a hex color value ("#420CAB") to an RGB list
-// Clamps each of the RGB values between 50 and 190
-/proc/fix_colors(var/hex)
+/**
+ * This proc converts a hex color value ("#420CAB") to an RGB list
+ * Clamps each of the RGB values between 50 and 190
+ */
+/proc/fix_colors(hex)
 	if(length(hex) != 7)
 		hex = fix_hex(hex)
 	var/list/L = hex_to_rgb_list(hex)
@@ -34,50 +36,63 @@
 	return copytext((startswith(hex, "#") ? hex : "#") + "000000", 1, 8)
 
 #define COLOR_MATRIX_PROTANOPIA_LABEL "protanopia"
-#define COLOR_MATRIX_PROTANOPIA list(0.55, 0.45, 0.00, 0.00,\
-																		 0.55, 0.45, 0.00, 0.00,\
-																		 0.00, 0.25, 1.00, 0.00,\
-																		 0.00, 0.00, 0.00, 1.00,\
-																		 0.00, 0.00, 0.00, 0.00)
+#define COLOR_MATRIX_PROTANOPIA list(\
+	0.55, 0.45, 0.00, 0.00,\
+	0.55, 0.45, 0.00, 0.00,\
+	0.00, 0.25, 1.00, 0.00,\
+	0.00, 0.00, 0.00, 1.00,\
+	0.00, 0.00, 0.00, 0.00)
+
 #define COLOR_MATRIX_DEUTERANOPIA_LABEL "deuteranopia"
-#define COLOR_MATRIX_DEUTERANOPIA list(0.63, 0.38, 0.00, 0.00,\
-																			 0.70, 0.30, 0.00, 0.00,\
-																			 0.00, 0.30, 0.70, 0.00,\
-																			 0.00, 0.00, 0.00, 1.00,\
-																			 0.00, 0.00, 0.00, 0.00)
+#define COLOR_MATRIX_DEUTERANOPIA list(\
+	0.63, 0.38, 0.00, 0.00,\
+	0.70, 0.30, 0.00, 0.00,\
+	0.00, 0.30, 0.70, 0.00,\
+	0.00, 0.00, 0.00, 1.00,\
+	0.00, 0.00, 0.00, 0.00)
+
 #define COLOR_MATRIX_TRITANOPIA_LABEL "tritanopia"
-#define COLOR_MATRIX_TRITANOPIA list(0.95, 0.05, 0.00, 0.00,\
-																		 0.00, 0.43, 0.57, 0.00,\
-																		 0.00, 0.48, 0.53, 0.00,\
-																		 0.00, 0.00, 0.00, 1.00,\
-																		 0.00, 0.00, 0.00, 0.00)
+#define COLOR_MATRIX_TRITANOPIA list(\
+	0.95, 0.05, 0.00, 0.00,\
+	0.00, 0.43, 0.57, 0.00,\
+	0.00, 0.48, 0.53, 0.00,\
+	0.00, 0.00, 0.00, 1.00,\
+	0.00, 0.00, 0.00, 0.00)
+
 #define COLOR_MATRIX_FLOCKMIND_LABEL "flockmind"
-#define COLOR_MATRIX_FLOCKMIND list(1.00, 0.00, 0.00, 0.00,\
-																		0.00, 1.00, 0.00, 0.00,\
-																		0.00, 0.00, 1.00, 0.00,\
-																		0.00, 0.00, 0.00, 1.00,\
-																		0.00, 0.10, 0.20, 0.00)
+#define COLOR_MATRIX_FLOCKMIND list(\
+	1.00, 0.00, 0.00, 0.00,\
+	0.00, 1.00, 0.00, 0.00,\
+	0.00, 0.00, 1.00, 0.00,\
+	0.00, 0.00, 0.00, 1.00,\
+	0.00, 0.10, 0.20, 0.00)
+
 #define COLOR_MATRIX_FLOCKMANGLED_LABEL "flockmind-fucked"
-#define COLOR_MATRIX_FLOCKMANGLED list(-0.3, -0.3, -0.3, 0.00,\
-																			 -0.3, -0.3, -0.3, 0.00,\
-																			 -0.3, -0.3, -0.3, 0.00,\
-																			 0.00, 0.00, 0.00, 1.00,\
-																			 0.20, 0.80, 0.70, 0.00)
+#define COLOR_MATRIX_FLOCKMANGLED list(\
+	-0.3, -0.3, -0.3, 0.00,\
+	-0.3, -0.3, -0.3, 0.00,\
+	-0.3, -0.3, -0.3, 0.00,\
+	0.00, 0.00, 0.00, 1.00,\
+	0.20, 0.80, 0.70, 0.00)
+
 #define COLOR_MATRIX_IDENTITY_LABEL "identity"
-#define COLOR_MATRIX_IDENTITY list(1.00, 0.00, 0.00, 0.00,\
-																	 0.00, 1.00, 0.00, 0.00,\
-																	 0.00, 0.00, 1.00, 0.00,\
-																	 0.00, 0.00, 0.00, 1.00,\
-																	 0.00, 0.00, 0.00, 0.00)
+#define COLOR_MATRIX_IDENTITY list(\
+	1.00, 0.00, 0.00, 0.00,\
+	0.00, 1.00, 0.00, 0.00,\
+	0.00, 0.00, 1.00, 0.00,\
+	0.00, 0.00, 0.00, 1.00,\
+	0.00, 0.00, 0.00, 0.00)
+
 #define COLOR_MATRIX_GRAYSCALE_LABEL "grayscale"
-#define COLOR_MATRIX_GRAYSCALE list(0.2126,0.2126,0.2126,0.00,\
-																		0.7152,0.7152,0.7152,0.00,\
-																		0.0722,0.0722,0.0722,0.00,\
-																		0.00,  0.00,  0.00,  1.00,\
-																		0.00,  0.00,  0.00,  0.00)
+#define COLOR_MATRIX_GRAYSCALE list(\
+	0.2126,0.2126,0.2126,0.00,\
+	0.7152,0.7152,0.7152,0.00,\
+	0.0722,0.0722,0.0722,0.00,\
+	0.00,  0.00,  0.00,  1.00,\
+	0.00,  0.00,  0.00,  0.00)
 
 /// Takes two 20-length lists, turns them into 5x4 matrices, multiplies them together, and returns a 20-length list
-/proc/mult_color_matrix(var/list/Mat1, var/list/Mat2) // always 5x4 please
+/proc/mult_color_matrix(list/Mat1, list/Mat2) // always 5x4 please
 	if (!Mat1.len || !Mat2.len || Mat1.len != 20 || Mat2.len != 20)
 		return COLOR_MATRIX_IDENTITY
 
@@ -177,13 +192,13 @@
 	CRASH("invalid color format")
 
 /**
-	Takes two lists, inp=list(i1, i2, i3), out=(o1, o2, o3).
-	Creates a color matrix which maps color i1 to o2, i2 to o2, i3 to o3. (Ignores alpha values.)
-	Keep the i1, i2, i3 vectors linearly independent.
-	The colors can be either be color hex strings or lists as returned from hex_to_rgb_list.
-	You need to supply all arguments. If you don't care about the third just set i3 = o3 to something linearly independent of i1 and i2.
-*/
-proc/color_mapping_matrix(list/list/inp, list/list/out)
+ * Takes two lists, inp=list(i1, i2, i3), out=(o1, o2, o3).
+ * Creates a color matrix which maps color i1 to o2, i2 to o2, i3 to o3. (Ignores alpha values.)
+ * Keep the i1, i2, i3 vectors linearly independent.
+ * The colors can be either be color hex strings or lists as returned from hex_to_rgb_list.
+ * You need to supply all arguments. If you don't care about the third just set i3 = o3 to something linearly independent of i1 and i2.
+ */
+/proc/color_mapping_matrix(list/list/inp, list/list/out)
 	if(length(inp) != 3 || length(out) != 3)
 		CRASH("Incorrect number of colors in the mapping.")
 	inp = inp.Copy() // we don't want to modify the input lists
@@ -211,10 +226,10 @@ proc/color_mapping_matrix(list/list/inp, list/list/out)
 	)
 
 /**
-	The same thing as [proc/color_mapping_matrix] but with 4 mapped colors.
-	The first color is used as the origin in the affine transform.
-*/
-proc/affine_color_mapping_matrix(list/list/inp, list/list/out)
+ * The same thing as [proc/color_mapping_matrix] but with 4 mapped colors.
+ * The first color is used as the origin in the affine transform.
+ */
+/proc/affine_color_mapping_matrix(list/list/inp, list/list/out)
 	if(length(inp) != 4 || length(out) != 4)
 		CRASH("Incorrect number of colors in the mapping.")
 	inp = inp.Copy()
@@ -244,12 +259,12 @@ proc/affine_color_mapping_matrix(list/list/inp, list/list/out)
 	return result_inner + additive_row
 
 /**
-	Generates a color matrix which performs an approximation of the HSV-space transform.
-	Hue is in degrees and is applied additively.
-	Saturation is in a 0-1 range and is applied multiplicatively.
-	Value is in a 0-1 range and is applied multiplicatively.
-*/
-proc/hsv_transform_color_matrix(h=0.0, s=1.0, v=1.0)
+ * Generates a color matrix which performs an approximation of the HSV-space transform.
+ * Hue is in degrees and is applied additively.
+ * Saturation is in a 0-1 range and is applied multiplicatively.
+ * Value is in a 0-1 range and is applied multiplicatively.
+ */
+/proc/hsv_transform_color_matrix(h=0.0, s=1.0, v=1.0)
 	// Source: http://beesbuzz.biz/code/16-hsv-color-transforms
 	var/vsu = v * s * cos(h)
 	var/vsw = v * s * sin(h)

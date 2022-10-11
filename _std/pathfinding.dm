@@ -575,8 +575,10 @@
 // Navigation procs
 // Used for A-star pathfinding
 
-/// Returns the surrounding cardinal turfs with open links
-/// Including through doors openable with the ID
+/**
+ * Returns the surrounding cardinal turfs with open links.
+ * Including through doors openable with the ID.
+ */
 /turf/proc/CardinalTurfsWithAccess(obj/item/card/id/ID)
 	. = list()
 
@@ -586,7 +588,7 @@
 			if(!LinkBlockedWithAccess(src, T, ID))
 				. += T
 
-/// Returns surrounding card+ord turfs with open links
+/// Returns surrounding card+ord turfs with open links.
 /turf/proc/AllDirsTurfsWithAccess(obj/item/card/id/ID)
 	. = list()
 
@@ -597,8 +599,8 @@
 			if(!LinkBlockedWithAccess(src, T, ID))
 				. += T
 
-// Fixes floorbots being terrified of space
-turf/proc/CardinalTurfsAndSpaceWithAccess(obj/item/card/id/ID)
+/// Fixes floorbots being terrified of space.
+/turf/proc/CardinalTurfsAndSpaceWithAccess(obj/item/card/id/ID)
 	. = list()
 
 	for(var/d in cardinal)
@@ -621,15 +623,17 @@ var/static/obj/item/card/id/ALL_ACCESS_CARD = new /obj/item/card/id/captains_spa
 			if (!LinkBlockedWithAccess(src, T))
 				. += T
 
-// Returns true if a link between A and B is blocked
-// Movement through doors allowed if ID has access
+/**
+ * Returns true if a link between A and B is blocked.
+ * Movement through doors allowed if ID has access.
+ */
 /proc/LinkBlockedWithAccess(turf/A, turf/B, obj/item/card/id/ID)
 	. = FALSE
 	if(A == null || B == null)
 		return 1
 	var/adir = get_dir(A,B)
 	var/rdir = get_dir(B,A)
-	if((adir & (NORTH|SOUTH)) && (adir & (EAST|WEST)))	//	diagonal
+	if((adir & (NORTH|SOUTH)) && (adir & (EAST|WEST))) // Diagonal
 		var/iStep = get_step(A,adir&(NORTH|SOUTH))
 		if(!LinkBlockedWithAccess(A,iStep, ID) && !LinkBlockedWithAccess(iStep,B,ID))
 			return 0
@@ -646,7 +650,7 @@ var/static/obj/item/card/id/ALL_ACCESS_CARD = new /obj/item/card/id/captains_spa
 	if(!DirWalkableB)
 		return 1
 
-	if (DirWalkableB == 2) //we found a door we can open! Let's open the door before we check the whole tile for dense objects below.
+	if (DirWalkableB == 2) // We found a door we can open! Let's open the door before we check the whole tile for dense objects below.
 		return 0
 
 	for (var/atom/O in B.contents)
@@ -663,15 +667,17 @@ var/static/obj/item/card/id/ALL_ACCESS_CARD = new /obj/item/card/id/captains_spa
 			else
 				return 1
 
-// Returns true if direction is accessible from loc
-// If we found a door we could open, return 2 instead of 1.
-// Checks doors against access with given ID
-/proc/DirWalkableWithAccess(turf/loc,var/dir,var/obj/item/card/id/ID, var/exiting_this_tile = 0)
+/**
+ * Returns TRUE if direction is accessible from loc.
+ * If we found a door we could open, return 2 instead of 1.
+ * Checks doors against access with given ID.
+ */
+/proc/DirWalkableWithAccess(turf/loc, dir, obj/item/card/id/ID, exiting_this_tile = 0)
 	. = TRUE
 	for (var/obj/O in loc)
 		if (O.density)
 			if (O.object_flags & BOTS_DIRBLOCK)
-				if (O.flags & ON_BORDER && dir == O.dir)//windoors and directional windows
+				if (O.flags & ON_BORDER && dir == O.dir) // Windoors and directional windows.
 					if (O.has_access_requirements())
 						if (O.check_access(ID) == 0)
 							return 0
@@ -679,7 +685,7 @@ var/static/obj/item/card/id/ALL_ACCESS_CARD = new /obj/item/card/id/captains_spa
 							return 2
 					else
 						return 2
-				else if (!exiting_this_tile)		//other solid objects. dont bother checking if we are EXITING this tile
+				else if (!exiting_this_tile) // Other solid objects. Don't bother checking if we are EXITING this tile.
 					if (O.has_access_requirements())
 						if (O.check_access(ID) == 0)
 							return 0
@@ -691,24 +697,23 @@ var/static/obj/item/card/id/ALL_ACCESS_CARD = new /obj/item/card/id/captains_spa
 				if (O.flags & ON_BORDER)
 					if (dir == O.dir)
 						return 0
-				else if (!exiting_this_tile) //dont bother checking if we are EXITING this tile
+				else if (!exiting_this_tile) // Don't bother checking if we are EXITING this tile.
 					return 0
 
-/turf/proc
-	AdjacentTurfs()
-		. = list()
-		for(var/turf/simulated/t in oview(src,1))
-			if(!t.density)
-				if(!LinkBlocked(src, t) && !TurfBlockedNonWindow(t))
-					. += t
 
-	AdjacentTurfsSpace()
-		. = list()
-		for(var/turf/t in oview(src,1))
-			if(!t.density)
-				if(!LinkBlocked(src, t) && !TurfBlockedNonWindow(t))
-					. += t
+/turf/proc/AdjacentTurfs()
+	. = list()
+	for(var/turf/simulated/t in oview(src,1))
+		if(!t.density)
+			if(!LinkBlocked(src, t) && !TurfBlockedNonWindow(t))
+				. += t
 
-	Distance(turf/t)
-		return sqrt((src.x - t.x) ** 2 + (src.y - t.y) ** 2)
+/turf/proc/AdjacentTurfsSpace()
+	. = list()
+	for(var/turf/t in oview(src,1))
+		if(!t.density)
+			if(!LinkBlocked(src, t) && !TurfBlockedNonWindow(t))
+				. += t
 
+/turf/proc/Distance(turf/t)
+	return sqrt((src.x - t.x) ** 2 + (src.y - t.y) ** 2)

@@ -1,4 +1,3 @@
-
 /// Instead of `#include "foo.dmm"` use the following macro which will also store information about the loaded z-level
 #define INCLUDE_MAP(PATH) \
 	/datum/_zlevel_helper/inner/get_zlevels() \
@@ -17,17 +16,17 @@ var/global/list/datum/zlevel/zlevels = null
 	/// Z coordinate of this z-level
 	var/z
 
-	New(path, z)
-		..()
-		src.path = path
-		src.z = z
-		src.generate_name()
+/datum/zlevel/New(path, z)
+	..()
+	src.path = path
+	src.z = z
+	src.generate_name()
 
-	proc/generate_name()
-		var/list/path_parts = splittext(path, "/")
-		var/filename = path_parts[length(path_parts)]
-		var/filename_parts = splittext(filename, ".")
-		src.name = filename_parts[1]
+/datum/zlevel/proc/generate_name()
+	var/list/path_parts = splittext(path, "/")
+	var/filename = path_parts[length(path_parts)]
+	var/filename_parts = splittext(filename, ".")
+	src.name = filename_parts[1]
 
 	// eventual plan is to add more properties to this (tele blockability, observability etc.) and create some subtypes which are chosen based on path
 	// instead of base /datum/zlevel being used
@@ -35,13 +34,12 @@ var/global/list/datum/zlevel/zlevels = null
 
 // internals
 
-/datum/_zlevel_helper
-	proc/get_zlevels()
-		. = list()
+/datum/_zlevel_helper/proc/get_zlevels()
+	. = list()
 
 /datum/_zlevel_helper/inner
 
-proc/init_zlevel_datums()
+/proc/init_zlevel_datums()
 	var/datum/_zlevel_helper/inner/helper = new
 	global.zlevels = list()
 	for(var/path in helper.get_zlevels())

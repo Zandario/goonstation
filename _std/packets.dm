@@ -1,7 +1,7 @@
 
 #define RADIO_JAMMER_RANGE 6
 
-proc/check_for_radio_jammers(atom/source)
+/proc/check_for_radio_jammers(atom/source)
 	. = FALSE
 	for (var/atom/A as anything in by_cat[TR_CAT_RADIO_JAMMERS])
 		if (IN_RANGE(source, A, RADIO_JAMMER_RANGE))
@@ -29,14 +29,14 @@ proc/check_for_radio_jammers(atom/source)
 		FALSE \
 	))
 
-proc/get_packet_connection_by_id(atom/movable/AM, id)
+/proc/get_packet_connection_by_id(atom/movable/AM, id)
 	RETURN_TYPE(/datum/component/packet_connected)
 	for(var/datum/component/packet_connected/comp as anything in AM.GetComponents(/datum/component/packet_connected))
 		if(comp.connection_id == id)
 			return comp
 	return null
 
-proc/get_radio_connection_by_id(atom/movable/AM, id)
+/proc/get_radio_connection_by_id(atom/movable/AM, id)
 	RETURN_TYPE(/datum/component/packet_connected/radio)
 	for(var/datum/component/packet_connected/radio/comp as anything in AM.GetComponents(/datum/component/packet_connected/radio))
 		if(comp.connection_id == id)

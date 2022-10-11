@@ -15,7 +15,7 @@ var/global/list/copy_stack
 var/global/list/longest_copy_stack
 #endif
 
-proc/semi_deep_copy(orig, new_arg=null, list/environment=null, root=null, copy_flags=0)
+/proc/semi_deep_copy(orig, new_arg=null, list/environment=null, root=null, copy_flags=0)
 	if(((copy_flags & COPY_SHALLOW) || (copy_flags & COPY_SHALLOW_EXCEPT_FOR_LISTS && !islist(orig))) && !isnull(root))
 		return orig
 	if(isnum(orig) || istext(orig) || isnull(orig) || isclient(orig) || isicon(orig) || isfile(orig) || ispath(orig) || \

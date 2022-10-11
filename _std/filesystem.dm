@@ -3,14 +3,14 @@
 #define IS_DIR_FNAME(fname) (copytext(fname, length(fname), length(fname) + 1) == "/")
 
 /// Gets the filaname from a filesystem path. Optionally strips extension too
-proc/filename_from_path(path, strip_extension=FALSE)
+/proc/filename_from_path(path, strip_extension=FALSE)
 	var/dirs = splittext(path, "/")
 	. = dirs[length(dirs)]
 	if(strip_extension)
 		. = splittext(., ".")[1]
 
 /// Lists all files recursively in a given dir, refer to builtin flist() for details
-proc/recursive_flist(dir, list_folders=TRUE)
+/proc/recursive_flist(dir, list_folders=TRUE)
 	if(!IS_DIR_FNAME(dir))
 		dir += "/"
 	. = list()

@@ -201,11 +201,11 @@ What can break when adding new gases:
 	TEG stats computer will ignore your new gas. Feel free to add it to reactor_stats.dm manually but good luck.
 */
 
-#define SPECIFIC_HEAT_PLASMA		200
-#define SPECIFIC_HEAT_O2		20
-#define SPECIFIC_HEAT_N2		20
-#define SPECIFIC_HEAT_CO2		30
-#define SPECIFIC_HEAT_FARTS 69
+#define SPECIFIC_HEAT_PLASMA 200
+#define SPECIFIC_HEAT_O2     20
+#define SPECIFIC_HEAT_N2     20
+#define SPECIFIC_HEAT_CO2    30
+#define SPECIFIC_HEAT_FARTS  69
 
 #define _APPLY_TO_GASES(PREF, SUFF, MACRO, ARGS...) \
 	MACRO(PREF ## oxygen ## SUFF, SPECIFIC_HEAT_O2, "O2", ARGS) \
@@ -232,11 +232,11 @@ What can break when adding new gases:
 #endif
 
 /**
-	* Returns the color of a given gas ID.
-	*
-	* This is used only in the gas mixer computer as of now.
-	*/
-proc/gas_text_color(gas_id)
+ * Returns the color of a given gas ID.
+ *
+ * This is used only in the gas mixer computer as of now.
+ */
+/proc/gas_text_color(gas_id)
 	switch(gas_id)
 		if("oxygen")
 			return "blue"
