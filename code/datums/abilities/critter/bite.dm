@@ -18,30 +18,30 @@
 
 	var/datum/projectile/slam/proj = new
 
-	cast(atom/target)
-		if (..())
-			return 1
-		if (isobj(target))
-			target = get_turf(target)
-		if (isturf(target))
-			target = locate(/mob/living) in target
-			if (!target)
-				boutput(holder.owner, "<span class='alert'>Nothing to bite there.</span>")
-				return 1
-		if (target == holder.owner)
-			return 1
-		if (BOUNDS_DIST(holder.owner, target) > 0)
-			boutput(holder.owner, "<span class='alert'>That is too far away to bite.</span>")
-			return 1
-		playsound(target, src.sound_bite, sound_volume, 1, -1)
-		var/mob/MT = target
-		MT.TakeDamageAccountArmor("All", src.brute_damage, 0, 0, DAMAGE_CRUSH)
-		MT.changeStatus("stunned", stun_duration)
-		if(bleed)
-			take_bleeding_damage(MT, null, bleed, DAMAGE_CUT, bleed-5, get_turf(MT))
+/datum/targetable/critter/bite/cast(atom/target)
+	if (..())
+		return TRUE
+	if (isobj(target))
+		target = get_turf(target)
+	if (isturf(target))
+		target = locate(/mob/living) in target
+		if (!target)
+			boutput(holder.owner, "<span class='alert'>Nothing to bite there.</span>")
+			return TRUE
+	if (target == holder.owner)
+		return TRUE
+	if (BOUNDS_DIST(holder.owner, target) > 0)
+		boutput(holder.owner, "<span class='alert'>That is too far away to bite.</span>")
+		return TRUE
+	playsound(target, src.sound_bite, sound_volume, TRUE, -1)
+	var/mob/MT = target
+	MT.TakeDamageAccountArmor("All", src.brute_damage, 0, 0, DAMAGE_CRUSH)
+	MT.changeStatus("stunned", stun_duration)
+	if(bleed)
+		take_bleeding_damage(MT, null, bleed, DAMAGE_CUT, bleed-5, get_turf(MT))
 
-		holder.owner.visible_message("<span class='combat'><b>[holder.owner] bites [MT]!</b></span>", "<span class='combat'>You bite [MT]!</span>")
-		return 0
+	holder.owner.visible_message("<span class='combat'><b>[holder.owner] bites [MT]!</b></span>", "<span class='combat'>You bite [MT]!</span>")
+	return FALSE
 
 /datum/targetable/critter/bite/big
 	name = "Bite"

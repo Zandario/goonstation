@@ -9,21 +9,21 @@
 	pointCost = 0
 	restricted_area_check = 1
 
-	cast(mob/target)
-		if (!holder)
-			return 1
+/datum/targetable/critter/fire_sprint/cast(mob/target)
+	if (!holder)
+		return TRUE
 
-		var/mob/living/carbon/human/M = holder.owner
-		//var/datum/abilityHolder/vampire/H = holder
+	var/mob/living/carbon/human/M = holder.owner
+	//var/datum/abilityHolder/vampire/H = holder
 
-		if (!M)
-			return 1
+	if (!M)
+		return TRUE
 
-		if (M.special_sprint & SPRINT_FIRE)
-			M.special_sprint &= ~SPRINT_FIRE
-		else
-			M.special_sprint |= SPRINT_FIRE
+	if (M.special_sprint & SPRINT_FIRE)
+		M.special_sprint &= ~SPRINT_FIRE
+	else
+		M.special_sprint |= SPRINT_FIRE
 
-		boutput(M, "<span class='notice'>Fire Form toggled [(M.special_sprint & SPRINT_FIRE ) ? "on" : "off"]. (Hold Sprint to activate - consumes stamina)</span>")
+	boutput(M, "<span class='notice'>Fire Form toggled [(M.special_sprint & SPRINT_FIRE ) ? "on" : "off"]. (Hold Sprint to activate - consumes stamina)</span>")
 
-		return 0
+	return FALSE
