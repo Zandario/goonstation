@@ -31,39 +31,39 @@
 /// depreceated, bye
 /chui
 
-chui/engine
+/chui/engine
 	var/global/list/chui/theme/themes
 	var/chui/window/staticinst
 
-	New()
-		..()
-		themes = list()
-		for( var/thm in typesof( "/chui/theme" ) )
-			themes += new thm()
-		SPAWN(0)
-			staticinst = new
-		//staticinst.theme = themes[1]//fart
+/chui/engine/New()
+	..()
+	themes = list()
+	for( var/thm in typesof( "/chui/theme" ) )
+		themes += new thm()
+	SPAWN(0)
+		staticinst = new
+	//staticinst.theme = themes[1]//fart
 
-	proc/GetTheme( var/name )
-		for( var/i = 1, i < themes.len, i++ )
-			var/chui/theme/theme = themes[ i ]
-			if( theme.name == name )
-				return theme
-		return themes[1]
+/chui/engine/proc/GetTheme(name)
+	for(var/i = 1, i < themes.len, i++)
+		var/chui/theme/theme = themes[i]
+		if(theme.name == name)
+			return theme
+	return themes[1]
 
-	/*
-	proc/RscStream( var/client/victim, var/list/resources )
-		CDBG2( "Transfering resources..." )
-		for( var/rsc in resources )
-			rsc = file("[rsc]")
-			CDBG3( "Transfering [rsc]" )
-			victim << browse( rsc, "display=0" )
-		CDBG2( "Complete." )
-	*/
+/*
+/chui/engine/proc/RscStream(client/victim, list/resources)
+	CDBG2( "Transfering resources..." )
+	for( var/rsc in resources )
+		rsc = file("[rsc]")
+		CDBG3( "Transfering [rsc]" )
+		victim << browse( rsc, "display=0" )
+	CDBG2( "Complete." )
+*/
 
 
 var/global/chui/engine/chui
-world/New()
-
-	if(!chui) chui = new()
+/world/New()
+	if(!chui)
+		chui = new()
 	. = ..()
