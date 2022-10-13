@@ -11,21 +11,21 @@
 	not_when_handcuffed = 0
 	werewolf_only = 1
 
-	cast(mob/target)
-		if (!holder)
-			return 1
-		var/mob/living/M = holder.owner
-		if (!M)
-			return 1
-		var/datum/abilityHolder/werewolf/W = holder
-		if (!istype(W))
-			return 1
-		if (M.reagents.total_volume == 0)
-			boutput(M, "<span class='notice'><B>You don't have any reagents in your bloodstream!</B></span>")
-			return 1
+/datum/targetable/werewolf/werewolf_tainted_saliva/cast(mob/target)
+	if (!holder)
+		return TRUE
+	var/mob/living/M = holder.owner
+	if (!M)
+		return TRUE
+	var/datum/abilityHolder/werewolf/W = holder
+	if (!istype(W))
+		return TRUE
+	if (M.reagents.total_volume == 0)
+		boutput(M, "<span class='notice'><B>You don't have any reagents in your bloodstream!</B></span>")
+		return TRUE
 
-		M.changeStatus("werewolf_saliva", 30 SECONDS)
-		return 0
+	M.changeStatus("werewolf_saliva", 30 SECONDS)
+	return FALSE
 
 /datum/statusEffect/tainted_saliva
 	id = "werewolf_saliva"
@@ -35,33 +35,37 @@
 	maxDuration = 300
 	unique = 1
 
-	onAdd(var/optional=null)
-		. = ..()
-		var/mob/living/M = owner
-		if (!istype(M)) return
-
-		var/datum/abilityHolder/werewolf/W
-		if (M.abilityHolder)
-			W = M.get_ability_holder(/datum/abilityHolder/werewolf)
-		if (!W) return
-
-		M.visible_message("<span class='alert'><B>[M] starts salivating a disgusting amount!</B></span>")
-		W.tainted_saliva_reservoir.clear_reagents()
-		M.reagents.copy_to(W.tainted_saliva_reservoir, 1, 1)
-		M.reagents.clear_reagents()
+/datum/statusEffect/tainted_saliva/onAdd(optional=null)
+	. = ..()
+	var/mob/living/M = owner
+	if (!istype(M))
 		return
 
-	onRemove()
-		. = ..()
-		var/mob/living/M = owner
-		if (!istype(M)) return
-
-		var/datum/abilityHolder/werewolf/W
-		if (M.abilityHolder)
-			W = M.get_ability_holder(/datum/abilityHolder/werewolf)
-		if (!W) return
-
-		W.tainted_saliva_reservoir.clear_reagents()
-		boutput(M, "<span class='notice'><B>You no longer will spread saliva when you attack!</B></span>")
-		M.visible_message("<span class='notice'><B>[M] stops dripping its disgusting saliva!</B></span>")
+	var/datum/abilityHolder/werewolf/W
+	if (M.abilityHolder)
+		W = M.get_ability_holder(/datum/abilityHolder/werewolf)
+	if (!W)
 		return
+
+	M.visible_message("<span class='alert'><B>[M] starts salivating a disgusting amount!</B></span>")
+	W.tainted_saliva_reservoir.clear_reagents()
+	M.reagents.copy_to(W.tainted_saliva_reservoir, 1, 1)
+	M.reagents.clear_reagents()
+	return
+
+/datum/statusEffect/tainted_saliva/onRemove()
+	. = ..()
+	var/mob/living/M = owner
+	if (!istype(M))
+		return
+
+	var/datum/abilityHolder/werewolf/W
+	if (M.abilityHolder)
+		W = M.get_ability_holder(/datum/abilityHolder/werewolf)
+	if (!W)
+		return
+
+	W.tainted_saliva_reservoir.clear_reagents()
+	boutput(M, "<span class='notice'><B>You no longer will spread saliva when you attack!</B></span>")
+	M.visible_message("<span class='notice'><B>[M] stops dripping its disgusting saliva!</B></span>")
+	return

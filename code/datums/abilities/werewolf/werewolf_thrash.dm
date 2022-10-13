@@ -10,25 +10,28 @@
 	when_stunned = 2
 	not_when_handcuffed = 1
 	werewolf_only = 1
-	cast(mob/target)
-		if (!holder)
-			return 1
-		var/mob/living/M = holder.owner
-		if (!M)
-			return 1
-		var/turf/thrash_loc = M.loc
-		M.canmove = 0
-		for (var/i = 0, i < 20, i++)
-			if (i > 5)
-				for (var/mob/T in range(1))
-					if (prob(40) && T.density)
-						M.werewolf_attack(T, "thrash")
-						M.set_dir(turn(M.dir, 90))
-			if (M)
-				M.set_dir(turn(M.dir, 90))
-				M.set_loc(thrash_loc)
-				playsound(M.loc, 'sound/voice/animal/werewolf_attack2.ogg', 10, 1, 0.1, 1.6)
-			else
-				return 0
-			sleep (1.5)
-		M.canmove = 1
+
+/datum/targetable/werewolf/werewolf_thrash/cast(mob/target)
+	if (!holder)
+		return TRUE
+
+	var/mob/living/M = holder.owner
+	if (!M)
+		return TRUE
+
+	var/turf/thrash_loc = M.loc
+	M.canmove = FALSE
+	for (var/i = 0, i < 20, i++)
+		if (i > 5)
+			for (var/mob/T in range(1))
+				if (prob(40) && T.density)
+					M.werewolf_attack(T, "thrash")
+					M.set_dir(turn(M.dir, 90))
+		if (M)
+			M.set_dir(turn(M.dir, 90))
+			M.set_loc(thrash_loc)
+			playsound(M.loc, 'sound/voice/animal/werewolf_attack2.ogg', 10, TRUE, 0.1, 1.6)
+		else
+			return FALSE
+		sleep (1.5)
+	M.canmove = TRUE
