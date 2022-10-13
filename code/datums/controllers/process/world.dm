@@ -3,43 +3,43 @@
 /datum/controller/process/world
 	var/shuttle
 
-	setup()
-		name = "World"
-		schedule_interval = 2.3 SECONDS
+/datum/controller/process/world/setup()
+	name = "World"
+	schedule_interval = 2.3 SECONDS
 
-		last_object = "genResearch.setup"
-		if(genResearch) genResearch.setup()
+	last_object = "genResearch.setup"
+	if(genResearch) genResearch.setup()
 
-		last_object = "setup_radiocodes"
-		setup_radiocodes()
-		last_object = "setup_organ_thresholds"
-		setup_organ_thresholds()
+	last_object = "setup_radiocodes"
+	setup_radiocodes()
+	last_object = "setup_organ_thresholds"
+	setup_organ_thresholds()
 
-		last_object = "emergency_shuttle"
-		emergency_shuttle = new /datum/shuttle_controller/emergency_shuttle()
-		src.shuttle = emergency_shuttle
+	last_object = "emergency_shuttle"
+	emergency_shuttle = new /datum/shuttle_controller/emergency_shuttle()
+	src.shuttle = emergency_shuttle
 
-		last_object = "generate_access_name_lookup"
-		generate_access_name_lookup()
+	last_object = "generate_access_name_lookup"
+	generate_access_name_lookup()
 
-	copyStateFrom(datum/controller/process/target)
-		var/datum/controller/process/world/old_world = target
-		src.shuttle = old_world.shuttle
+/datum/controller/process/world/copyStateFrom(datum/controller/process/target)
+	var/datum/controller/process/world/old_world = target
+	src.shuttle = old_world.shuttle
 
-	doWork()
-		last_object = "sun.calc_position"
-		sun.calc_position()
+/datum/controller/process/world/doWork()
+	last_object = "sun.calc_position"
+	sun.calc_position()
 
-		last_object = "genResearch.progress"
-		if(genResearch) genResearch.progress()
+	last_object = "genResearch.progress"
+	if(genResearch) genResearch.progress()
 
-		for (var/byondkey in muted_keys)
-			last_object = "muted_keys[byondkey]"
-			var/value = muted_keys[byondkey]
-			if (value > 1)
-				muted_keys[byondkey] = value - 1
-			else if (value == 1 || value == 0)
-				muted_keys -= byondkey
+	for (var/byondkey in muted_keys)
+		last_object = "muted_keys[byondkey]"
+		var/value = muted_keys[byondkey]
+		if (value > 1)
+			muted_keys[byondkey] = value - 1
+		else if (value == 1 || value == 0)
+			muted_keys -= byondkey
 
 /proc/setup_radiocodes()
 	var/list/codewords = list("Alpha","Beta","Gamma","Zeta","Omega", "Bravo", "Epsilon", "Jeff", "Delta")
