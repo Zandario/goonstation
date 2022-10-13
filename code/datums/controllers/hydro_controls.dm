@@ -1,16 +1,18 @@
 var/datum/hydroponics_controller/hydro_controls
 
-//some things (mostly items places on the map) call procs on this datum before it exists, queue them instead
+/// Some things (mostly items places on the map) call procs on this datum before it exists, queue them instead
 var/global/list/hydro_controller_queue = list(
 	"species" = list(),
 	"mutation" = list(),
 	"strain" = list()
 )
 
-/datum/hydroponics_controller/
+/datum/hydroponics_controller
 	// global variable name is currently "hydro_controls"
-	var/max_harvest_cap = 10          // How many items can be harvested at once.
-	var/delay_between_harvests = 300  // How long between harvests, in spawn ticks.
+	/// How many items can be harvested at once.
+	var/max_harvest_cap = 10
+	/// How long between harvests, in spawn ticks.
+	var/delay_between_harvests = 300
 	var/list/plant_species = list()
 	var/list/mutations = list()
 	var/list/strains = list()
@@ -21,93 +23,93 @@ var/global/list/hydro_controller_queue = list(
 	var/image/pot_harvest_display = null
 
 
-	proc/set_up()
-		pot_death_display = image('icons/obj/hydroponics/machines_hydroponics.dmi', "led-dead")
-		pot_health_display = image('icons/obj/hydroponics/machines_hydroponics.dmi', "led-health")
-		pot_harvest_display = image('icons/obj/hydroponics/machines_hydroponics.dmi', "led-harv")
+/datum/hydroponics_controller/proc/set_up()
+	pot_death_display = image('icons/obj/hydroponics/machines_hydroponics.dmi', "led-dead")
+	pot_health_display = image('icons/obj/hydroponics/machines_hydroponics.dmi', "led-health")
+	pot_harvest_display = image('icons/obj/hydroponics/machines_hydroponics.dmi', "led-harv")
 
-		for (var/B in typesof(/datum/plantmutation))
-			if (B == /datum/plantmutation)
-				continue
-			src.mutations += new B(src)
+	for (var/B in typesof(/datum/plantmutation))
+		if (B == /datum/plantmutation)
+			continue
+		src.mutations += new B(src)
 
-		for (var/C in typesof(/datum/plant_gene_strain))
-			if (C == /datum/plant_gene_strain)
-				continue
-			src.strains += new C(src)
+	for (var/C in typesof(/datum/plant_gene_strain))
+		if (C == /datum/plant_gene_strain)
+			continue
+		src.strains += new C(src)
 
-		// You need to do plants after the others or they won't set up properly due to mutations and strains
-		// not having been set up yet
-		for (var/A in concrete_typesof(/datum/plant))
-			src.plant_species += new A(src)
+	// You need to do plants after the others or they won't set up properly due to mutations and strains
+	// not having been set up yet
+	for (var/A in concrete_typesof(/datum/plant))
+		src.plant_species += new A(src)
 
-		SPAWN(0)
-			for (var/datum/plant/P in src.plant_species)
-				for (var/X in P.mutations)
-					if (ispath(X))
-						P.mutations += HY_get_mutation_from_path(X)
-						P.mutations -= X
+	SPAWN(0)
+		for (var/datum/plant/P in src.plant_species)
+			for (var/X in P.mutations)
+				if (ispath(X))
+					P.mutations += HY_get_mutation_from_path(X)
+					P.mutations -= X
 
-				for (var/X in P.commuts)
-					if (ispath(X))
-						P.commuts += HY_get_strain_from_path(X)
-						P.commuts -= X
+			for (var/X in P.commuts)
+				if (ispath(X))
+					P.commuts += HY_get_strain_from_path(X)
+					P.commuts -= X
 
-				if (P.vending)
-					vendable_plants += P
+			if (P.vending)
+				vendable_plants += P
 
-			src.process_queue()
-
-
-	//clear any entries in queue
-	proc/process_queue()
-		//clear species lookups
-		for (var/key in hydro_controller_queue["species"])
-			var/list/entry = hydro_controller_queue["species"][key]
-			var/species_path = entry["path"]
-			var/obj/item/thing = entry["thing"]
-			var/datum/plant/species
-
-			for (var/datum/plant/P in src.plant_species)
-				if (species_path == P.type)
-					species = P
-					break
-
-			thing.HY_set_species(species)
-			hydro_controller_queue["species"] -= key
-
-		//clear mutation lookups
-		for (var/key in hydro_controller_queue["mutation"])
-			var/list/entry = hydro_controller_queue["mutation"][key]
-			var/mutation_path = entry["path"]
-			var/obj/item/thing = entry["thing"]
-			var/datum/plantmutation/mutation
-
-			for (var/datum/plantmutation/M in src.mutations)
-				if (mutation_path == M.type)
-					mutation = M
-					break
-
-			thing.HY_set_mutation(mutation)
-			hydro_controller_queue["mutation"] -= key
-
-		//clear strain lookups
-		for (var/key in hydro_controller_queue["strain"])
-			var/list/entry = hydro_controller_queue["strain"][key]
-			var/strain_path = entry["path"]
-			var/obj/item/thing = entry["thing"]
-			var/datum/plant_gene_strain/strain
-
-			for (var/datum/plant_gene_strain/S in src.strains)
-				if (strain_path == S.type)
-					strain = S
-					break
-
-			thing.HY_set_strain(strain)
-			hydro_controller_queue["strain"] -= key
+		src.process_queue()
 
 
-/proc/HY_get_species_from_path(var/species_path, var/obj/item/thing)
+/// Clear any entries in queue
+/datum/hydroponics_controller/proc/process_queue()
+	//clear species lookups
+	for (var/key in hydro_controller_queue["species"])
+		var/list/entry = hydro_controller_queue["species"][key]
+		var/species_path = entry["path"]
+		var/obj/item/thing = entry["thing"]
+		var/datum/plant/species
+
+		for (var/datum/plant/P in src.plant_species)
+			if (species_path == P.type)
+				species = P
+				break
+
+		thing.HY_set_species(species)
+		hydro_controller_queue["species"] -= key
+
+	//clear mutation lookups
+	for (var/key in hydro_controller_queue["mutation"])
+		var/list/entry = hydro_controller_queue["mutation"][key]
+		var/mutation_path = entry["path"]
+		var/obj/item/thing = entry["thing"]
+		var/datum/plantmutation/mutation
+
+		for (var/datum/plantmutation/M in src.mutations)
+			if (mutation_path == M.type)
+				mutation = M
+				break
+
+		thing.HY_set_mutation(mutation)
+		hydro_controller_queue["mutation"] -= key
+
+	//clear strain lookups
+	for (var/key in hydro_controller_queue["strain"])
+		var/list/entry = hydro_controller_queue["strain"][key]
+		var/strain_path = entry["path"]
+		var/obj/item/thing = entry["thing"]
+		var/datum/plant_gene_strain/strain
+
+		for (var/datum/plant_gene_strain/S in src.strains)
+			if (strain_path == S.type)
+				strain = S
+				break
+
+		thing.HY_set_strain(strain)
+		hydro_controller_queue["strain"] -= key
+
+
+/proc/HY_get_species_from_path(species_path, obj/item/thing)
 	if (!hydro_controls)
 		if (thing)
 			hydro_controller_queue["species"]["[length(hydro_controller_queue["species"])]"] = list("path" = species_path, "thing" = thing)
@@ -126,7 +128,7 @@ var/global/list/hydro_controller_queue = list(
 	logTheThing(LOG_DEBUG, null, "<b>Hydro Controller:</b> Species \"[species_path]\" not found")
 	return null
 
-/proc/HY_get_mutation_from_path(var/mutation_path, var/obj/item/thing)
+/proc/HY_get_mutation_from_path(mutation_path, obj/item/thing)
 	if (!hydro_controls)
 		if (thing)
 			hydro_controller_queue["mutation"]["[length(hydro_controller_queue["mutation"])]"] = list("path" = mutation_path, "thing" = thing)
@@ -145,7 +147,7 @@ var/global/list/hydro_controller_queue = list(
 	logTheThing(LOG_DEBUG, null, "<b>Hydro Controller:</b> Mutation \"[mutation_path]\" not found")
 	return null
 
-/proc/HY_get_strain_from_path(var/strain_path, var/obj/item/thing)
+/proc/HY_get_strain_from_path(strain_path, obj/item/thing)
 	if (!hydro_controls)
 		if (thing)
 			hydro_controller_queue["strain"]["[length(hydro_controller_queue["strain"])]"] = list("path" = strain_path, "thing" = thing)

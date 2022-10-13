@@ -4,15 +4,15 @@ var/datum/disease_controller/disease_controls
 	var/list/standard_diseases = list()
 	var/list/custom_diseases = list()
 
-	New()
-		..()
-		for (var/X in typesof(/datum/ailment))
-			if (X == /datum/ailment || X == /datum/ailment/disease || X == /datum/ailment/parasite || X == /datum/ailment/disability)
-				continue
-			var/datum/ailment/A = new X
-			standard_diseases += A
+/datum/disease_controller/New()
+	..()
+	for (var/X in typesof(/datum/ailment))
+		if (X == /datum/ailment || X == /datum/ailment/disease || X == /datum/ailment/parasite || X == /datum/ailment/disability)
+			continue
+		var/datum/ailment/A = new X
+		standard_diseases += A
 
-/proc/get_disease_from_path(var/disease_path)
+/proc/get_disease_from_path(disease_path)
 	if (!ispath(disease_path))
 		logTheThing(LOG_DEBUG, null, "<b>Disease:</b> Attempt to find schematic with null path")
 		return null
@@ -25,7 +25,7 @@ var/datum/disease_controller/disease_controls
 	logTheThing(LOG_DEBUG, null, "<b>Disease:</b> Disease \"[disease_path]\" not found")
 	return null
 
-/proc/get_disease_from_name(var/disease_name)
+/proc/get_disease_from_name(disease_name)
 	if (!istext(disease_name))
 		logTheThing(LOG_DEBUG, null, "<b>Disease:</b> Attempt to find disease with non-string")
 		return null

@@ -2,43 +2,43 @@
 var/global/datum/controller/processScheduler/processScheduler
 
 /datum/controller/processScheduler
-	// Processes known by the scheduler
+	/// Processes known by the scheduler
 	var/tmp/list/datum/controller/process/processes = new
 
-	// Processes that are currently running
+	/// Processes that are currently running
 	var/tmp/list/datum/controller/process/running = new
 
-	// Processes that are idle
+	/// Processes that are idle
 	var/tmp/list/datum/controller/process/idle = new
 
-	// Processes that are queued to run
+	/// Processes that are queued to run
 	var/tmp/list/datum/controller/process/queued = new
 
-	// Process name -> process object map
+	/// Process name -> process object map
 	var/tmp/list/datum/controller/process/nameToProcessMap = new
 
-	// Process last start times
+	/// Process last start times
 	var/tmp/list/datum/controller/process/last_start = new
 
-	// Process last run durations
+	/// Process last run durations
 	var/tmp/list/datum/controller/process/last_run_time = new
 
-	// Per process list of the last 20 durations
+	/// Per process list of the last 20 durations
 	var/tmp/list/datum/controller/process/last_twenty_run_times = new
 
-	// Process highest run time
+	/// Process highest run time
 	var/tmp/list/datum/controller/process/highest_run_time = new
 
-	// Sleep epsilon deciseconds, internally for byond this means to sleep until next tick
+	/// Sleep epsilon deciseconds, internally for byond this means to sleep until next tick
 	var/tmp/scheduler_sleep_interval = 0.001
 
-	// When starting more than one queued process, how many ticks apart will they be started
+	/// When starting more than one queued process, how many ticks apart will they be started
 	var/tmp/process_run_interval = 2
 
-	// Controls whether the scheduler is running or not
+	/// Controls whether the scheduler is running or not
 	var/tmp/isRunning = 0
 
-	// Setup for these processes will be deferred until all the other processes are set up.
+	/// Setup for these processes will be deferred until all the other processes are set up.
 	var/tmp/list/deferredSetupList = new
 	var/tmp/list/alreadyCreatedPathsList = new
 	var/tmp/list/alreadyCreatedList = new
@@ -61,10 +61,10 @@ var/global/datum/controller/processScheduler/processScheduler
  * the deferred setup list. On goonstation, only the ticker needs to have
  * this treatment.
  */
-/datum/controller/processScheduler/proc/deferSetupFor(var/processPath)
+/datum/controller/processScheduler/proc/deferSetupFor(processPath)
 	deferredSetupList |= processPath
 
-/datum/controller/processScheduler/proc/addNowSkipSetup(var/processPath)
+/datum/controller/processScheduler/proc/addNowSkipSetup(processPath)
 	src.alreadyCreatedPathsList += processPath
 	var/newProcess = new processPath(src)
 	src.alreadyCreatedList += newProcess
@@ -148,7 +148,7 @@ var/global/datum/controller/processScheduler/processScheduler
 			delay += process_run_interval * world.tick_lag
 		queued.len = 0
 
-/datum/controller/processScheduler/proc/addProcess(var/datum/controller/process/process, var/skipSetup = 0)
+/datum/controller/processScheduler/proc/addProcess(datum/controller/process/process, skipSetup = 0)
 	// zamu here, sorry for making this dumb thing
 	if (game_start_countdown)
 		var/procname = copytext("[process.type]", findlasttext("[process.type]", "/", -1) + 1)
@@ -179,7 +179,7 @@ var/global/datum/controller/processScheduler/processScheduler
 	// Save process in the name -> process map
 	nameToProcessMap[process.name] = process
 
-/datum/controller/processScheduler/proc/replaceProcess(var/datum/controller/process/oldProcess, var/datum/controller/process/newProcess)
+/datum/controller/processScheduler/proc/replaceProcess(datum/controller/process/oldProcess, datum/controller/process/newProcess)
 	processes.Remove(oldProcess)
 	processes.Add(newProcess)
 
@@ -210,24 +210,24 @@ var/global/datum/controller/processScheduler/processScheduler
 
 	nameToProcessMap[newProcess.name] = newProcess
 
-/datum/controller/processScheduler/proc/runProcess(var/datum/controller/process/process, var/delay)
+/datum/controller/processScheduler/proc/runProcess(datum/controller/process/process, delay)
 	SPAWN(delay)
 		process.process()
 
-/datum/controller/processScheduler/proc/processStarted(var/datum/controller/process/process)
+/datum/controller/processScheduler/proc/processStarted(datum/controller/process/process)
 	setRunningProcessState(process)
 	recordStart(process)
 
-/datum/controller/processScheduler/proc/processFinished(var/datum/controller/process/process)
+/datum/controller/processScheduler/proc/processFinished(datum/controller/process/process)
 	setIdleProcessState(process)
 	recordEnd(process)
 
-/datum/controller/processScheduler/proc/setIdleProcessState(var/datum/controller/process/process)
+/datum/controller/processScheduler/proc/setIdleProcessState(datum/controller/process/process)
 	running -= process
 	queued -= process
 	idle |= process
 
-/datum/controller/processScheduler/proc/setQueuedProcessState(var/datum/controller/process/process)
+/datum/controller/processScheduler/proc/setQueuedProcessState(datum/controller/process/process)
 	// Do jitter adjustments since we just queued (± in the !initial! jitter range)
 	process.schedule_jitter = ((rand() * 2) - 1) * initial(process.schedule_jitter)
 
@@ -238,18 +238,18 @@ var/global/datum/controller/processScheduler/processScheduler
 	// The other state transitions are handled internally by the process.
 	process.queued()
 
-/datum/controller/processScheduler/proc/setRunningProcessState(var/datum/controller/process/process)
+/datum/controller/processScheduler/proc/setRunningProcessState(datum/controller/process/process)
 	queued -= process
 	idle -= process
 	running |= process
 
-/datum/controller/processScheduler/proc/recordStart(var/datum/controller/process/process, var/time = null)
+/datum/controller/processScheduler/proc/recordStart(datum/controller/process/process, time = null)
 	if (isnull(time))
 		time = TimeOfHour
 
 	last_start[process] = time
 
-/datum/controller/processScheduler/proc/recordEnd(var/datum/controller/process/process, var/time = null)
+/datum/controller/processScheduler/proc/recordEnd(datum/controller/process/process, time = null)
 	if (isnull(time))
 		time = TimeOfHour
 
@@ -268,7 +268,7 @@ var/global/datum/controller/processScheduler/processScheduler
  * recordRunTime
  * Records a run time for a process
  */
-/datum/controller/processScheduler/proc/recordRunTime(var/datum/controller/process/process, time)
+/datum/controller/processScheduler/proc/recordRunTime(datum/controller/process/process, time)
 	last_run_time[process] = time
 	if(time > highest_run_time[process])
 		highest_run_time[process] = time
@@ -283,7 +283,7 @@ var/global/datum/controller/processScheduler/processScheduler
  * averageRunTime
  * returns the average run time (over the last 20) of the process
  */
-/datum/controller/processScheduler/proc/averageRunTime(var/datum/controller/process/process)
+/datum/controller/processScheduler/proc/averageRunTime(datum/controller/process/process)
 	var/lastTwenty = last_twenty_run_times[process]
 
 	var/t = 0
@@ -308,18 +308,18 @@ var/global/datum/controller/processScheduler/processScheduler
 /datum/controller/processScheduler/proc/getProcessCount()
 	return length(processes)
 
-/datum/controller/processScheduler/proc/hasProcess(var/processName as text)
+/datum/controller/processScheduler/proc/hasProcess(processName as text)
 	if (nameToProcessMap[processName])
 		return 1
 
-/datum/controller/processScheduler/proc/getProcess(var/processName as text)
+/datum/controller/processScheduler/proc/getProcess(processName as text)
 	RETURN_TYPE(/datum/controller/process)
 	. = nameToProcessMap[processName]
 
-/datum/controller/processScheduler/proc/killProcess(var/processName as text)
+/datum/controller/processScheduler/proc/killProcess(processName as text)
 	restartProcess(processName)
 
-/datum/controller/processScheduler/proc/restartProcess(var/processName as text)
+/datum/controller/processScheduler/proc/restartProcess(processName as text)
 	if (hasProcess(processName))
 		var/datum/controller/process/oldInstance = nameToProcessMap[processName]
 		var/datum/controller/process/newInstance = new oldInstance.type(src)
@@ -327,17 +327,17 @@ var/global/datum/controller/processScheduler/processScheduler
 		replaceProcess(oldInstance, newInstance)
 		oldInstance.kill()
 
-/datum/controller/processScheduler/proc/enableProcess(var/processName as text)
+/datum/controller/processScheduler/proc/enableProcess(processName as text)
 	if (hasProcess(processName))
 		var/datum/controller/process/process = nameToProcessMap[processName]
 		process.enable()
 
-/datum/controller/processScheduler/proc/disableProcess(var/processName as text)
+/datum/controller/processScheduler/proc/disableProcess(processName as text)
 	if (hasProcess(processName))
 		var/datum/controller/process/process = nameToProcessMap[processName]
 		process.disable()
 
-/datum/controller/processScheduler/proc/editProcess(var/processName as text)
+/datum/controller/processScheduler/proc/editProcess(processName as text)
 	if (hasProcess(processName))
 		var/datum/controller/process/process = nameToProcessMap[processName]
 		usr.client.debug_variables(process)

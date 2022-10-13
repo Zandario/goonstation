@@ -23,35 +23,35 @@
 	var/speed_error = 0
 	var/throw_type
 
-	New(atom/movable/thing, atom/target, error, speed, dx, dy, dist_x, dist_y, range,
-			target_x, target_y, matrix/transform_original, list/params, turf/thrown_from, mob/thrown_by, atom/return_target,
-			bonus_throwforce=0, end_throw_callback=null, throw_type=1)
-		src.thing = thing
-		src.target = target
-		src.error = error
-		src.speed = speed
-		src.dx = dx
-		src.dy = dy
-		src.dist_x = dist_x
-		src.dist_y = dist_y
-		src.range = range
-		src.target_x = target_x
-		src.target_y = target_y
-		src.transform_original = transform_original
-		src.params = params
-		src.thrown_from = thrown_from
-		src.thrown_by = thrown_by
-		src.return_target = return_target
-		src.bonus_throwforce = bonus_throwforce
-		src.end_throw_callback = end_throw_callback
-		src.user = usr // ew
-		src.throw_type = throw_type
-		..()
+/datum/thrown_thing/New(atom/movable/thing, atom/target, error, speed, dx, dy, dist_x, dist_y, range,
+		target_x, target_y, matrix/transform_original, list/params, turf/thrown_from, mob/thrown_by, atom/return_target,
+		bonus_throwforce=0, end_throw_callback=null, throw_type=1)
+	src.thing = thing
+	src.target = target
+	src.error = error
+	src.speed = speed
+	src.dx = dx
+	src.dy = dy
+	src.dist_x = dist_x
+	src.dist_y = dist_y
+	src.range = range
+	src.target_x = target_x
+	src.target_y = target_y
+	src.transform_original = transform_original
+	src.params = params
+	src.thrown_from = thrown_from
+	src.thrown_by = thrown_by
+	src.return_target = return_target
+	src.bonus_throwforce = bonus_throwforce
+	src.end_throw_callback = end_throw_callback
+	src.user = usr // ew
+	src.throw_type = throw_type
+	..()
 
-	proc/get_throw_travelled()
-		. = src.dist_travelled //dist traveled is super innacurrate, especially when stacking throws
-		if (src.thrown_from && (get_step(src.thrown_from, 0)?.z == get_step(src.thing, 0)?.z)) //if we have this param and we haven't gone cross-z-level we should use it to get the REAL distance.
-			. = GET_DIST(get_turf(thing), get_turf(src.thrown_from))
+/datum/thrown_thing/proc/get_throw_travelled()
+	. = src.dist_travelled //dist traveled is super innacurrate, especially when stacking throws
+	if (src.thrown_from && (get_step(src.thrown_from, 0)?.z == get_step(src.thing, 0)?.z)) //if we have this param and we haven't gone cross-z-level we should use it to get the REAL distance.
+		. = GET_DIST(get_turf(thing), get_turf(src.thrown_from))
 
 var/global/datum/controller/throwing/throwing_controller = new
 

@@ -16,8 +16,10 @@
 
 var/datum/ghost_notification_controller/ghost_notifier
 /datum/ghost_notification_controller
-	var/list/active_notifications = list() // associative list, key is notification key (timeofday), value is ghost_notification
-	var/list/notifications_blacklist = list() // associative list, key is ckey, value is a list of notification PATHS they're not interested in
+	/// Associative list, key is notification key (timeofday), value is ghost_notification.
+	var/list/active_notifications = list()
+	/// Associative list, key is ckey, value is a list of notification PATHS they're not interested in.
+	var/list/notifications_blacklist = list()
 	var/last_time
 	var/chui/window/ghost_notification_config/config_window
 
@@ -26,7 +28,7 @@ var/datum/ghost_notification_controller/ghost_notifier
 	src.last_time = world.timeofday
 	src.config_window = new(src)
 
-/datum/ghost_notification_controller/proc/send_notification(var/datum/dispatcher, var/datum/subject, var/datum/ghost_notification/n_type) // the last one is a TYPE field!!!
+/datum/ghost_notification_controller/proc/send_notification(datum/dispatcher, datum/subject, datum/ghost_notification/n_type) // the last one is a TYPE field!!!
 	if(!dispatcher || !subject || !n_type)
 		return
 	var/datum/ghost_notification/N = new n_type()
@@ -50,7 +52,7 @@ var/datum/ghost_notification_controller/ghost_notifier
 	N.dispatch(to_notify)
 	active_notifications[N.key] = N
 
-/datum/ghost_notification_controller/proc/add_notification_to_blacklist(var/mob/M, var/datum/ghost_notification/N)
+/datum/ghost_notification_controller/proc/add_notification_to_blacklist(mob/M, datum/ghost_notification/N)
 	if(!M || !M.ckey || !N)
 		return
 	var/list/blacklist = notifications_blacklist[M.ckey]
@@ -60,7 +62,7 @@ var/datum/ghost_notification_controller/ghost_notifier
 	blacklist |= "[N.type]"
 
 
-// invoked by ghost notifications process, which exists, shut up
+/// Invoked by ghost notifications process, which exists, shut up.
 /datum/ghost_notification_controller/proc/process()
 	// get the time elapsed since the last process
 	var/current_time = world.timeofday
@@ -87,7 +89,7 @@ var/datum/ghost_notification_controller/ghost_notifier
 	for(var/expired_key in expired_notifications)
 		src.active_notifications[expired_key] = null
 
-/datum/ghost_notification_controller/proc/invalidate(var/key)
+/datum/ghost_notification_controller/proc/invalidate(key)
 	if(!key || !src.active_notifications[key])
 		return // probably already removed
 	var/datum/ghost_notification/N = src.active_notifications[key]
@@ -102,18 +104,23 @@ var/datum/ghost_notification_controller/ghost_notifier
 // NOTIFICATION PARENT
 // Please don't use this root ghost notification datum, use observe, or respawn, or something else more appropriate to your needs
 /datum/ghost_notification
-	var/time_to_display = 30 // in seconds, how long should this window stay up before it autocloses
-	var/time_displayed = 0 // how long the notification's been displayed to all users
-	var/dispatched = 0 // has this already been sent out?
-	var/invalid = 0 // are responses still valid? do we need to be expunged?
+	/// In seconds, how long should this window stay up before it autocloses.
+	var/time_to_display = 30
+	/// How long the notification's been displayed to all users.
+	var/time_displayed = 0
+	/// Has this already been sent out?
+	var/dispatched = 0
+	/// Are responses still valid? do we need to be expunged?
+	var/invalid = 0
 	var/key = ""
 	var/category = "dial 911-CODR"
 	var/datum/dispatcher
-	var/datum/subject // what atom this notification is about or for
+	/// What atom this notification is about or for.
+	var/datum/subject
 	var/list/notified = list()
 	var/chui/window/ghost_notification/window
 
-/datum/ghost_notification/proc/dispatch(var/list/toNotify)
+/datum/ghost_notification/proc/dispatch(list/toNotify)
 	if(src.dispatched)
 		return // do not dispatch more than once
 	if(length(toNotify))
@@ -129,17 +136,17 @@ var/datum/ghost_notification_controller/ghost_notifier
 /datum/ghost_notification/proc/get_notice_body()
 	return "help help this is all going wrong TELL CIRR IT WENT WRONG"
 
-/datum/ghost_notification/proc/is_authorised(var/mob/M)
+/datum/ghost_notification/proc/is_authorised(mob/M)
 	if(!M)
 		return 0 // null can't catch a break
 	return 1
 
-/datum/ghost_notification/proc/ignore(var/mob/M)
+/datum/ghost_notification/proc/ignore(mob/M)
 	if(!M)
 		return
 	ghost_notifier.add_notification_to_blacklist(M, src)
 
-/datum/ghost_notification/proc/notify(var/mob/M)
+/datum/ghost_notification/proc/notify(mob/M)
 	if(!M || !M.client)
 		return
 	var/client/C = M.client
@@ -174,7 +181,7 @@ var/datum/ghost_notification_controller/ghost_notifier
 /datum/ghost_notification/observe/get_notice_body()
 	return "Something is happening! Observe [src.subject]?<br>[bicon(src.subject)]"
 
-/datum/ghost_notification/observe/respond(var/mob/M)
+/datum/ghost_notification/observe/respond(mob/M)
 	if(..())
 		return
 	var/mob/dead/observer/O = M
@@ -209,7 +216,7 @@ var/datum/ghost_notification_controller/ghost_notifier
 		webicon = bicon(I)
 	return "Would you like to play as \a [respawn_explanation]?<br>[webicon]"
 
-/datum/ghost_notification/respawn/dispatch(var/list/toNotify)
+/datum/ghost_notification/respawn/dispatch(list/toNotify)
 	..()
 	if(src.invalid)
 		// let's tell our subscriber we had no one to notify and the ghosts to receive is an empty list
@@ -217,13 +224,13 @@ var/datum/ghost_notification_controller/ghost_notifier
 			src.subject:receive_ghosts(list())
 
 // allow any ghost that isn't DNR by default
-/datum/ghost_notification/respawn/is_authorised(var/mob/query)
+/datum/ghost_notification/respawn/is_authorised(mob/query)
 	if(!..())
 		return 0
 	return dead_player_list_helper(query) // might as well use convair's dead player selection criteria for consistency
 	// SEEING AS I DIDN'T REALISE THE DEAD PLAYER LIST STUFF ALREADY EXISTED, RENDERING THIS WHOLE SYSTEM ENTIRELY POINTLESS
 
-/datum/ghost_notification/respawn/respond(var/mob/M)
+/datum/ghost_notification/respawn/respond(mob/M)
 	if(..())
 		return
 	src.responders |= M
@@ -248,27 +255,27 @@ var/datum/ghost_notification_controller/ghost_notifier
 	var/noticeBody = ""
 	var/datum/ghost_notification/associated
 
-	New(var/datum/ghost_notification/associated)
-		..(null) // pass null to our parent because we do NOT have an ATOM that depends on the window being drawn
-		src.associated = associated
+/chui/window/ghost_notification/New(datum/ghost_notification/associated)
+	..(null) // pass null to our parent because we do NOT have an ATOM that depends on the window being drawn
+	src.associated = associated
 
-	GetBody()
-		if(!src.associated)
-			return "Something has gone terribly wrong. Please call a coder."
-		var/ret = "<p style=\"font-size:110%;\"><b>[src.associated.get_notice_body()]</b></p><br/>"
-		ret += "[theme.generateButton("respond", "Yes")]"
-		ret += "[theme.generateButton("close", "No")]"
-		ret += "[theme.generateButton("ignore", "Ignore all [src.associated.category] notices for the round")]"
-		return ret
+/chui/window/ghost_notification/GetBody()
+	if(!src.associated)
+		return "Something has gone terribly wrong. Please call a coder."
+	var/ret = "<p style=\"font-size:110%;\"><b>[src.associated.get_notice_body()]</b></p><br/>"
+	ret += "[theme.generateButton("respond", "Yes")]"
+	ret += "[theme.generateButton("close", "No")]"
+	ret += "[theme.generateButton("ignore", "Ignore all [src.associated.category] notices for the round")]"
+	return ret
 
-	OnClick( var/client/who, var/id )
-		switch(id)
-			// close is ignored, all it does is close the window
-			if("respond")
-				src.associated.respond(who.mob)
-			if("ignore")
-				src.associated.ignore(who.mob)
-		Unsubscribe(who)
+/chui/window/ghost_notification/OnClick(client/who, id)
+	switch(id)
+		// close is ignored, all it does is close the window
+		if("respond")
+			src.associated.respond(who.mob)
+		if("ignore")
+			src.associated.ignore(who.mob)
+	Unsubscribe(who)
 
 /////////////////////////////////////////////
 // GHOST NOTIFICATIONS CONTROL WINDOW
@@ -278,40 +285,40 @@ var/datum/ghost_notification_controller/ghost_notifier
 	windowSize = "450x400"
 	var/datum/ghost_notification_controller/associated
 
-	New(var/datum/ghost_notification_controller/associated)
-		..()
-		src.associated = associated
+/chui/window/ghost_notification_config/New(datum/ghost_notification_controller/associated)
+	..()
+	src.associated = associated
 
-	GetBody()
-		if(!src.associated)
-			return "The ghost notification controller is dead or something. RIP. The process should handle restarting it."
+/chui/window/ghost_notification_config/GetBody()
+	if(!src.associated)
+		return "The ghost notification controller is dead or something. RIP. The process should handle restarting it."
 
-		// stolen from chemicals.dm
-		var/script = {"
-		<script type='text/javascript'>
-			function removeNotification(key){
-				$("#" + key + "-row").fadeOut(300, function(){ $(this).remove(); });
-			}
-		</script>"}
+	// stolen from chemicals.dm
+	var/script = {"
+	<script type='text/javascript'>
+		function removeNotification(key){
+			$("#" + key + "-row").fadeOut(300, function(){ $(this).remove(); });
+		}
+	</script>"}
 
-		var/ret = script
-		ret += "<p style=\"font-size:110%;\"><h3>Active Notifications</h3></p><br/>"
-		ret += "<table id='notes-table'><thead><tr><th>Key</th><th>Category</th><th>Notice</th><th>Target</th><th>Responders</th><th>Actions</th></tr></thead><tbody>"
-		for(var/datum/ghost_notification/N in src.associated.active_notifications)
-			ret += "<tr id='[N.key]-row'>"
-			ret += "<td>[N.key]</td>"
-			ret += "<td>[N.category]</td>"
-			ret += "<td>[N.get_notice_body()]</td>"
-			ret += "<td>[N.subject]</td>"
-			var/responder_list = ""
-			ret += "<td>[responder_list]</td>"
-			ret += "<td>[theme.generateButton("invalidate-[N.key]", "Invalidate")]</td>"
-			ret += "</tr>"
-		ret += "</tbody></table>"
-		return ret
+	var/ret = script
+	ret += "<p style=\"font-size:110%;\"><h3>Active Notifications</h3></p><br/>"
+	ret += "<table id='notes-table'><thead><tr><th>Key</th><th>Category</th><th>Notice</th><th>Target</th><th>Responders</th><th>Actions</th></tr></thead><tbody>"
+	for(var/datum/ghost_notification/N in src.associated.active_notifications)
+		ret += "<tr id='[N.key]-row'>"
+		ret += "<td>[N.key]</td>"
+		ret += "<td>[N.category]</td>"
+		ret += "<td>[N.get_notice_body()]</td>"
+		ret += "<td>[N.subject]</td>"
+		var/responder_list = ""
+		ret += "<td>[responder_list]</td>"
+		ret += "<td>[theme.generateButton("invalidate-[N.key]", "Invalidate")]</td>"
+		ret += "</tr>"
+	ret += "</tbody></table>"
+	return ret
 
-	OnClick( var/client/who, var/id )
-		if(copytext(id, 1, 11) == "invalidate")
-			var/key = copytext(id, 12)
-			CallJSFunction("removeNotification", list(key))
-			src.associated.invalidate(key)
+/chui/window/ghost_notification_config/OnClick(client/who, id)
+	if(copytext(id, 1, 11) == "invalidate")
+		var/key = copytext(id, 12)
+		CallJSFunction("removeNotification", list(key))
+		src.associated.invalidate(key)

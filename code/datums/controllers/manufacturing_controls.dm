@@ -5,16 +5,16 @@ var/datum/manufacturing_controller/manuf_controls
 	var/list/normal_schematics = list()
 	var/list/custom_schematics = list()
 
-	proc/set_up()
-		for (var/M in concrete_typesof(/datum/manufacture, FALSE))
-			var/datum/manufacture/man = new M
-			if(!man.disposed)
-				src.normal_schematics += man
-		for_by_tcl(M, /obj/machinery/manufacturer)
-			src.manufacturing_units += M
-			M.set_up_schematics()
+/datum/manufacturing_controller/proc/set_up()
+	for (var/M in concrete_typesof(/datum/manufacture, FALSE))
+		var/datum/manufacture/man = new M
+		if(!man.disposed)
+			src.normal_schematics += man
+	for_by_tcl(M, /obj/machinery/manufacturer)
+		src.manufacturing_units += M
+		M.set_up_schematics()
 
-/proc/get_schematic_from_path(var/schematic_path)
+/proc/get_schematic_from_path(schematic_path)
 	if (!ispath(schematic_path))
 		logTheThing(LOG_DEBUG, null, "<b>Manufacturer:</b> Attempt to find schematic with null path")
 		return null
@@ -27,7 +27,7 @@ var/datum/manufacturing_controller/manuf_controls
 	logTheThing(LOG_DEBUG, null, "<b>Manufacturer:</b> Schematic \"[schematic_path]\" not found")
 	return null
 
-/proc/get_schematic_from_name(var/schematic_name)
+/proc/get_schematic_from_name(schematic_name)
 	if (!istext(schematic_name))
 		logTheThing(LOG_DEBUG, null, "<b>Manufacturer:</b> Attempt to find schematic with non-string")
 		return null
@@ -40,7 +40,7 @@ var/datum/manufacturing_controller/manuf_controls
 	logTheThing(LOG_DEBUG, null, "<b>Manufacturer:</b> Schematic with name \"[schematic_name]\" not found")
 	return null
 
-/proc/get_schematic_from_name_in_custom(var/schematic_name)
+/proc/get_schematic_from_name_in_custom(schematic_name)
 	if (!istext(schematic_name))
 		logTheThing(LOG_DEBUG, null, "<b>Manufacturer:</b> Attempt to find schematic with non-string")
 		return null
@@ -53,7 +53,7 @@ var/datum/manufacturing_controller/manuf_controls
 	logTheThing(LOG_DEBUG, null, "<b>Manufacturer:</b> Schematic with name \"[schematic_name]\" not found")
 	return null
 
-/proc/get_schematic_from_path_in_custom(var/schematic_path)
+/proc/get_schematic_from_path_in_custom(schematic_path)
 	if (!ispath(schematic_path))
 		logTheThing(LOG_DEBUG, null, "<b>Manufacturer:</b> Attempt to find schematic with null path")
 		return null

@@ -1,23 +1,23 @@
 //some of this stuff is shamelessly based from savefile.dm. yay!! blame MBC if it breaks.
 
-datum/job_controller/proc/savefile_path(key)
+/datum/job_controller/proc/savefile_path(key)
 	return "data/admin_custom_job_saves/[src.load_another_ckey ? src.load_another_ckey : ckey(key)].sav"
 
-datum/job_controller/proc/savefile_path_exists(key)
+/datum/job_controller/proc/savefile_path_exists(key)
 	var/path = savefile_path(key)
 	if (!fexists(path))
 		return 0
 	return path
 
-datum/job_controller/proc/savefile_delete(key, profileNum=1)
+/datum/job_controller/proc/savefile_delete(key, profileNum=1)
 	fdel(savefile_path(key))
 
-datum/job_controller/proc/savefile_unlock(client/user)
+/datum/job_controller/proc/savefile_unlock(client/user)
 	if (savefile_path_exists(user.ckey))
 		var/savefile/F = new /savefile(src.savefile_path(user.ckey), -1)
 		F.Unlock()
 
-datum/job_controller/proc/savefile_version_pass(client/user)
+/datum/job_controller/proc/savefile_version_pass(client/user)
 	var/version = null
 	var/savefile/F = new /savefile(src.savefile_path(user.ckey), -1)
 	F["version"] >> version
@@ -27,7 +27,7 @@ datum/job_controller/proc/savefile_version_pass(client/user)
 		return 0
 	return 1
 
-datum/job_controller/proc/savefile_save(client/user, profileNum=1)
+/datum/job_controller/proc/savefile_save(client/user, profileNum=1)
 	profileNum = clamp(profileNum, 1, CUSTOMJOB_SAVEFILE_PROFILES_MAX)
 	var/savefile/F = new /savefile(src.savefile_path(user.ckey), -1)
 	F.Lock(-1)
@@ -69,7 +69,7 @@ datum/job_controller/proc/savefile_save(client/user, profileNum=1)
 
 	return 1
 
-datum/job_controller/proc/savefile_load(client/user, var/profileNum = 1)
+/datum/job_controller/proc/savefile_load(client/user, profileNum = 1)
 	if (!savefile_path_exists(user.ckey))
 		return 0
 
@@ -135,7 +135,7 @@ datum/job_controller/proc/savefile_load(client/user, var/profileNum = 1)
 
 	return 1
 
-datum/job_controller/proc/savefile_get_job_name(client/user, var/profileNum = 1)
+/datum/job_controller/proc/savefile_get_job_name(client/user, profileNum = 1)
 
 	if (!savefile_path_exists(user.ckey))
 		return 0

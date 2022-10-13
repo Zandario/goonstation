@@ -1,207 +1,207 @@
 var/datum/artifact_controller/artifact_controls
 
 /datum/artifact_controller
-	/// list of all artifacts
+	/// List of all artifacts
 	var/list/artifacts = list()
-	/// list with an instance of each artifact type, sorted by size and alphabetically
+	/// List with an instance of each artifact type, sorted by size and alphabetically.
 	var/list/datum/artifact/artifact_types = list()
-	/// associative list with the instance from above, with the key being the type name
+	/// associative list with the instance from above, with the key being the type name.
 	var/list/datum/artifact/artifact_types_from_name = list()
-	/// associative list of lists, with the keys being artifact origin names (and "all") and artifact types
+	/// associative list of lists, with the keys being artifact origin names (and "all") and artifact types.
 	/// the value is the rarity of the type.
-	/// This is used with weighted_pick for randomly generated artifacts (sometimes of specific origin)
+	/// This is used with weighted_pick for randomly generated artifacts (sometimes of specific origin).
 	var/list/artifact_rarities = list()
-	/// list with an instance of each artifact origin
+	/// List with an instance of each artifact origin.
 	var/list/artifact_origins = list()
 
-	/// list of artifact origin names, for artifact forms
+	/// List of artifact origin names, for artifact forms.
 	var/list/artifact_origin_names = list()
-	/// list of artifact type names, for artifact forms
+	/// List of artifact type names, for artifact forms.
 	var/list/artifact_type_names = list()
-	/// list of artifact fault names, for artifact forms
+	/// List of artifact fault names, for artifact forms.
 	var/list/artifact_fault_names = list()
-	/// list of artifact trigger names, for artifact forms (unused)
+	/// List of artifact trigger names, for artifact forms (unused).
 	var/list/artifact_trigger_names = list()
 	var/spawner_type = null
 	var/spawner_cine = 0
 
-	New()
-		..()
-		artifact_rarities["all"] = list()
+/datum/artifact_controller/New()
+	..()
+	artifact_rarities["all"] = list()
 
-		// origin list
-		for (var/X in childrentypesof(/datum/artifact_origin))
-			var/datum/artifact_origin/AO = new X
-			artifact_origins += AO
-			artifact_origin_names += AO.type_name
-			artifact_rarities[AO.name] = list()
+	// origin list
+	for (var/X in childrentypesof(/datum/artifact_origin))
+		var/datum/artifact_origin/AO = new X
+		artifact_origins += AO
+		artifact_origin_names += AO.type_name
+		artifact_rarities[AO.name] = list()
 
-		for (var/A in concrete_typesof(/datum/artifact))
-			var/datum/artifact/AI = new A
-			if(!AI.type_name)
-				continue
-			artifact_types += AI
-			artifact_types_from_name[AI.type_name] = AI
+	for (var/A in concrete_typesof(/datum/artifact))
+		var/datum/artifact/AI = new A
+		if(!AI.type_name)
+			continue
+		artifact_types += AI
+		artifact_types_from_name[AI.type_name] = AI
 
-			artifact_rarities["all"][A] = AI.rarity_weight
-			for (var/origin in artifact_rarities)
-				if(origin in AI.validtypes)
-					artifact_rarities[origin][A] = AI.rarity_weight
+		artifact_rarities["all"][A] = AI.rarity_weight
+		for (var/origin in artifact_rarities)
+			if(origin in AI.validtypes)
+				artifact_rarities[origin][A] = AI.rarity_weight
 
-		sortList(artifact_types, /proc/compareArtifactTypes)
+	sortList(artifact_types, /proc/compareArtifactTypes)
 
-		for (var/datum/artifact/AI in artifact_types)
-			artifact_type_names += list(list(AI.type_name, AI.type_size))
+	for (var/datum/artifact/AI in artifact_types)
+		artifact_type_names += list(list(AI.type_name, AI.type_size))
 
-		// fault list
-		for (var/X in concrete_typesof(/datum/artifact_fault))
-			var/datum/artifact_fault/AF = new X
-			artifact_fault_names += AF.type_name
+	// fault list
+	for (var/X in concrete_typesof(/datum/artifact_fault))
+		var/datum/artifact_fault/AF = new X
+		artifact_fault_names += AF.type_name
 
-		// trigger list
-		for (var/X in concrete_typesof(/datum/artifact_trigger))
-			var/datum/artifact_trigger/AT = new X
-			if(AT.used)
-				artifact_trigger_names += AT.type_name
+	// trigger list
+	for (var/X in concrete_typesof(/datum/artifact_trigger))
+		var/datum/artifact_trigger/AT = new X
+		if(AT.used)
+			artifact_trigger_names += AT.type_name
 
-	proc/get_origin_from_string(var/string)
-		if (!istext(string))
-			return
-		for (var/datum/artifact_origin/AO in src.artifact_origins)
-			if (AO.name == string)
-				return AO
-		return null
+/datum/artifact_controller/proc/get_origin_from_string(string)
+	if (!istext(string))
+		return
+	for (var/datum/artifact_origin/AO in src.artifact_origins)
+		if (AO.name == string)
+			return AO
+	return null
 
-	// Added. Admin actions related to artfacts were not logged at all (Convair880).
-	proc/log_me(var/mob/user, var/obj/O, var/type_of_action, var/trigger_alert = 0)
-		if (type_of_action == "spawns")
-			logTheThing(LOG_ADMIN, user, "spawns a random artifact at [user && ismob(user) ? "[log_loc(user)]" : "*unknown*"].")
-			logTheThing(LOG_DIARY, user, "spawns a random artifact at [user && ismob(user) ? "[log_loc(user)]" : "*unknown*"].", "admin")
-			return
-
-		if (!O || !istype(O.artifact, /datum/artifact) || !type_of_action)
-			return
-
-		var/datum/artifact/A = O.artifact
-
-		logTheThing(LOG_ADMIN, user, "[type_of_action] an artifact ([A.type]) at [log_loc(O)].")
-		logTheThing(LOG_DIARY, user, "[type_of_action] an artifact ([A.type]) at [log_loc(O)].", "admin")
-		if (trigger_alert)
-			message_admins("[key_name(user)] [type_of_action] an artifact ([A.type]) at [log_loc(O)].")
+/// Added. Admin actions related to artfacts were not logged at all (Convair880).
+/datum/artifact_controller/proc/log_me(mob/user, obj/O, type_of_action, trigger_alert = 0)
+	if (type_of_action == "spawns")
+		logTheThing(LOG_ADMIN, user, "spawns a random artifact at [user && ismob(user) ? "[log_loc(user)]" : "*unknown*"].")
+		logTheThing(LOG_DIARY, user, "spawns a random artifact at [user && ismob(user) ? "[log_loc(user)]" : "*unknown*"].", "admin")
 		return
 
-	proc/config()
-		var/dat = "<html><body><title>Artifact Controller</title>"
-		dat += "<b><u>Artifact Controls</u></b><HR><small>"
-		dat += "<a href='byond://?src=\ref[src];Spawnnew=1'>Spawn a new Artifact on your current tile</b></a><br>"
+	if (!O || !istype(O.artifact, /datum/artifact) || !type_of_action)
+		return
 
-		dat += "<a href='byond://?src=\ref[src];Spawntype=1'>Spawn Type:</a> "
-		if (!spawner_type)
-			dat += "Random"
+	var/datum/artifact/A = O.artifact
+
+	logTheThing(LOG_ADMIN, user, "[type_of_action] an artifact ([A.type]) at [log_loc(O)].")
+	logTheThing(LOG_DIARY, user, "[type_of_action] an artifact ([A.type]) at [log_loc(O)].", "admin")
+	if (trigger_alert)
+		message_admins("[key_name(user)] [type_of_action] an artifact ([A.type]) at [log_loc(O)].")
+	return
+
+/datum/artifact_controller/proc/config()
+	var/dat = "<html><body><title>Artifact Controller</title>"
+	dat += "<b><u>Artifact Controls</u></b><HR><small>"
+	dat += "<a href='byond://?src=\ref[src];Spawnnew=1'>Spawn a new Artifact on your current tile</b></a><br>"
+
+	dat += "<a href='byond://?src=\ref[src];Spawntype=1'>Spawn Type:</a> "
+	if (!spawner_type)
+		dat += "Random"
+	else
+		dat += "[spawner_type]"
+
+	dat += "<br><a href='byond://?src=\ref[src];Spawncine=1'>Cinematic Spawning:</a> "
+	if (spawner_cine)
+		dat += "Yes"
+	else
+		dat += "No"
+	dat += "<br><br>"
+
+	var/datum/artifact/A = null
+	var/turf/T = null
+	for (var/obj/O in src.artifacts)
+		if (!istype(O.artifact,/datum/artifact/))
+			continue
+		A = O.artifact
+		T = get_turf(O)
+
+		dat += "<b>"
+		if (A.internal_name)
+			dat += "[A.internal_name] "
 		else
-			dat += "[spawner_type]"
+			dat += "Unnamed Artifact "
+		dat += "</b>"
+		if (istype(T,/turf/))
+			dat += "in [T.loc]<br>"
 
-		dat += "<br><a href='byond://?src=\ref[src];Spawncine=1'>Cinematic Spawning:</a> "
-		if (spawner_cine)
-			dat += "Yes"
+		dat += "[O.name], [A.artitype.name], [A.type]<br>"
+		for(var/trigger in A.triggers)
+			dat += "[trigger] "
+		if(A.triggers.len)
+			dat += "<br>"
+
+		dat += "<a href='byond://?src=\ref[src];Activate=\ref[O]'>"
+		if (!A.activated)
+			dat += "Activate"
 		else
-			dat += "No"
-		dat += "<br><br>"
+			dat += "Deactivate"
+		dat += "</a> * "
+		dat += "<a href='byond://?src=\ref[src];Jumpto=\ref[O]'>Jump To</a> * "
+		dat += "<a href='byond://?src=\ref[src];Get=\ref[O]'>Get</a> * "
+		dat += "<a href='byond://?src=\ref[src];Destroy=\ref[O]'>Destroy</a><br><br>"
 
-		var/datum/artifact/A = null
-		var/turf/T = null
-		for (var/obj/O in src.artifacts)
-			if (!istype(O.artifact,/datum/artifact/))
-				continue
-			A = O.artifact
-			T = get_turf(O)
+	dat += "</small></body></html>"
 
-			dat += "<b>"
-			if (A.internal_name)
-				dat += "[A.internal_name] "
-			else
-				dat += "Unnamed Artifact "
-			dat += "</b>"
-			if (istype(T,/turf/))
-				dat += "in [T.loc]<br>"
+	usr.Browse(dat,"window=artifacts;size=400x600")
 
-			dat += "[O.name], [A.artitype.name], [A.type]<br>"
-			for(var/trigger in A.triggers)
-				dat += "[trigger] "
-			if(A.triggers.len)
-				dat += "<br>"
+/datum/artifact_controller/Topic(href, href_list[])
+	USR_ADMIN_ONLY
+	if (href_list["Activate"])
+		var/obj/O = locate(href_list["Activate"]) in src.artifacts
+		if (!istype(O,/obj/))
+			return
+		if (!istype(O.artifact,/datum/artifact/))
+			return
+		var/datum/artifact/A = O.artifact
+		if (A.activated)
+			O.ArtifactDeactivated()
+		else
+			O.ArtifactActivated()
 
-			dat += "<a href='byond://?src=\ref[src];Activate=\ref[O]'>"
-			if (!A.activated)
-				dat += "Activate"
-			else
-				dat += "Deactivate"
-			dat += "</a> * "
-			dat += "<a href='byond://?src=\ref[src];Jumpto=\ref[O]'>Jump To</a> * "
-			dat += "<a href='byond://?src=\ref[src];Get=\ref[O]'>Get</a> * "
-			dat += "<a href='byond://?src=\ref[src];Destroy=\ref[O]'>Destroy</a><br><br>"
+		src.log_me(usr, O, A.activated ? "activates" : "deactivates", 1)
 
-		dat += "</small></body></html>"
+	else if (href_list["Jumpto"])
+		var/obj/O = locate(href_list["Jumpto"]) in src.artifacts
+		if (!istype(O,/obj/))
+			return
+		var/turf/T = O.loc
+		usr.set_loc(T)
 
-		usr.Browse(dat,"window=artifacts;size=400x600")
+		src.log_me(usr, O, "jumps to", 0)
 
-	Topic(href, href_list[])
-		USR_ADMIN_ONLY
-		if (href_list["Activate"])
-			var/obj/O = locate(href_list["Activate"]) in src.artifacts
-			if (!istype(O,/obj/))
-				return
-			if (!istype(O.artifact,/datum/artifact/))
-				return
-			var/datum/artifact/A = O.artifact
-			if (A.activated)
-				O.ArtifactDeactivated()
-			else
-				O.ArtifactActivated()
+	else if (href_list["Get"])
+		var/obj/O = locate(href_list["Get"]) in src.artifacts
+		if (!istype(O,/obj/))
+			return
+		var/turf/T = usr.loc
+		O.set_loc(T)
 
-			src.log_me(usr, O, A.activated ? "activates" : "deactivates", 1)
+		src.log_me(usr, O, "teleports", 0)
 
-		else if (href_list["Jumpto"])
-			var/obj/O = locate(href_list["Jumpto"]) in src.artifacts
-			if (!istype(O,/obj/))
-				return
-			var/turf/T = O.loc
-			usr.set_loc(T)
+	else if (href_list["Destroy"])
+		var/obj/O = locate(href_list["Destroy"]) in src.artifacts
+		if (!istype(O,/obj/))
+			return
+		if (!istype(O.artifact,/datum/artifact/))
+			return
 
-			src.log_me(usr, O, "jumps to", 0)
+		src.log_me(usr, O, "destroys", 1)
+		O.ArtifactDestroyed()
 
-		else if (href_list["Get"])
-			var/obj/O = locate(href_list["Get"]) in src.artifacts
-			if (!istype(O,/obj/))
-				return
-			var/turf/T = usr.loc
-			O.set_loc(T)
+	else if (href_list["Spawnnew"])
+		var/turf/T = get_turf(usr)
+		new /obj/artifact_spawner(T,spawner_type,spawner_cine)
 
-			src.log_me(usr, O, "teleports", 0)
+		src.log_me(usr, null, "spawns", 0)
 
-		else if (href_list["Destroy"])
-			var/obj/O = locate(href_list["Destroy"]) in src.artifacts
-			if (!istype(O,/obj/))
-				return
-			if (!istype(O.artifact,/datum/artifact/))
-				return
+	else if (href_list["Spawntype"])
+		spawner_type = input("What type of artifact?","Artifact Controls") as null|anything in list("ancient","martian","wizard","eldritch","precursor")//,"bee","void","lattice","feather")
 
-			src.log_me(usr, O, "destroys", 1)
-			O.ArtifactDestroyed()
+	else if (href_list["Spawncine"])
+		spawner_cine = !spawner_cine
 
-		else if (href_list["Spawnnew"])
-			var/turf/T = get_turf(usr)
-			new /obj/artifact_spawner(T,spawner_type,spawner_cine)
-
-			src.log_me(usr, null, "spawns", 0)
-
-		else if (href_list["Spawntype"])
-			spawner_type = input("What type of artifact?","Artifact Controls") as null|anything in list("ancient","martian","wizard","eldritch","precursor")//,"bee","void","lattice","feather")
-
-		else if (href_list["Spawncine"])
-			spawner_cine = !spawner_cine
-
-		src.config()
+	src.config()
 
 // Origins
 
@@ -218,8 +218,10 @@ var/datum/artifact_controller/artifact_controls
 	var/fx_green_max = 255
 	var/fx_blue_min = 0
 	var/fx_blue_max = 255
-	var/nofx = 0 // If set to 1, does not apply an overlay but a flat icon_state change.
-	var/scramblechance = 10 //probability to have "fake" artifact with altered appearance
+	/// If set to 1, does not apply an overlay but a flat icon_state change.
+	var/nofx = 0
+	/// Probability to have "fake" artifact with altered appearance.
+	var/scramblechance = 10
 	var/list/activation_sounds = list()
 	var/list/instrument_sounds = list()
 	var/list/fault_types = list("all")
@@ -228,24 +230,24 @@ var/datum/artifact_controller/artifact_controls
 	var/list/nouns_small = list("item","device","relic","widget","utensil","gadget","accessory","gizmo")
 	var/list/touch_descriptors = list("You can't really tell how it feels.")
 
-	New()
-		..()
-		if ("all" in fault_types)
-			fault_types += concrete_typesof(/datum/artifact_fault)
+/datum/artifact_origin/New()
+	..()
+	if ("all" in fault_types)
+		fault_types += concrete_typesof(/datum/artifact_fault)
 
-	proc/post_setup(obj/artifact)
-		var/datum/artifact/AD = artifact.artifact
-		var/rarityMod = AD.get_rarity_modifier()
-		if(prob(100*rarityMod))
-			artifact.transform = matrix(artifact.transform, -1, 1, MATRIX_SCALE)
-		if(prob(20 * rarityMod))
-			artifact.transform = matrix(artifact.transform, 1, -1, MATRIX_SCALE)
+/datum/artifact_origin/proc/post_setup(obj/artifact)
+	var/datum/artifact/AD = artifact.artifact
+	var/rarityMod = AD.get_rarity_modifier()
+	if(prob(100*rarityMod))
+		artifact.transform = matrix(artifact.transform, -1, 1, MATRIX_SCALE)
+	if(prob(20 * rarityMod))
+		artifact.transform = matrix(artifact.transform, 1, -1, MATRIX_SCALE)
 
-	proc/generate_name()
-		return "unknown object"
+/datum/artifact_origin/proc/generate_name()
+	return "unknown object"
 
 
-/datum/artifact_origin/ancient
+/datum/artifact_origin/ancient/
 	type_name = "Silicon"
 	name = "ancient"
 	fault_types = list(
@@ -256,7 +258,8 @@ var/datum/artifact_controller/artifact_controls
 		/datum/artifact_fault/explode = 10,
 		/datum/artifact_fault/messager/ai_laws = 10)
 	activation_sounds = list('sound/machines/ArtifactAnc1.ogg')
-	instrument_sounds = list('sound/musical_instruments/artifact/Artifact_Ancient_1.ogg',
+	instrument_sounds = list(
+		'sound/musical_instruments/artifact/Artifact_Ancient_1.ogg',
 		'sound/musical_instruments/artifact/Artifact_Ancient_2.ogg',
 		'sound/musical_instruments/artifact/Artifact_Ancient_3.ogg',
 		'sound/musical_instruments/artifact/Artifact_Ancient_4.ogg')
@@ -274,21 +277,21 @@ var/datum/artifact_controller/artifact_controls
 	nouns_small = list("implement","device","instrument","apparatus","appliance","mechanism","tool")
 	touch_descriptors = list("It feels cold.","It feels smooth.","Touching it makes you feel uneasy.")
 
-	post_setup(obj/artifact)
-		. = ..()
-		var/datum/artifact/AD = artifact.artifact
-		var/rarityMod = AD.get_rarity_modifier()
-		if(prob(50 * rarityMod))
-			var/scaling = 1.1 + rand() * 0.2
-			artifact.transform = matrix(artifact.transform, scaling, scaling, MATRIX_SCALE)
-		if(prob(100 * rarityMod))
-			var/col = rand(100, 230)
-			artifact.color = rgb(col, col, col)
+/datum/artifact_origin/ancient/post_setup(obj/artifact)
+	. = ..()
+	var/datum/artifact/AD = artifact.artifact
+	var/rarityMod = AD.get_rarity_modifier()
+	if(prob(50 * rarityMod))
+		var/scaling = 1.1 + rand() * 0.2
+		artifact.transform = matrix(artifact.transform, scaling, scaling, MATRIX_SCALE)
+	if(prob(100 * rarityMod))
+		var/col = rand(100, 230)
+		artifact.color = rgb(col, col, col)
 
-	generate_name()
-		return "unit [pick("alpha","sigma","tau","phi","gamma","epsilon")]-[pick("x","z","d","e","k")] [rand(100,999)]"
+/datum/artifact_origin/ancient/generate_name()
+	return "unit [pick("alpha","sigma","tau","phi","gamma","epsilon")]-[pick("x","z","d","e","k")] [rand(100,999)]"
 
-/datum/artifact_origin/martian
+/datum/artifact_origin/martian/
 	type_name = "Martian"
 	name = "martian"
 	fault_types = list(
@@ -301,7 +304,8 @@ var/datum/artifact_controller/artifact_controls
 		/datum/artifact_fault/shrink = 8,
 		/datum/artifact_fault/messager/emoji = 10)
 	activation_sounds = list('sound/machines/ArtifactMar1.ogg','sound/machines/ArtifactMar2.ogg')
-	instrument_sounds = list('sound/musical_instruments/artifact/Artifact_Martian_1.ogg',
+	instrument_sounds = list(
+		'sound/musical_instruments/artifact/Artifact_Martian_1.ogg',
 		'sound/musical_instruments/artifact/Artifact_Martian_2.ogg',
 		'sound/musical_instruments/artifact/Artifact_Martian_3.ogg',
 		'sound/musical_instruments/artifact/Artifact_Martian_4.ogg')
@@ -322,51 +326,51 @@ var/datum/artifact_controller/artifact_controls
 	var/list/thingy = list("cystic","genetic","metabolic","static","vascular","muscular")
 	var/list/action = list("stimulator","suppressor","regenerator","depressor","mutator")
 
-	post_setup(obj/artifact)
-		. = ..()
-		var/datum/artifact/AD = artifact.artifact
-		var/rarityMod = AD.get_rarity_modifier()
-		if(prob(50 * rarityMod))
-			artifact.transform = matrix(artifact.transform, rand(-15, 15), MATRIX_ROTATE)
-		if(prob(200 * rarityMod))
-			artifact.color = rgb(rand(210, 255), rand(210, 255), rand(210, 255))
+/datum/artifact_origin/martian/post_setup(obj/artifact)
+	. = ..()
+	var/datum/artifact/AD = artifact.artifact
+	var/rarityMod = AD.get_rarity_modifier()
+	if(prob(50 * rarityMod))
+		artifact.transform = matrix(artifact.transform, rand(-15, 15), MATRIX_ROTATE)
+	if(prob(200 * rarityMod))
+		artifact.color = rgb(rand(210, 255), rand(210, 255), rand(210, 255))
+	if(prob(80 * rarityMod))
+		var/icon/distortion_icon = icon('icons/effects/distort.dmi', "martian[rand(1,7)]")
+		if(prob(20))
+			distortion_icon = turn(distortion_icon, rand(360))
+		var/size = rand(4, 6 + 8 * rarityMod) * pick(-1, 1)
+		artifact.add_filter("martian distortion", 1, displacement_map_filter(icon=distortion_icon, size=size))
 		if(prob(80 * rarityMod))
-			var/icon/distortion_icon = icon('icons/effects/distort.dmi', "martian[rand(1,7)]")
-			if(prob(20))
-				distortion_icon = turn(distortion_icon, rand(360))
-			var/size = rand(4, 6 + 8 * rarityMod) * pick(-1, 1)
-			artifact.add_filter("martian distortion", 1, displacement_map_filter(icon=distortion_icon, size=size))
-			if(prob(80 * rarityMod))
-				var/filter = artifact.get_filter("martian distortion")
-				var/anim_time = pick(rand() * 1 SECOND + 1 SECOND, rand() * 5 SECONDS, rand() * 1 MINUTE)
-				var/new_size = size + rand(-8, 8)
-				if(prob(15) || anim_time > 5 SECONDS && prob(70))
-					if(prob(50))
-						new_size = -size
-					else
-						new_size *= 1.5
-				animate(filter,
-					size = new_size,
-					time = anim_time,
-					easing = SINE_EASING,
-					flags = ANIMATION_PARALLEL,
-					loop = -1)
-				if(anim_time < 2 SECONDS && prob(35))
-					animate(time = rand() * 1.5 MINUTES)
-				animate(
-					size = size,
-					time = anim_time,
-					easing = SINE_EASING,
-					loop = -1)
-				if(anim_time < 2 SECONDS && prob(35))
-					animate(time = rand() * 1.5 MINUTES)
+			var/filter = artifact.get_filter("martian distortion")
+			var/anim_time = pick(rand() * 1 SECOND + 1 SECOND, rand() * 5 SECONDS, rand() * 1 MINUTE)
+			var/new_size = size + rand(-8, 8)
+			if(prob(15) || anim_time > 5 SECONDS && prob(70))
+				if(prob(50))
+					new_size = -size
+				else
+					new_size *= 1.5
+			animate(filter,
+				size = new_size,
+				time = anim_time,
+				easing = SINE_EASING,
+				flags = ANIMATION_PARALLEL,
+				loop = -1)
+			if(anim_time < 2 SECONDS && prob(35))
+				animate(time = rand() * 1.5 MINUTES)
+			animate(
+				size = size,
+				time = anim_time,
+				easing = SINE_EASING,
+				loop = -1)
+			if(anim_time < 2 SECONDS && prob(35))
+				animate(time = rand() * 1.5 MINUTES)
 
-	generate_name()
-		var/namestring = ""
-		namestring += "[pick(prefix)]"
-		namestring += "[pick(thingy)] "
-		namestring += "[pick(action)]"
-		return namestring
+/datum/artifact_origin/martian/generate_name()
+	var/namestring = ""
+	namestring += "[pick(prefix)]"
+	namestring += "[pick(thingy)] "
+	namestring += "[pick(action)]"
+	return namestring
 
 /datum/artifact_origin/wizard
 	type_name = "Wizard"
@@ -384,7 +388,8 @@ var/datum/artifact_controller/artifact_controls
 		/datum/artifact_fault/messager/what_people_said = 5,
 		/datum/artifact_fault/messager/emoji = 5)
 	activation_sounds = list('sound/machines/ArtifactWiz1.ogg')
-	instrument_sounds = list('sound/musical_instruments/artifact/Artifact_Wizard_1.ogg',
+	instrument_sounds = list(
+		'sound/musical_instruments/artifact/Artifact_Wizard_1.ogg',
 		'sound/musical_instruments/artifact/Artifact_Wizard_2.ogg',
 		'sound/musical_instruments/artifact/Artifact_Wizard_3.ogg',
 		'sound/musical_instruments/artifact/Artifact_Wizard_4.ogg')
@@ -405,40 +410,41 @@ var/datum/artifact_controller/artifact_controls
 	var/list/object = list("jewel","trophy","favor","boon","token","crown","treasure","sacrament","oath")
 	var/list/aspect = list("wonder","splendor","power","plenty","mystery","glory","majesty","eminence","grace")
 
-	post_setup(obj/artifact)
-		. = ..()
-		var/datum/artifact/AD = artifact.artifact
-		var/rarityMod = AD.get_rarity_modifier()
-		if(prob(300*rarityMod))
-			var/hue1 = prob(100*rarityMod) ? rand(360) : (55 + rand(-10, 10))
-			var/list/col1
-			if(prob(150*rarityMod))
-				col1 = hsv2rgblist(hue1, rand() * 20 + 50, rand() * 20 + 60)
-			else
-				col1 = list(255, 168, 0)
-			var/hue2 = 180 + hue1 + rand(-135, 135)
-			if(prob(100*rarityMod))
-				hue2 = rand(360)
-			var/list/col2 = hsv2rgblist(hue2, rand() * 30 + 70, rand() * 10 + 90)
-			artifact.color = affine_color_mapping_matrix(
-				list("#000000", "#ffa800", "#ae2300", "#0000ff"),
-				list(random_color(), col1, col2, "#0000ff")
-			)
-		if(prob(50*rarityMod))
-			artifact.alpha = rand(200, 255)
+/datum/artifact_origin/wizard/post_setup(obj/artifact)
+	. = ..()
+	var/datum/artifact/AD = artifact.artifact
+	var/rarityMod = AD.get_rarity_modifier()
+	if(prob(300*rarityMod))
+		var/hue1 = prob(100*rarityMod) ? rand(360) : (55 + rand(-10, 10))
+		var/list/col1
+		if(prob(150*rarityMod))
+			col1 = hsv2rgblist(hue1, rand() * 20 + 50, rand() * 20 + 60)
+		else
+			col1 = list(255, 168, 0)
+		var/hue2 = 180 + hue1 + rand(-135, 135)
+		if(prob(100*rarityMod))
+			hue2 = rand(360)
+		var/list/col2 = hsv2rgblist(hue2, rand() * 30 + 70, rand() * 10 + 90)
+		artifact.color = affine_color_mapping_matrix(
+			list("#000000", "#ffa800", "#ae2300", "#0000ff"),
+			list(random_color(), col1, col2, "#0000ff")
+		)
+	if(prob(50*rarityMod))
+		artifact.alpha = rand(200, 255)
 
-	generate_name()
-		var/namestring = ""
-		namestring += "[pick(material)] "
-		namestring += "[pick(object)] of "
-		namestring += "[pick(aspect)]"
-		return namestring
+/datum/artifact_origin/wizard/generate_name()
+	var/namestring = ""
+	namestring += "[pick(material)] "
+	namestring += "[pick(object)] of "
+	namestring += "[pick(aspect)]"
+	return namestring
 
 /datum/artifact_origin/eldritch
 	type_name = "Eldritch"
 	name = "eldritch"
 	activation_sounds = list('sound/machines/ArtifactEld1.ogg','sound/machines/ArtifactEld2.ogg')
-	instrument_sounds = list('sound/musical_instruments/artifact/Artifact_Eldritch_1.ogg',
+	instrument_sounds = list(
+		'sound/musical_instruments/artifact/Artifact_Eldritch_1.ogg',
 		'sound/musical_instruments/artifact/Artifact_Eldritch_2.ogg',
 		'sound/musical_instruments/artifact/Artifact_Eldritch_3.ogg',
 		'sound/musical_instruments/artifact/Artifact_Eldritch_4.ogg')
@@ -478,43 +484,44 @@ var/datum/artifact_controller/artifact_controls
 	var/list/horror_name_mid = list("sog","ran","gon","ni","a","hul","ttur","ay","o","lo","ncac","sin","fel","di")
 	var/list/horror_name_end = list("dyte","oth","tula","olac","tur","bburath","thoth","hu","dha","aoth","tath","goth","ter")
 
-	generate_name()
-		var/the_horror = src.horror_name()
-		var/namestring = ""
-		if (prob(50))
-			if (prob(20))
-				namestring += "[pick(general_adjectives)] "
-			namestring += "[pick(object_nouns)] of "
-			if (prob(20))
-				namestring += "[pick(person_adjectives)] "
-			namestring += "[the_horror]"
-		else
-			if (prob(20))
-				namestring += "[pick(person_adjectives)] "
-			namestring += "[the_horror]'s "
-			if (prob(20))
-				namestring += "[pick(general_adjectives)] "
-			namestring += "[pick(object_nouns)]"
-		return namestring
+/datum/artifact_origin/eldritch/generate_name()
+	var/the_horror = src.horror_name()
+	var/namestring = ""
+	if (prob(50))
+		if (prob(20))
+			namestring += "[pick(general_adjectives)] "
+		namestring += "[pick(object_nouns)] of "
+		if (prob(20))
+			namestring += "[pick(person_adjectives)] "
+		namestring += "[the_horror]"
+	else
+		if (prob(20))
+			namestring += "[pick(person_adjectives)] "
+		namestring += "[the_horror]'s "
+		if (prob(20))
+			namestring += "[pick(general_adjectives)] "
+		namestring += "[pick(object_nouns)]"
+	return namestring
 
-	proc/horror_name()
-		var/fthagn = ""
-		if (prob(20))
-			fthagn += "[pick(people)] "
-		fthagn += "[pick(horror_name_start)]"
-		if (prob(20))
-			fthagn += "[pick("'","-")]"
-		fthagn += "[pick(horror_name_mid)]"
-		if (prob(20))
-			fthagn += "[pick("'","-")]"
-		fthagn += "[pick(horror_name_end)]"
-		return fthagn // ia ia
+/datum/artifact_origin/eldritch/proc/horror_name()
+	var/fthagn = ""
+	if (prob(20))
+		fthagn += "[pick(people)] "
+	fthagn += "[pick(horror_name_start)]"
+	if (prob(20))
+		fthagn += "[pick("'","-")]"
+	fthagn += "[pick(horror_name_mid)]"
+	if (prob(20))
+		fthagn += "[pick("'","-")]"
+	fthagn += "[pick(horror_name_end)]"
+	return fthagn // ia ia
 
 /datum/artifact_origin/precursor
 	type_name = "Precursor"
 	name = "precursor"
 	activation_sounds = list('sound/machines/ArtifactPre1.ogg')
-	instrument_sounds = list('sound/musical_instruments/artifact/Artifact_Precursor_1.ogg',
+	instrument_sounds = list(
+		'sound/musical_instruments/artifact/Artifact_Precursor_1.ogg',
 		'sound/musical_instruments/artifact/Artifact_Precursor_2.ogg',
 		'sound/musical_instruments/artifact/Artifact_Precursor_3.ogg',
 		'sound/musical_instruments/artifact/Artifact_Precursor_4.ogg',
@@ -546,76 +553,76 @@ var/datum/artifact_controller/artifact_controls
 	var/list/particles = list("quark","tachyon","neutron","positron","photon","neutrino","lepton","baryon","atom","molecule")
 	var/list/verber = list("stabilizer","synchroniser","generator","coupler","fuser","linker","materializer")
 
-	post_setup(obj/artifact)
-		. = ..()
-		var/datum/artifact/AD = artifact.artifact
-		var/rarityMod = AD.get_rarity_modifier()
-		if(!isitem(artifact) && prob(100 * rarityMod))
-			var/do_opposite_y = prob(50)
-			var/base_pixel_y = rand(-10, 10)
-			var/eps = 0.1 * pick(-1, 1)
-			var/r = rand(10, 26)
-			var/start_dir = pick(-1, 1)
-			var/icon_state = "precursorball[rand(1, 6)]"
-			var/time = rand(4 SECONDS, 18 SECONDS)
-			if(prob(20))
-				time = rand(50 SECONDS, 70 SECONDS)
-			var/n_balls = rand(1, 4) + round(rarityMod * 3)
-			for(var/i = 1 to n_balls)
-				var/delay = (i - 1) * time / n_balls
-				SPAWN(delay)
-					var/obj/effect/ball = new
-					ball.icon = 'icons/obj/artifacts/artifactEffects.dmi'
-					ball.icon_state = icon_state
-					if(prob(15))
-						ball.icon_state = "precursorball[rand(1, 6)]"
-					if(prob(10))
-						ball.color = list(-1,0,0, 0,-1,0, 0,0,-1, 1,1,1)
-					ball.mouse_opacity = 0
-					artifact.vis_contents += ball
-					if(!do_opposite_y)
-						base_pixel_y = rand(-10, 10)
-					ball.pixel_y = do_opposite_y ? 0 : base_pixel_y
-					ball.layer = artifact.layer + eps
-					animate(ball,
-						time = time/4,
-						easing = SINE_EASING | EASE_OUT,
-						pixel_x = r * start_dir,
-						pixel_y = base_pixel_y,
-						layer = artifact.layer,
-						loop = -1)
-					animate(
-						time = time/4,
-						easing = SINE_EASING | EASE_IN,
-						pixel_x = 0,
-						pixel_y = do_opposite_y ? 0 : base_pixel_y,
-						layer = artifact.layer - eps,
-						loop = -1)
-					animate(
-						time = time/4,
-						easing = SINE_EASING | EASE_OUT,
-						pixel_x = -r * start_dir,
-						pixel_y = do_opposite_y ? -base_pixel_y : base_pixel_y,
-						layer = artifact.layer,
-						loop = -1)
-					animate(
-						time = time/4,
-						easing = SINE_EASING | EASE_IN,
-						pixel_x = 0,
-						pixel_y = do_opposite_y ? 0 : base_pixel_y,
-						layer = artifact.layer + eps,
-						loop = -1)
+/datum/artifact_origin/precursor/post_setup(obj/artifact)
+	. = ..()
+	var/datum/artifact/AD = artifact.artifact
+	var/rarityMod = AD.get_rarity_modifier()
+	if(!isitem(artifact) && prob(100 * rarityMod))
+		var/do_opposite_y = prob(50)
+		var/base_pixel_y = rand(-10, 10)
+		var/eps = 0.1 * pick(-1, 1)
+		var/r = rand(10, 26)
+		var/start_dir = pick(-1, 1)
+		var/icon_state = "precursorball[rand(1, 6)]"
+		var/time = rand(4 SECONDS, 18 SECONDS)
+		if(prob(20))
+			time = rand(50 SECONDS, 70 SECONDS)
+		var/n_balls = rand(1, 4) + round(rarityMod * 3)
+		for(var/i = 1 to n_balls)
+			var/delay = (i - 1) * time / n_balls
+			SPAWN(delay)
+				var/obj/effect/ball = new
+				ball.icon = 'icons/obj/artifacts/artifactEffects.dmi'
+				ball.icon_state = icon_state
+				if(prob(15))
+					ball.icon_state = "precursorball[rand(1, 6)]"
+				if(prob(10))
+					ball.color = list(-1,0,0, 0,-1,0, 0,0,-1, 1,1,1)
+				ball.mouse_opacity = 0
+				artifact.vis_contents += ball
+				if(!do_opposite_y)
+					base_pixel_y = rand(-10, 10)
+				ball.pixel_y = do_opposite_y ? 0 : base_pixel_y
+				ball.layer = artifact.layer + eps
+				animate(ball,
+					time = time/4,
+					easing = SINE_EASING | EASE_OUT,
+					pixel_x = r * start_dir,
+					pixel_y = base_pixel_y,
+					layer = artifact.layer,
+					loop = -1)
+				animate(
+					time = time/4,
+					easing = SINE_EASING | EASE_IN,
+					pixel_x = 0,
+					pixel_y = do_opposite_y ? 0 : base_pixel_y,
+					layer = artifact.layer - eps,
+					loop = -1)
+				animate(
+					time = time/4,
+					easing = SINE_EASING | EASE_OUT,
+					pixel_x = -r * start_dir,
+					pixel_y = do_opposite_y ? -base_pixel_y : base_pixel_y,
+					layer = artifact.layer,
+					loop = -1)
+				animate(
+					time = time/4,
+					easing = SINE_EASING | EASE_IN,
+					pixel_x = 0,
+					pixel_y = do_opposite_y ? 0 : base_pixel_y,
+					layer = artifact.layer + eps,
+					loop = -1)
 
 
-	generate_name()
-		var/namestring = ""
-		if (prob(40))
-			namestring += "[pick(prefixes)]"
-		namestring += "[pick(particles)] "
-		if (prob(33))
-			namestring += "de"
-		namestring += "[pick(verber)]"
-		return namestring
+/datum/artifact_origin/precursor/generate_name()
+	var/namestring = ""
+	if (prob(40))
+		namestring += "[pick(prefixes)]"
+	namestring += "[pick(particles)] "
+	if (prob(33))
+		namestring += "de"
+	namestring += "[pick(verber)]"
+	return namestring
 
 
 // TODO: These origins are not ready for general use yet

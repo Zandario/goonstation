@@ -26,142 +26,142 @@ var/list/asteroid_blocked_turfs = list()
 
 	var/list/magnet_do_not_erase = list(/obj/securearea,/obj/forcefield/mining,/obj/grille/catwalk,/obj/grille/catwalk/cross, /obj/overlay)
 
-	New()
-		..()
-		for (var/X in childrentypesof(/datum/ore) - /datum/ore/event)
-			var/datum/ore/O = new X
-			ore_types_common += O
-			ore_types_all += O
+/datum/mining_controller/New()
+	..()
+	for (var/X in childrentypesof(/datum/ore) - /datum/ore/event)
+		var/datum/ore/O = new X
+		ore_types_common += O
+		ore_types_all += O
 
-		for (var/X in childrentypesof(/datum/mining_encounter))
-			var/datum/mining_encounter/MC = new X
-			mining_encounters_common += MC
-			mining_encounters_all += MC
+	for (var/X in childrentypesof(/datum/mining_encounter))
+		var/datum/mining_encounter/MC = new X
+		mining_encounters_common += MC
+		mining_encounters_all += MC
 
-		for (var/datum/ore/O in src.ore_types_common)
-			if (O.no_pick)
-				ore_types_common -= O
-				continue
+	for (var/datum/ore/O in src.ore_types_common)
+		if (O.no_pick)
+			ore_types_common -= O
+			continue
 
-			if (istype(O, /datum/ore/event/))
-				var/datum/ore/event/E = O
-				events += E
-				weighted_events[E] = initial(E.weight)
-				ore_types_common -= O
-			if (O.rarity_tier == 2)
-				ore_types_uncommon += O
-				ore_types_common -= O
-			else if (O.rarity_tier == 3)
-				ore_types_rare += O
-				ore_types_common -= O
-			O.set_up()
+		if (istype(O, /datum/ore/event/))
+			var/datum/ore/event/E = O
+			events += E
+			weighted_events[E] = initial(E.weight)
+			ore_types_common -= O
+		if (O.rarity_tier == 2)
+			ore_types_uncommon += O
+			ore_types_common -= O
+		else if (O.rarity_tier == 3)
+			ore_types_rare += O
+			ore_types_common -= O
+		O.set_up()
 
-		for (var/datum/mining_encounter/MC in mining_encounters_common)
-			if (MC.no_pick)
-				mining_encounters_common -= MC
-				continue
+	for (var/datum/mining_encounter/MC in mining_encounters_common)
+		if (MC.no_pick)
+			mining_encounters_common -= MC
+			continue
 
-			if (MC.rarity_tier == 3)
-				mining_encounters_rare += MC
-				mining_encounters_common -= MC
-			else if (MC.rarity_tier == 2)
-				mining_encounters_uncommon += MC
-				mining_encounters_common -= MC
-			else if (MC.rarity_tier == -1)
-				small_encounters += MC
-				mining_encounters_common -= MC
-			else if (MC.rarity_tier != 1)
-				mining_encounters_common -= MC
-				qdel(MC)
+		if (MC.rarity_tier == 3)
+			mining_encounters_rare += MC
+			mining_encounters_common -= MC
+		else if (MC.rarity_tier == 2)
+			mining_encounters_uncommon += MC
+			mining_encounters_common -= MC
+		else if (MC.rarity_tier == -1)
+			small_encounters += MC
+			mining_encounters_common -= MC
+		else if (MC.rarity_tier != 1)
+			mining_encounters_common -= MC
+			qdel(MC)
 
-	proc/setup_mining_landmarks()
-		for(var/turf/T in landmarks[LANDMARK_MAGNET_CENTER])
-			magnetic_center = T
-			magnet_area = get_area(T)
-			break
+/datum/mining_controller/proc/setup_mining_landmarks()
+	for(var/turf/T in landmarks[LANDMARK_MAGNET_CENTER])
+		magnetic_center = T
+		magnet_area = get_area(T)
+		break
 
-		for(var/turf/T in landmarks[LANDMARK_MAGNET_SHIELD])
-			var/obj/forcefield/mining/S = new /obj/forcefield/mining(T)
-			magnet_shields += S
+	for(var/turf/T in landmarks[LANDMARK_MAGNET_SHIELD])
+		var/obj/forcefield/mining/S = new /obj/forcefield/mining(T)
+		magnet_shields += S
 
-	proc/spawn_mining_z_asteroids(var/amt, var/zlev)
-		SPAWN(0)
-			var/the_mining_z = zlev ? zlev : src.mining_z
-			var/turf/T
-			var/spawn_amount = amt ? amt : src.mining_z_asteroids_max
-			for (var/i=spawn_amount, i>0, i--)
-				LAGCHECK(LAG_LOW)
-				T = locate(rand(8,(world.maxy - 8)),rand(8,(world.maxy - 8)),the_mining_z)
-				if (istype(T))
-					T.GenerateAsteroid(rand(4,15))
-			message_admins("Asteroid generation on z[the_mining_z] complete: ")
+/datum/mining_controller/proc/spawn_mining_z_asteroids(amt, zlev)
+	SPAWN(0)
+		var/the_mining_z = zlev ? zlev : src.mining_z
+		var/turf/T
+		var/spawn_amount = amt ? amt : src.mining_z_asteroids_max
+		for (var/i=spawn_amount, i>0, i--)
+			LAGCHECK(LAG_LOW)
+			T = locate(rand(8,(world.maxy - 8)),rand(8,(world.maxy - 8)),the_mining_z)
+			if (istype(T))
+				T.GenerateAsteroid(rand(4,15))
+		message_admins("Asteroid generation on z[the_mining_z] complete: ")
 
-	proc/get_ore_from_string(var/string)
-		if (!istext(string))
-			return
-		for (var/datum/ore/O in ore_types_all)
-			if (O.name == string)
-				return O
-		return null
-
-	proc/get_ore_from_path(var/path)
-		if (!ispath(path))
-			return
-		for (var/datum/ore/O in ore_types_all)
-			if (O.type == path)
-				return O
-		return null
-
-	proc/get_encounter_by_name(var/enc_name = null)
-		if(enc_name)
-			for(var/datum/mining_encounter/A in mining_encounters_all)
-				if(A.name == enc_name)
-					return A
-		return null
-
-	proc/add_selectable_encounter(var/datum/mining_encounter/A)
-		if(A)
-			var/number = "[(mining_encounters_selectable.len + 1)]"
-			mining_encounters_selectable += number
-			mining_encounters_selectable[number] = A
+/datum/mining_controller/proc/get_ore_from_string(string)
+	if (!istext(string))
 		return
+	for (var/datum/ore/O in ore_types_all)
+		if (O.name == string)
+			return O
+	return null
 
-	proc/remove_selectable_encounter(var/number_id)
-		if(mining_encounters_selectable.Find(number_id))
-			//var/datum/mining_encounter/A = mining_encounters_selectable[number_id]
-			mining_encounters_selectable.Remove(number_id)
-
-			var/list/rebuiltList = list()
-			var/count = 1
-
-			for(var/X in mining_encounters_selectable)
-				rebuiltList.Add("[count]")
-				rebuiltList["[count]"] = mining_encounters_selectable[X]
-				count++
-
-			mining_encounters_selectable = rebuiltList
-
+/datum/mining_controller/proc/get_ore_from_path(path)
+	if (!ispath(path))
 		return
+	for (var/datum/ore/O in ore_types_all)
+		if (O.type == path)
+			return O
+	return null
 
-	proc/select_encounter(var/rarity_mod)
-		if (!isnum(rarity_mod))
-			rarity_mod = 0
-		var/chosen = RarityClassRoll(100,rarity_mod,list(95,70))
+/datum/mining_controller/proc/get_encounter_by_name(enc_name = null)
+	if(enc_name)
+		for(var/datum/mining_encounter/A in mining_encounters_all)
+			if(A.name == enc_name)
+				return A
+	return null
 
-		var/list/category = mining_controls.mining_encounters_common
-		switch(chosen)
-			if (2)
-				category = mining_controls.mining_encounters_uncommon
-			if (3)
-				category = mining_controls.mining_encounters_rare
+/datum/mining_controller/proc/add_selectable_encounter(datum/mining_encounter/A)
+	if(A)
+		var/number = "[(mining_encounters_selectable.len + 1)]"
+		mining_encounters_selectable += number
+		mining_encounters_selectable[number] = A
+	return
 
-		if (category.len < 1)
-			category = mining_controls.mining_encounters_common
+/datum/mining_controller/proc/remove_selectable_encounter(number_id)
+	if(mining_encounters_selectable.Find(number_id))
+		//var/datum/mining_encounter/A = mining_encounters_selectable[number_id]
+		mining_encounters_selectable.Remove(number_id)
 
-		return pick(category)
+		var/list/rebuiltList = list()
+		var/count = 1
 
-	proc/select_small_encounter(var/rarity_mod)
-		return pick(small_encounters)
+		for(var/X in mining_encounters_selectable)
+			rebuiltList.Add("[count]")
+			rebuiltList["[count]"] = mining_encounters_selectable[X]
+			count++
+
+		mining_encounters_selectable = rebuiltList
+
+	return
+
+/datum/mining_controller/proc/select_encounter(rarity_mod)
+	if (!isnum(rarity_mod))
+		rarity_mod = 0
+	var/chosen = RarityClassRoll(100,rarity_mod,list(95,70))
+
+	var/list/category = mining_controls.mining_encounters_common
+	switch(chosen)
+		if (2)
+			category = mining_controls.mining_encounters_uncommon
+		if (3)
+			category = mining_controls.mining_encounters_rare
+
+	if (category.len < 1)
+		category = mining_controls.mining_encounters_common
+
+	return pick(category)
+
+/datum/mining_controller/proc/select_small_encounter(rarity_mod)
+	return pick(small_encounters)
 
 /area/mining/magnet
 	name = "Magnet Area"
@@ -171,20 +171,20 @@ var/list/asteroid_blocked_turfs = list()
 	luminosity = 1
 	expandable = 0
 
-	proc/check_for_unacceptable_content()
-		for (var/mob/living/L in src.contents)
-			if(!isintangible(L)) //neither blob overmind or AI eye should block this
-				return 1
-		for (var/obj/machinery/vehicle/V in src.contents)
+/area/mining/magnet/proc/check_for_unacceptable_content()
+	for (var/mob/living/L in src.contents)
+		if(!isintangible(L)) //neither blob overmind or AI eye should block this
 			return 1
-		for (var/obj/artifact/A in src.contents) // check if an artifact has someone inside
-			if (istype(A, /obj/artifact/prison))
-				var/datum/artifact/prison/P = A.artifact
-				if(istype(P.prisoner)) return 1
-			else if (istype(A, /obj/artifact/cloner))
-				var/datum/artifact/cloner/C = A.artifact
-				if(istype(C.clone)) return 1
-		return 0
+	for (var/obj/machinery/vehicle/V in src.contents)
+		return 1
+	for (var/obj/artifact/A in src.contents) // check if an artifact has someone inside
+		if (istype(A, /obj/artifact/prison))
+			var/datum/artifact/prison/P = A.artifact
+			if(istype(P.prisoner)) return 1
+		else if (istype(A, /obj/artifact/cloner))
+			var/datum/artifact/cloner/C = A.artifact
+			if(istype(C.clone)) return 1
+	return 0
 
 /obj/forcefield/mining
 	name = "magnetic forcefield"
@@ -200,7 +200,7 @@ var/list/asteroid_blocked_turfs = list()
 
 /// *** MISC *** ///
 
-/proc/getOreQualityName(var/quality)
+/proc/getOreQualityName(quality)
 	switch(quality)
 		if(-INFINITY to -101)
 			return "worthless"
@@ -243,7 +243,7 @@ var/list/asteroid_blocked_turfs = list()
 		else
 			return "strange"
 
-/proc/getGemQualityName(var/quality)
+/proc/getGemQualityName(quality)
 	switch(quality)
 		if(-INFINITY to -101)
 			return "worthless"
