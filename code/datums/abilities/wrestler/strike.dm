@@ -13,57 +13,57 @@
 	when_stunned = 1
 	not_when_handcuffed = 1
 
-	cast(mob/target)
-		if (!holder)
-			return 1
+/datum/targetable/wrestler/strike/cast(mob/target)
+	if (!holder)
+		return TRUE
 
-		var/mob/living/M = holder.owner
+	var/mob/living/M = holder.owner
 
-		if (!M || !target)
-			return 1
+	if (!M || !target)
+		return TRUE
 
-		if (M == target)
-			boutput(M, "<span class='alert'>Why would you want to wrestle yourself?</span>")
-			return 1
+	if (M == target)
+		boutput(M, "<span class='alert'>Why would you want to wrestle yourself?</span>")
+		return TRUE
 
-		if (GET_DIST(M, target) > src.max_range)
-			boutput(M, "<span class='alert'>[target] is too far away.</span>")
-			return 1
-		if(check_target_immunity( target ))
-			M.visible_message("<span class='alert'>You seem to attack [target]!</span>")
-			return 1
+	if (GET_DIST(M, target) > src.max_range)
+		boutput(M, "<span class='alert'>[target] is too far away.</span>")
+		return TRUE
+	if(check_target_immunity( target ))
+		M.visible_message("<span class='alert'>You seem to attack [target]!</span>")
+		return TRUE
 
-		SEND_SIGNAL(M, COMSIG_MOB_CLOAKING_DEVICE_DEACTIVATE)
+	SEND_SIGNAL(M, COMSIG_MOB_CLOAKING_DEVICE_DEACTIVATE)
 
-		var/turf/T = get_turf(M)
-		if (T && isturf(T) && target && isturf(target.loc))
-			playsound(M.loc, "swing_hit", 50, 1)
+	var/turf/T = get_turf(M)
+	if (T && isturf(T) && target && isturf(target.loc))
+		playsound(M.loc, "swing_hit", 50, TRUE)
 
-			SPAWN(0)
-				for (var/i = 0, i < 4, i++)
-					M.set_dir(turn(M.dir, 90))
+		SPAWN(0)
+			for (var/i = 0, i < 4, i++)
+				M.set_dir(turn(M.dir, 90))
 
-				M.set_loc(target.loc)
-				sleep(4)
-				if (M && (T && isturf(T) && BOUNDS_DIST(M, T) == 0))
-					M.set_loc(T)
+			M.set_loc(target.loc)
+			sleep(4)
+			if (M && (T && isturf(T) && BOUNDS_DIST(M, T) == 0))
+				M.set_loc(T)
 
-			M.visible_message("<span class='alert'><b>[M] [pick_string("wrestling_belt.txt", "strike")] [target]!</b></span>")
-			playsound(M.loc, 'sound/impact_sounds/Flesh_Break_1.ogg', 75, 1)
+		M.visible_message("<span class='alert'><b>[M] [pick_string("wrestling_belt.txt", "strike")] [target]!</b></span>")
+		playsound(M.loc, 'sound/impact_sounds/Flesh_Break_1.ogg', 75, TRUE)
 
-			if (!fake)
-				random_brute_damage(target, 15, 1)
-				target.changeStatus("paralysis", 2 SECONDS)
-				target.changeStatus("weakened", 3 SECONDS)
-				target.force_laydown_standup()
-				target.change_misstep_chance(25)
+		if (!fake)
+			random_brute_damage(target, 15, 1)
+			target.changeStatus("paralysis", 2 SECONDS)
+			target.changeStatus("weakened", 3 SECONDS)
+			target.force_laydown_standup()
+			target.change_misstep_chance(25)
 
-			logTheThing(LOG_COMBAT, M, "uses the [fake ? "fake " : ""]strike wrestling move on [constructTarget(target,"combat")] at [log_loc(M)].")
+		logTheThing(LOG_COMBAT, M, "uses the [fake ? "fake " : ""]strike wrestling move on [constructTarget(target,"combat")] at [log_loc(M)].")
 
-		else
-			boutput(M, "<span class='alert'>You can't wrestle the target here!</span>")
+	else
+		boutput(M, "<span class='alert'>You can't wrestle the target here!</span>")
 
-		return 0
+	return FALSE
 
 /datum/targetable/wrestler/strike/fake
 	fake = 1

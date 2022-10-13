@@ -13,51 +13,51 @@
 	when_stunned = 1
 	not_when_handcuffed = 0
 
-	cast(mob/target)
-		if (!holder)
-			return 1
+/datum/targetable/wrestler/kick/cast(mob/target)
+	if (!holder)
+		return TRUE
 
-		var/mob/living/M = holder.owner
+	var/mob/living/M = holder.owner
 
-		if (!M || !target)
-			return 1
+	if (!M || !target)
+		return TRUE
 
-		if (M == target)
-			boutput(M, "<span class='alert'>Why would you want to wrestle yourself?</span>")
-			return 1
+	if (M == target)
+		boutput(M, "<span class='alert'>Why would you want to wrestle yourself?</span>")
+		return TRUE
 
-		if (GET_DIST(M, target) > src.max_range)
-			boutput(M, "<span class='alert'>[target] is too far away.</span>")
-			return 1
+	if (GET_DIST(M, target) > src.max_range)
+		boutput(M, "<span class='alert'>[target] is too far away.</span>")
+		return TRUE
 
-		if(check_target_immunity( target ))
-			M.visible_message("<span class='alert'>You seem to attack [target]!</span>")
-			return 1
+	if(check_target_immunity( target ))
+		M.visible_message("<span class='alert'>You seem to attack [target]!</span>")
+		return TRUE
 
-		SEND_SIGNAL(M, COMSIG_MOB_CLOAKING_DEVICE_DEACTIVATE)
+	SEND_SIGNAL(M, COMSIG_MOB_CLOAKING_DEVICE_DEACTIVATE)
 
-		M.emote("scream")
-		M.emote("flip")
-		M.set_dir(turn(M.dir, 90))
+	M.emote("scream")
+	M.emote("flip")
+	M.set_dir(turn(M.dir, 90))
 
-		for (var/mob/C in oviewers(M))
-			shake_camera(C, 8, 24)
+	for (var/mob/C in oviewers(M))
+		shake_camera(C, 8, 24)
 
-		M.visible_message("<span class='alert'><B>[M.name] [pick_string("wrestling_belt.txt", "kick")]-kicks [target]!</B></span>")
-		if (!fake)
-			random_brute_damage(target, 15, 1)
-		playsound(M.loc, "swing_hit", 60, 1)
+	M.visible_message("<span class='alert'><B>[M.name] [pick_string("wrestling_belt.txt", "kick")]-kicks [target]!</B></span>")
+	if (!fake)
+		random_brute_damage(target, 15, 1)
+	playsound(M.loc, "swing_hit", 60, TRUE)
 
-		var/turf/T = get_edge_target_turf(M, get_dir(M, get_step_away(target, M)))
-		if (!fake && T && isturf(T))
-			target.throw_at(T, 3, 2, bonus_throwforce = 15)
-			target.changeStatus("weakened", 3 SECONDS)
-			target.changeStatus("stunned", 3 SECONDS)
-			target.changeStatus("slowed", 8 SECONDS, 2)
-			target.force_laydown_standup()
+	var/turf/T = get_edge_target_turf(M, get_dir(M, get_step_away(target, M)))
+	if (!fake && T && isturf(T))
+		target.throw_at(T, 3, 2, bonus_throwforce = 15)
+		target.changeStatus("weakened", 3 SECONDS)
+		target.changeStatus("stunned", 3 SECONDS)
+		target.changeStatus("slowed", 8 SECONDS, 2)
+		target.force_laydown_standup()
 
-		logTheThing(LOG_COMBAT, M, "uses the [fake ? "fake " : ""]kick wrestling move on [constructTarget(target,"combat")] at [log_loc(M)].")
-		return 0
+	logTheThing(LOG_COMBAT, M, "uses the [fake ? "fake " : ""]kick wrestling move on [constructTarget(target,"combat")] at [log_loc(M)].")
+	return FALSE
 
 /datum/targetable/wrestler/kick/fake
 	fake = 1
