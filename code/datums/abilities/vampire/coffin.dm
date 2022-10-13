@@ -1,4 +1,3 @@
-
 /obj/storage/closet/coffin/vampire
 	name = "vampiric coffin"
 	desc = "A vampire's place of rest. They can regenerate while inside."
@@ -8,36 +7,36 @@
 	_max_health = 50
 	_health = 50
 
-	open(entangleLogic, mob/user)
-		if (!isvampire(user))
-			return
-		. = ..()
+/obj/storage/closet/coffin/vampire/open(entangleLogic, mob/user)
+	if (!isvampire(user))
+		return
+	. = ..()
 
-	attack_hand(mob/user)
-		if (!isvampire(user))
-			if (user.a_intent == INTENT_HELP)
-				user.show_text("It won't budge!", "red")
-			else
-				user.show_text("It's built tough! A weapon would be more effective.", "red")
-			return
-
-		..()
-
-	MouseDrop_T(atom/movable/O as mob|obj, mob/user as mob)
-		if (!isvampire(user))
+/obj/storage/closet/coffin/vampire/attack_hand(mob/user)
+	if (!isvampire(user))
+		if (user.a_intent == INTENT_HELP)
 			user.show_text("It won't budge!", "red")
 		else
-			..()
+			user.show_text("It's built tough! A weapon would be more effective.", "red")
+		return
 
-	attackby(obj/item/I, mob/user)
-		user.lastattacked = src
-		_health -= I.force
-		attack_particle(user,src)
-		playsound(src.loc, 'sound/impact_sounds/Wood_Hit_1.ogg', 50, 1, pitch = 1.1)
+	..()
 
-		if (_health <= 0)
-			logTheThing(LOG_COMBAT, user, "destroyed [src] at [log_loc(src)]")
-			bust_out()
+/obj/storage/closet/coffin/vampire/MouseDrop_T(atom/movable/O as mob|obj, mob/user as mob)
+	if (!isvampire(user))
+		user.show_text("It won't budge!", "red")
+	else
+		..()
+
+/obj/storage/closet/coffin/vampire/attackby(obj/item/I, mob/user)
+	user.lastattacked = src
+	_health -= I.force
+	attack_particle(user,src)
+	playsound(src.loc, 'sound/impact_sounds/Wood_Hit_1.ogg', 50, TRUE, pitch = 1.1)
+
+	if (_health <= 0)
+		logTheThing(LOG_COMBAT, user, "destroyed [src] at [log_loc(src)]")
+		bust_out()
 
 
 /datum/targetable/vampire/mark_coffin
@@ -57,28 +56,28 @@
 
 
 
-	cast(turf/target)
-		if (!holder)
-			return 1
+/datum/targetable/vampire/mark_coffin/cast(turf/target)
+	if (!holder)
+		return TRUE
 
-		if (!isturf(target))
-			target = get_turf(target)
+	if (!isturf(target))
+		target = get_turf(target)
 
-		if (!target)
-			return 1
+	if (!target)
+		return TRUE
 
-		var/mob/living/M = holder.owner
-		var/datum/abilityHolder/vampire/V = holder
+	var/mob/living/M = holder.owner
+	var/datum/abilityHolder/vampire/V = holder
 
-		if (istype(target,/turf/space) || isrestrictedz(target.z))
-			boutput(M, "<span class='alert'>You cannot place your coffin there.</span>")
-			return 1
+	if (istype(target,/turf/space) || isrestrictedz(target.z))
+		boutput(M, "<span class='alert'>You cannot place your coffin there.</span>")
+		return TRUE
 
-		V.coffin_turf = target
-		boutput(M, "<span class='notice'>You plant your coffin on [target].</span>")
+	V.coffin_turf = target
+	boutput(M, "<span class='notice'>You plant your coffin on [target].</span>")
 
-		logTheThing(LOG_COMBAT, M, "marks coffin on tile on [constructTarget(target,"combat")] at [log_loc(M)].")
-		return 0
+	logTheThing(LOG_COMBAT, M, "marks coffin on tile on [constructTarget(target,"combat")] at [log_loc(M)].")
+	return FALSE
 
 /datum/targetable/vampire/coffin_escape
 	name = "Coffin Escape"
@@ -94,43 +93,43 @@
 	sticky = 1
 	unlock_message = "You have gained Coffin Escape. It allows you to heal within a coffin."
 
-	cast(mob/target)
-		if (!holder)
-			return 1
+/datum/targetable/vampire/coffin_escape/cast(mob/target)
+	if (!holder)
+		return TRUE
 
-		var/mob/living/M = holder.owner
-		var/datum/abilityHolder/vampire/V = holder
+	var/mob/living/M = holder.owner
+	var/datum/abilityHolder/vampire/V = holder
 
-		if (!V.coffin_turf)
-			V.coffin_turf = get_turf(M)
+	if (!V.coffin_turf)
+		V.coffin_turf = get_turf(M)
 
-		var/turf/spawnturf = V.coffin_turf
-		if (istype(spawnturf,/turf/space))
-			spawnturf = get_turf(M)
-		var/turf/owner_turf = get_turf(M)
-		if (spawnturf.z != owner_turf?.z)
-			boutput(M, "<span class='alert'>You cannot escape to a different Z-level.</span>")
-			return 1
+	var/turf/spawnturf = V.coffin_turf
+	if (istype(spawnturf,/turf/space))
+		spawnturf = get_turf(M)
+	var/turf/owner_turf = get_turf(M)
+	if (spawnturf.z != owner_turf?.z)
+		boutput(M, "<span class='alert'>You cannot escape to a different Z-level.</span>")
+		return TRUE
 
 
-		var/obj/storage/closet/coffin/vampire/coffin = new(spawnturf)
-		animate_buff_in(coffin)
+	var/obj/storage/closet/coffin/vampire/coffin = new(spawnturf)
+	animate_buff_in(coffin)
 
-		V.the_coffin = coffin
+	V.the_coffin = coffin
 
-		var/obj/projectile/proj = initialize_projectile_ST(M, new/datum/projectile/special/homing/travel, spawnturf)
-		var/tries = 5
-		while (tries > 0 && (!proj || proj.disposed))
-			proj = initialize_projectile_ST(M, new/datum/projectile/special/homing/travel, spawnturf)
+	var/obj/projectile/proj = initialize_projectile_ST(M, new/datum/projectile/special/homing/travel, spawnturf)
+	var/tries = 5
+	while (tries > 0 && (!proj || proj.disposed))
+		proj = initialize_projectile_ST(M, new/datum/projectile/special/homing/travel, spawnturf)
 
-		proj.special_data["owner"] = M
-		proj.targets = list(coffin)
+	proj.special_data["owner"] = M
+	proj.targets = list(coffin)
 
-		proj.launch()
+	proj.launch()
 
-		logTheThing(LOG_COMBAT, M, "begins escaping to a coffin from [log_loc(M)] to [log_loc(V.coffin_turf)].")
+	logTheThing(LOG_COMBAT, M, "begins escaping to a coffin from [log_loc(M)] to [log_loc(V.coffin_turf)].")
 
-		if (get_turf(coffin) == get_turf(M))
-			M.set_loc(coffin)
+	if (get_turf(coffin) == get_turf(M))
+		M.set_loc(coffin)
 
-		return 0
+	return FALSE

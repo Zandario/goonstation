@@ -13,24 +13,24 @@
 	dont_lock_holder = 1
 	ignore_holder_lock = 1
 
-	cast(mob/target)
-		if (!holder)
-			return 1
+/datum/targetable/vampire/blood_tracking/cast(mob/target)
+	if (!holder)
+		return TRUE
 
-		var/mob/living/M = holder.owner
-		var/datum/abilityHolder/vampire/H = holder
+	var/mob/living/M = holder.owner
+	var/datum/abilityHolder/vampire/H = holder
 
-		if (!M)
-			return 1
+	if (!M)
+		return TRUE
 
-		if (ismobcritter(M) && !istype(H))
-			boutput(M, "<span class='alert'>Critter mobs currently don't have to worry about blood. Lucky you.</span>")
-			return 1
+	if (ismobcritter(M) && !istype(H))
+		boutput(M, "<span class='alert'>Critter mobs currently don't have to worry about blood. Lucky you.</span>")
+		return TRUE
 
-		if (H.vamp_blood_tracking == 1)
-			H.vamp_blood_tracking = 0
-		else
-			H.vamp_blood_tracking = 1
+	if (H.vamp_blood_tracking == TRUE)
+		H.vamp_blood_tracking = FALSE
+	else
+		H.vamp_blood_tracking = TRUE
 
-		boutput(M, "<span class='notice'>Blood tracking turned [H.vamp_blood_tracking == 1 ? "on" : "off"].</span>")
-		return 0
+	boutput(M, "<span class='notice'>Blood tracking turned [H.vamp_blood_tracking == 1 ? "on" : "off"].</span>")
+	return FALSE

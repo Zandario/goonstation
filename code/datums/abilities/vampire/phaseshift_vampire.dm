@@ -15,38 +15,38 @@
 
 	var/level = 1
 
-	cast(mob/target)
-		if (!holder)
-			return 1
+/datum/targetable/vampire/phaseshift_vampire/cast(mob/target)
+	if (!holder)
+		return TRUE
 
-		var/mob/living/carbon/human/M = holder.owner
-		//var/datum/abilityHolder/vampire/H = holder
+	var/mob/living/carbon/human/M = holder.owner
+	//var/datum/abilityHolder/vampire/H = holder
 
-		if (!M)
-			return 1
+	if (!M)
+		return TRUE
 
-		if (level == 1)
-			M.special_sprint &= ~SPRINT_BAT_CLOAKED
+	if (level == 1)
+		M.special_sprint &= ~SPRINT_BAT_CLOAKED
 
-			if (M.special_sprint & SPRINT_BAT)
-				M.special_sprint &= ~SPRINT_BAT
-				icon_state = "mist"
-			else
-				M.special_sprint |= SPRINT_BAT
-				icon_state = "mist"
-		else
+		if (M.special_sprint & SPRINT_BAT)
 			M.special_sprint &= ~SPRINT_BAT
+			icon_state = "mist"
+		else
+			M.special_sprint |= SPRINT_BAT
+			icon_state = "mist"
+	else
+		M.special_sprint &= ~SPRINT_BAT
 
-			if (M.special_sprint & SPRINT_BAT_CLOAKED)
-				M.special_sprint &= ~SPRINT_BAT_CLOAKED
-				icon_state = "mist"
-			else
-				M.special_sprint |= SPRINT_BAT_CLOAKED
-				icon_state = "mist"
+		if (M.special_sprint & SPRINT_BAT_CLOAKED)
+			M.special_sprint &= ~SPRINT_BAT_CLOAKED
+			icon_state = "mist"
+		else
+			M.special_sprint |= SPRINT_BAT_CLOAKED
+			icon_state = "mist"
 
-		boutput(M, "<span class='notice'>Bat Form toggled [(M.special_sprint & SPRINT_BAT || M.special_sprint & SPRINT_BAT_CLOAKED ) ? "on" : "off"]. (Hold Sprint to activate - consumes stamina)</span>")
+	boutput(M, "<span class='notice'>Bat Form toggled [(M.special_sprint & SPRINT_BAT || M.special_sprint & SPRINT_BAT_CLOAKED ) ? "on" : "off"]. (Hold Sprint to activate - consumes stamina)</span>")
 
-		return 0
+	return FALSE
 
 /datum/targetable/vampire/phaseshift_vampire/mk2
 	name = "Bat Form Mk2"
@@ -72,23 +72,24 @@
 	var/duration = 50
 	unlock_message = "You have gained mist form. It temporarily turns you incorporeal, allowing you to pass through solid objects."
 
-	cast(mob/target)
-		if (!holder)
-			return 1
+/datum/targetable/vampire/phaseshift_vampire_old/cast(mob/target)
+	if (!holder)
+		return TRUE
 
-		var/mob/living/M = holder.owner
-		var/datum/abilityHolder/vampire/H = holder
+	var/mob/living/M = holder.owner
+	var/datum/abilityHolder/vampire/H = holder
 
-		if (!M)
-			return 1
+	if (!M)
+		return TRUE
 
-		if (spell_invisibility(M, 1, 1, 0, 1) != 1) // Dry run. Can we phaseshift?
-			return 1
+	if (spell_invisibility(M, 1, 1, 0, 1) != 1) // Dry run. Can we phaseshift?
+		return TRUE
 
-		spell_invisibility(M, src.duration, 1)
-		H.locked = 1 // Can't use any powers during phaseshift.
-		SPAWN(src.duration)
-			if (H) H.locked = 0
+	spell_invisibility(M, src.duration, 1)
+	H.locked = TRUE // Can't use any powers during phaseshift.
+	SPAWN(src.duration)
+		if (H)
+			H.locked = FALSE
 
-		logTheThing(LOG_COMBAT, M, "uses mist form at [log_loc(M)].")
-		return 0
+	logTheThing(LOG_COMBAT, M, "uses mist form at [log_loc(M)].")
+	return FALSE

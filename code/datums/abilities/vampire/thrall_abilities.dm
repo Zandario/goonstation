@@ -13,28 +13,28 @@
 	restricted_area_check = 0
 	unlock_message = ""
 
-	incapacitation_check()
-		.= 1
+/datum/targetable/vampiric_thrall/speak/incapacitation_check()
+	return 1
 
-	cast(mob/target)
-		if (!holder)
-			return 1
+/datum/targetable/vampiric_thrall/speak/cast(mob/target)
+	if (!holder)
+		return TRUE
 
-		var/mob/living/M = holder.owner
-		var/datum/abilityHolder/vampiric_thrall/H = holder
+	var/mob/living/M = holder.owner
+	var/datum/abilityHolder/vampiric_thrall/H = holder
 
-		if (!M)
-			return 1
+	if (!M)
+		return TRUE
 
-		var/message = html_encode(input("Choose something to say:","Enter Message.","") as null|text)
-		if (!message)
-			return
-		logTheThing(LOG_SAY, M, "[message]")
+	var/message = html_encode(input("Choose something to say:","Enter Message.","") as null|text)
+	if (!message)
+		return
+	logTheThing(LOG_SAY, M, "[message]")
 
-		if (!H.master)
-			boutput(M, "<span class='alert'>Your link to your master has been severed!</span>")
-			return 1
+	if (!H.master)
+		boutput(M, "<span class='alert'>Your link to your master has been severed!</span>")
+		return TRUE
 
-		.= H.msg_to_master(message)
+	.= H.msg_to_master(message)
 
-		return 0
+	return FALSE

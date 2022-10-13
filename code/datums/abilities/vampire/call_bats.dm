@@ -22,53 +22,53 @@
 	unlock_message = "You have gained Call Frost Bats, a protection spell."
 	var/datum/projectile/special/homing/orbiter/spiritbat/P = new
 
-	flip_callback()
-		var/datum/abilityHolder/vampire/H = holder
-		H.launch_bat_orbiters()
+/datum/targetable/vampire/call_bats/flip_callback()
+	var/datum/abilityHolder/vampire/H = holder
+	H.launch_bat_orbiters()
 
-	cast(mob/target)
-		if (!holder)
-			return 1
+/datum/targetable/vampire/call_bats/cast(mob/target)
+	if (!holder)
+		return TRUE
 
-		var/mob/living/M = holder.owner
-		var/datum/abilityHolder/vampire/H = holder
+	var/mob/living/M = holder.owner
+	var/datum/abilityHolder/vampire/H = holder
 
-		if (!M)
-			return 1
+	if (!M)
+		return TRUE
 
-		var/turf/T = get_turf(M)
-		if (T && isturf(T))
-			//play sound pls
-			//either here or in projectile launch
+	var/turf/T = get_turf(M)
+	if (T && isturf(T))
+		//play sound pls
+		//either here or in projectile launch
 
-			H.bat_orbiters = list()
+		H.bat_orbiters = list()
 
-			var/create = 4
-			var/turf/shoot_at = get_step(M,pick(alldirs))
+		var/create = 4
+		var/turf/shoot_at = get_step(M,pick(alldirs))
 
-			for (var/i = 0, i < create, i += 0.1) //pay no mind :)
-				var/obj/projectile/proj = initialize_projectile_ST(M, P, shoot_at)
-				if (proj && !proj.disposed)
-					proj.targets = list(M)
+		for (var/i = 0, i < create, i += 0.1) //pay no mind :)
+			var/obj/projectile/proj = initialize_projectile_ST(M, P, shoot_at)
+			if (proj && !proj.disposed)
+				proj.targets = list(M)
 
-					H.bat_orbiters += proj
+				H.bat_orbiters += proj
 
-					proj.launch()
-					proj.special_data["orbit_angle"] = round(i)/create * 360
+				proj.launch()
+				proj.special_data["orbit_angle"] = round(i)/create * 360
 
-					i++
+				i++
 
-		else
-			boutput(M, "<span class='alert'>The bats did not respond to your call!</span>")
-			return 1 // No cooldown here, though.
+	else
+		boutput(M, "<span class='alert'>The bats did not respond to your call!</span>")
+		return TRUE // No cooldown here, though.
 
-		if (src.pointCost && istype(H))
-			H.blood_tracking_output(src.pointCost)
+	if (src.pointCost && istype(H))
+		H.blood_tracking_output(src.pointCost)
 
-		playsound(M.loc, 'sound/effects/gust.ogg', 60, 1)
+	playsound(M.loc, 'sound/effects/gust.ogg', 60, TRUE)
 
-		logTheThing(LOG_COMBAT, M, "uses call bats at [log_loc(M)].")
-		return 0
+	logTheThing(LOG_COMBAT, M, "uses call bats at [log_loc(M)].")
+	return FALSE
 
 
 
@@ -86,34 +86,35 @@
 	not_when_handcuffed = 1
 	unlock_message = "You have gained call bats, which summons bats to fight for you."
 
-	cast(mob/target)
-		if (!holder)
-			return 1
+/datum/targetable/vampire/call_bats_old/cast(mob/target)
+	if (!holder)
+		return TRUE
 
-		var/mob/living/M = holder.owner
-		var/datum/abilityHolder/vampire/H = holder
+	var/mob/living/M = holder.owner
+	var/datum/abilityHolder/vampire/H = holder
 
-		if (!M)
-			return 1
+	if (!M)
+		return TRUE
 
-		if (M.wear_mask && istype(M.wear_mask, /obj/item/clothing/mask/muzzle))
-			boutput(M, "<span class='alert'>How do you expect this to work? You're muzzled!</span>")
-			M.visible_message("<span class='alert'><b>[M]</b> makes a loud noise.</span>")
-			if (istype(H)) H.blood_tracking_output(src.pointCost)
-			return 0 // Cooldown because spam is bad.
+	if (M.wear_mask && istype(M.wear_mask, /obj/item/clothing/mask/muzzle))
+		boutput(M, "<span class='alert'>How do you expect this to work? You're muzzled!</span>")
+		M.visible_message("<span class='alert'><b>[M]</b> makes a loud noise.</span>")
+		if (istype(H))
+			H.blood_tracking_output(src.pointCost)
+		return FALSE // Cooldown because spam is bad.
 
-		var/turf/T = get_turf(M)
-		if (T && isturf(T))
-			M.say("BATT PHAR")
-			new /obj/critter/bat/buff(T)
-			new /obj/critter/bat/buff(T)
-			new /obj/critter/bat/buff(T)
-			for (var/obj/critter/bat/buff/B in range(M, 1))
-				B.friends += M
-		else
-			boutput(M, "<span class='alert'>The bats did not respond to your call!</span>")
-			return 1 // No cooldown here, though.
+	var/turf/T = get_turf(M)
+	if (T && isturf(T))
+		M.say("BATT PHAR")
+		new /obj/critter/bat/buff(T)
+		new /obj/critter/bat/buff(T)
+		new /obj/critter/bat/buff(T)
+		for (var/obj/critter/bat/buff/B in range(M, 1))
+			B.friends += M
+	else
+		boutput(M, "<span class='alert'>The bats did not respond to your call!</span>")
+		return TRUE // No cooldown here, though.
 
-		if (istype(H)) H.blood_tracking_output(src.pointCost)
-		logTheThing(LOG_COMBAT, M, "uses call bats at [log_loc(M)].")
-		return 0
+	if (istype(H)) H.blood_tracking_output(src.pointCost)
+	logTheThing(LOG_COMBAT, M, "uses call bats at [log_loc(M)].")
+	return FALSE

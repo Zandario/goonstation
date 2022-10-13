@@ -1,7 +1,7 @@
 /datum/abilityHolder/vampire/var/list/blood_tally
 /datum/abilityHolder/vampire/var/const/max_take_per_mob = 250
 
-/datum/abilityHolder/vampire/proc/tally_bite(var/mob/living/carbon/human/target, var/blood_amt_taken)
+/datum/abilityHolder/vampire/proc/tally_bite(mob/living/carbon/human/target, blood_amt_taken)
 	if (!src.blood_tally)
 		src.blood_tally = list()
 
@@ -10,14 +10,14 @@
 
 	src.blood_tally[target] += blood_amt_taken
 
-/datum/abilityHolder/vampire/proc/can_take_blood_from(var/mob/living/carbon/human/target)
+/datum/abilityHolder/vampire/proc/can_take_blood_from(mob/living/carbon/human/target)
 	.= 1
 	if (src.blood_tally)
 		if (target in src.blood_tally)
 			.= src.blood_tally[target] < max_take_per_mob
 
 
-/datum/abilityHolder/vampire/proc/can_bite(var/mob/living/carbon/human/target, is_pointblank = TRUE)
+/datum/abilityHolder/vampire/proc/can_bite(mob/living/carbon/human/target, is_pointblank = TRUE)
 	var/datum/abilityHolder/vampire/holder = src
 	var/mob/living/M = holder.owner
 	var/datum/abilityHolder/vampire/H = holder
@@ -72,7 +72,7 @@
 
 	return TRUE
 
-/datum/abilityHolder/vampire/proc/do_bite(var/mob/living/carbon/human/HH, var/mult = 1, var/thrall = 0)
+/datum/abilityHolder/vampire/proc/do_bite(mob/living/carbon/human/HH, mult = 1, thrall = 0)
 	.= 1
 	var/mob/living/carbon/human/M = src.owner
 	var/datum/abilityHolder/vampire/H = src
@@ -150,7 +150,8 @@
 							HH.changeStatus("weakened", 1 SECOND)
 							HH.stuttering = min(HH.stuttering + 3, 10)
 
-			if (istype(H)) H.blood_tracking_output()
+			if (istype(H))
+				H.blood_tracking_output()
 
 	if (!can_take_blood_from(HH) && (mult >= 1) && (isunconscious(HH) || HH.health <= 90))
 		HH.death(FALSE)
@@ -166,13 +167,13 @@
 /datum/abilityHolder/vampiric_thrall/var/list/blood_tally
 /datum/abilityHolder/vampiric_thrall/var/const/max_take_per_mob = 250
 
-/datum/abilityHolder/vampiric_thrall/proc/can_take_blood_from(var/mob/living/carbon/human/target)
+/datum/abilityHolder/vampiric_thrall/proc/can_take_blood_from(mob/living/carbon/human/target)
 	.= 1
 	if (src.blood_tally)
 		if (target in src.blood_tally)
 			.= src.blood_tally[target] < max_take_per_mob
 
-/datum/abilityHolder/vampiric_thrall/proc/tally_bite(var/mob/living/carbon/human/target, var/blood_amt_taken)
+/datum/abilityHolder/vampiric_thrall/proc/tally_bite(mob/living/carbon/human/target, blood_amt_taken)
 	if (!src.blood_tally)
 		src.blood_tally = list()
 
@@ -181,7 +182,7 @@
 
 	src.blood_tally[target] += blood_amt_taken
 
-/datum/abilityHolder/vampiric_thrall/proc/can_bite(var/mob/living/carbon/human/target, is_pointblank = 1)
+/datum/abilityHolder/vampiric_thrall/proc/can_bite(mob/living/carbon/human/target, is_pointblank = 1)
 	var/datum/abilityHolder/vampiric_thrall/holder = src
 	var/mob/living/M = holder.owner
 	var/datum/abilityHolder/vampiric_thrall/H = holder
@@ -236,7 +237,7 @@
 
 	return 1
 
-/datum/abilityHolder/vampiric_thrall/proc/do_bite(var/mob/living/carbon/human/HH, var/mult = 1, var/thrall = 0)
+/datum/abilityHolder/vampiric_thrall/proc/do_bite(mob/living/carbon/human/HH, mult = 1, thrall = 0)
 	.= 1
 	var/mob/living/carbon/human/M = src.owner
 	var/datum/abilityHolder/vampiric_thrall/H = src
@@ -332,37 +333,37 @@
 	restricted_area_check = 2
 	var/thrall = 0
 
-	cast(mob/target)
-		if (!holder)
-			return 1
+/datum/targetable/vampire/vampire_bite/cast(mob/target)
+	if (!holder)
+		return TRUE
 
-		var/mob/living/M = holder.owner
-		var/datum/abilityHolder/vampire/H = holder
+	var/mob/living/M = holder.owner
+	var/datum/abilityHolder/vampire/H = holder
 
-		if (!M || !target || !ismob(target))
-			return 1
+	if (!M || !target || !ismob(target))
+		return TRUE
 
-		if (GET_DIST(M, target) > src.max_range)
-			boutput(M, "<span class='alert'>[target] is too far away.</span>")
-			return 1
+	if (GET_DIST(M, target) > src.max_range)
+		boutput(M, "<span class='alert'>[target] is too far away.</span>")
+		return TRUE
 
-		if (actions.hasAction(M, "vamp_blood_suck_ranged"))
-			boutput(M, "<span class='alert'>You are already performing a Blood action and cannot start a Bite.</span>")
-			return 1
+	if (actions.hasAction(M, "vamp_blood_suck_ranged"))
+		boutput(M, "<span class='alert'>You are already performing a Blood action and cannot start a Bite.</span>")
+		return TRUE
 
-		if (isnpc(target))
-			boutput(M, "<span class='alert'>The blood of this target would provide you with no sustenance.</span>")
-			return 1
+	if (isnpc(target))
+		boutput(M, "<span class='alert'>The blood of this target would provide you with no sustenance.</span>")
+		return TRUE
 
-		var/mob/living/carbon/human/HH = target
+	var/mob/living/carbon/human/HH = target
 
 
-		boutput(M, "<span class='notice'>You bite [HH] and begin to drain them of blood.</span>")
-		HH.visible_message("<span class='alert'><B>[M] bites [HH]!</B></span>")
+	boutput(M, "<span class='notice'>You bite [HH] and begin to drain them of blood.</span>")
+	HH.visible_message("<span class='alert'><B>[M] bites [HH]!</B></span>")
 
-		actions.start(new/datum/action/bar/private/icon/vamp_blood_suc(M,H,HH,src), M)
+	actions.start(new/datum/action/bar/private/icon/vamp_blood_suc(M,H,HH,src), M)
 
-		return 0
+	return 0
 
 /datum/targetable/vampire/vampire_bite/thrall
 	thrall = 1
@@ -384,81 +385,81 @@
 	var/mob/living/carbon/human/HH
 	var/datum/targetable/vampire/vampire_bite/B
 
-	New(user,vampabilityholder,target,biteabil)
-		M = user
-		H = vampabilityholder
-		HH = target
-		B = biteabil
-		..()
-		if (B.thrall)
-			duration = 60
+/datum/action/bar/private/icon/vamp_blood_suc/New(user,vampabilityholder,target,biteabil)
+	M = user
+	H = vampabilityholder
+	HH = target
+	B = biteabil
+	..()
+	if (B.thrall)
+		duration = 60
 
 
-	onUpdate()
-		..()
-		if(BOUNDS_DIST(M, HH) > 0 || M == null || HH == null || B == null)
-			interrupt(INTERRUPT_ALWAYS)
-			return
-
-
-	onStart()
-		..()
-		if(BOUNDS_DIST(M, HH) > 0 || M == null || HH == null || B == null)
-			interrupt(INTERRUPT_ALWAYS)
-			return
-
-		if (!H.can_bite(HH, is_pointblank = 1))
-			interrupt(INTERRUPT_ALWAYS)
-			return
-
-		if (istype(H))
-			H.vamp_isbiting = HH
-
-		HH.client?.images += bar.img
-		HH.client?.images += border.img
-		HH.client?.images += icon_image
-
-		src.loopStart()
-
-	loopStart()
-		..()
-		logTheThing(LOG_COMBAT, M, "bites [constructTarget(HH,"combat")]'s neck at [log_loc(M)].")
+/datum/action/bar/private/icon/vamp_blood_suc/onUpdate()
+	..()
+	if(BOUNDS_DIST(M, HH) > 0 || M == null || HH == null || B == null)
+		interrupt(INTERRUPT_ALWAYS)
 		return
 
-	onEnd()
-		if(BOUNDS_DIST(M, HH) > 0 || M == null || HH == null || B == null)
-			..()
-			interrupt(INTERRUPT_ALWAYS)
-			src.end()
-			return
 
-		if (!H.do_bite(HH,mult = 1.5, thrall = B.thrall))
-			..()
-			interrupt(INTERRUPT_ALWAYS)
-			src.end()
-			return
+/datum/action/bar/private/icon/vamp_blood_suc/onStart()
+	..()
+	if(BOUNDS_DIST(M, HH) > 0 || M == null || HH == null || B == null)
+		interrupt(INTERRUPT_ALWAYS)
+		return
 
-		src.onRestart()
+	if (!H.can_bite(HH, is_pointblank = 1))
+		interrupt(INTERRUPT_ALWAYS)
+		return
 
-	onInterrupt() //Called when the action fails / is interrupted.
-		if (state == ACTIONSTATE_RUNNING)
-			if (HH.blood_volume < 0)
-				boutput(M, "<span class='alert'>[HH] doesn't have enough blood left to drink.</span>")
-			else if (!H.can_take_blood_from(H, HH))
-				boutput(M, "<span class='alert'>You have drank your fill [HH]'s blood. It tastes all bland and gross now.</span>")
-			else
-				boutput(M, "<span class='alert'>Your feast was interrupted.</span>")
+	if (istype(H))
+		H.vamp_isbiting = HH
 
-		src.end()
+	HH.client?.images += bar.img
+	HH.client?.images += border.img
+	HH.client?.images += icon_image
 
+	src.loopStart()
+
+/datum/action/bar/private/icon/vamp_blood_suc/loopStart()
+	..()
+	logTheThing(LOG_COMBAT, M, "bites [constructTarget(HH,"combat")]'s neck at [log_loc(M)].")
+	return
+
+/datum/action/bar/private/icon/vamp_blood_suc/onEnd()
+	if(BOUNDS_DIST(M, HH) > 0 || M == null || HH == null || B == null)
 		..()
+		interrupt(INTERRUPT_ALWAYS)
+		src.end()
+		return
 
-	onDelete()
-		. = ..()
-		HH.client?.images -= bar.img
-		HH.client?.images -= border.img
-		HH.client?.images -= icon_image
+	if (!H.do_bite(HH,mult = 1.5, thrall = B.thrall))
+		..()
+		interrupt(INTERRUPT_ALWAYS)
+		src.end()
+		return
 
-	proc/end()
-		if (istype(H))
-			H.vamp_isbiting = null
+	src.onRestart()
+
+/datum/action/bar/private/icon/vamp_blood_suc/onInterrupt() //Called when the action fails / is interrupted.
+	if (state == ACTIONSTATE_RUNNING)
+		if (HH.blood_volume < 0)
+			boutput(M, "<span class='alert'>[HH] doesn't have enough blood left to drink.</span>")
+		else if (!H.can_take_blood_from(H, HH))
+			boutput(M, "<span class='alert'>You have drank your fill [HH]'s blood. It tastes all bland and gross now.</span>")
+		else
+			boutput(M, "<span class='alert'>Your feast was interrupted.</span>")
+
+	src.end()
+
+	..()
+
+/datum/action/bar/private/icon/vamp_blood_suc/onDelete()
+	. = ..()
+	HH.client?.images -= bar.img
+	HH.client?.images -= border.img
+	HH.client?.images -= icon_image
+
+/datum/action/bar/private/icon/vamp_blood_suc/proc/end()
+	if (istype(H))
+		H.vamp_isbiting = null

@@ -12,31 +12,31 @@
 	restricted_area_check = 2
 	unlock_message = "You have gained Enthrall. It allows you to enthrall dead humans."
 
-	cast(mob/target)
-		if (!holder)
-			return 1
+/datum/targetable/vampire/enthrall/cast(mob/target)
+	if (!holder)
+		return TRUE
 
-		var/mob/living/M = holder.owner
-		//var/datum/abilityHolder/vampire/H = holder
+	var/mob/living/M = holder.owner
+	//var/datum/abilityHolder/vampire/H = holder
 
-		if (!M || !target || !ismob(target))
-			return 1
+	if (!M || !target || !ismob(target))
+		return TRUE
 
-		if (M == target)
-			boutput(M, "<span class='alert'>Why would you want to enthrall yourself?</span>")
-			return 1
+	if (M == target)
+		boutput(M, "<span class='alert'>Why would you want to enthrall yourself?</span>")
+		return TRUE
 
-		if (GET_DIST(M, target) > src.max_range)
-			boutput(M, "<span class='alert'>[target] is too far away.</span>")
-			return 1
+	if (GET_DIST(M, target) > src.max_range)
+		boutput(M, "<span class='alert'>[target] is too far away.</span>")
+		return TRUE
 
-		if (!ishuman(target))
-			return 1
+	if (!ishuman(target))
+		return TRUE
 
-		actions.start(new/datum/action/bar/private/icon/vampire_enthrall_thrall(target, src), M)
-		return 1 //not 0, we dont awnna deduct points until cast finishes
+	actions.start(new/datum/action/bar/private/icon/vampire_enthrall_thrall(target, src), M)
+	return TRUE //not 0, we dont awnna deduct points until cast finishes
 
-/datum/targetable/vampire/speak_thrall
+/datum/targetable/vampire/speak_thrall/
 	name = "Speak to Thralls"
 	desc = "Telepathically speak to all of your undead thralls."
 	icon_state = "thrallspeak"
@@ -51,23 +51,23 @@
 	restricted_area_check = 0
 	unlock_message = "You have gained 'Speak to Thralls'. It allows you to telepathically speak to all of your undead thralls."
 
-	cast(mob/target)
-		if (!holder)
-			return 1
+/datum/targetable/vampire/speak_thrall/cast(mob/target)
+	if (!holder)
+		return TRUE
 
-		var/mob/living/M = holder.owner
-		var/datum/abilityHolder/vampire/H = holder
-		if (!M)
-			return 1
+	var/mob/living/M = holder.owner
+	var/datum/abilityHolder/vampire/H = holder
+	if (!M)
+		return TRUE
 
-		var/message = html_encode(input("Choose something to say:","Enter Message.","") as null|text)
-		if (!message)
-			return
-		logTheThing(LOG_SAY, holder.owner, "[message]")
+	var/message = html_encode(input("Choose something to say:","Enter Message.","") as null|text)
+	if (!message)
+		return
+	logTheThing(LOG_SAY, holder.owner, "[message]")
 
-		.= H.transmit_thrall_msg(message, M)
+	.= H.transmit_thrall_msg(message, M)
 
-		return 0
+	return FALSE
 
 
 /datum/action/bar/private/icon/vampire_enthrall_thrall
@@ -84,66 +84,66 @@
 	var/mob/living/carbon/human/target
 	var/datum/targetable/vampire/enthrall/enthrall
 
-	New(Target, Enthrall)
-		target = Target
-		enthrall = Enthrall
-		..()
+/datum/action/bar/private/icon/vampire_enthrall_thrall/New(Target, Enthrall)
+	target = Target
+	enthrall = Enthrall
+	..()
 
-	onStart()
-		..()
+/datum/action/bar/private/icon/vampire_enthrall_thrall/onStart()
+	..()
 
-		var/mob/living/M = owner
+	var/mob/living/M = owner
 
-		if (!enthrall || GET_DIST(M, target) > enthrall.max_range || target == null || M == null)
-			interrupt(INTERRUPT_ALWAYS)
-			return
+	if (!enthrall || GET_DIST(M, target) > enthrall.max_range || target == null || M == null)
+		interrupt(INTERRUPT_ALWAYS)
+		return
 
-		if (!isdead(target) && !istype(target.mutantrace, /datum/mutantrace/vampiric_thrall))
-			boutput(M, "<span class='alert'>[target] needs to be dead first.</span>")
-			interrupt(INTERRUPT_ALWAYS)
-			return
+	if (!isdead(target) && !istype(target.mutantrace, /datum/mutantrace/vampiric_thrall))
+		boutput(M, "<span class='alert'>[target] needs to be dead first.</span>")
+		interrupt(INTERRUPT_ALWAYS)
+		return
 
-		if(istype(M))
-			M.visible_message("<span class='alert'><B>[M] stabs [target] with their sharp fingers!</B></span>")
-			boutput(M, "<span class='notice'>You begin to pump your [pick("polluted","spooky","bad","gross","icky","evil","necrotic")] blood into [target]'s chest.</span>")
-			boutput(target, "<span class='alert'>You feel cold . . .</span>")
+	if(istype(M))
+		M.visible_message("<span class='alert'><B>[M] stabs [target] with their sharp fingers!</B></span>")
+		boutput(M, "<span class='notice'>You begin to pump your [pick("polluted","spooky","bad","gross","icky","evil","necrotic")] blood into [target]'s chest.</span>")
+		boutput(target, "<span class='alert'>You feel cold . . .</span>")
 
-	onUpdate()
-		..()
+/datum/action/bar/private/icon/vampire_enthrall_thrall/onUpdate()
+	..()
 
-		var/mob/living/M = owner
+	var/mob/living/M = owner
 
-		if (!enthrall || GET_DIST(M, target) > enthrall.max_range || target == null || M == null)
-			interrupt(INTERRUPT_ALWAYS)
-			return
+	if (!enthrall || GET_DIST(M, target) > enthrall.max_range || target == null || M == null)
+		interrupt(INTERRUPT_ALWAYS)
+		return
 
 
-	onEnd()
-		..()
+/datum/action/bar/private/icon/vampire_enthrall_thrall/onEnd()
+	..()
 
-		var/mob/living/M = owner
-		var/datum/abilityHolder/vampire/H = enthrall.holder
+	var/mob/living/M = owner
+	var/datum/abilityHolder/vampire/H = enthrall.holder
 
-		if (!istype(target.mutantrace, /datum/mutantrace/vampiric_thrall))
-			H.make_thrall(target)
-		else
-			target.full_heal()
+	if (!istype(target.mutantrace, /datum/mutantrace/vampiric_thrall))
+		H.make_thrall(target)
+	else
+		target.full_heal()
 
-		if (target in H.thralls)
-			//and add blood!
-			var/datum/mutantrace/vampiric_thrall/V = target.mutantrace
-			if (V)
-				V.blood_points += 200
+	if (target in H.thralls)
+		//and add blood!
+		var/datum/mutantrace/vampiric_thrall/V = target.mutantrace
+		if (V)
+			V.blood_points += 200
 
-			H.blood_tracking_output(100)
+		H.blood_tracking_output(100)
 
-			H.deductPoints(100)
+		H.deductPoints(100)
 
-			boutput(M, "<span class='notice'>You donate 200 blood points to [target].</span>")
-			boutput(target, "<span class='notice'>[M] has donated you 200 blood points. Your health is temporarily increased.</span>")
-		else
-			boutput(M, "<span class='notice'>You were not able to enthrall [target] - their ghost has departed.</span>")
+		boutput(M, "<span class='notice'>You donate 200 blood points to [target].</span>")
+		boutput(target, "<span class='notice'>[M] has donated you 200 blood points. Your health is temporarily increased.</span>")
+	else
+		boutput(M, "<span class='notice'>You were not able to enthrall [target] - their ghost has departed.</span>")
 
-	onInterrupt()
-		..()
-		boutput(owner, "<span class='alert'>Your attempt to enthrall the target was interrupted!</span>")
+/datum/action/bar/private/icon/vampire_enthrall_thrall/onInterrupt()
+	..()
+	boutput(owner, "<span class='alert'>Your attempt to enthrall the target was interrupted!</span>")
