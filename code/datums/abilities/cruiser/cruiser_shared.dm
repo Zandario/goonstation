@@ -8,14 +8,14 @@
 	dont_lock_holder = 1
 	ignore_holder_lock = 1
 
-	cast(atom/target)
-		if (..())
-			return 1
+/datum/targetable/cruiser/cancel_camera/cast(atom/target)
+	if (..())
+		return TRUE
 
-		var/mob/M = holder.owner
-		M.set_eye(null)
-		M.client.view = world.view
-		holder.removeAbility(/datum/targetable/cruiser/cancel_camera)
+	var/mob/M = holder.owner
+	M.set_eye(null)
+	M.client.view = world.view
+	holder.removeAbility(/datum/targetable/cruiser/cancel_camera)
 
 /datum/targetable/cruiser/toggle_interior
 	name = "Toggle Interior"
@@ -27,14 +27,14 @@
 	dont_lock_holder = 1
 	ignore_holder_lock = 1
 
-	cast(atom/target)
-		if (..())
-			return 1
+/datum/targetable/cruiser/toggle_interior/cast(atom/target)
+	if (..())
+		return TRUE
 
-		var/mob/M = holder.owner
-		if(istype(M.loc, /obj/machinery/cruiser_destroyable/cruiser_pod))
-			var/obj/machinery/cruiser_destroyable/cruiser_pod/C = M.loc
-			C.interior.ship.toggle_interior(M)
+	var/mob/M = holder.owner
+	if(istype(M.loc, /obj/machinery/cruiser_destroyable/cruiser_pod))
+		var/obj/machinery/cruiser_destroyable/cruiser_pod/C = M.loc
+		C.interior.ship.toggle_interior(M)
 
 
 /datum/targetable/cruiser/exit_pod
@@ -48,13 +48,13 @@
 	ignore_holder_lock = 1
 
 
-	cast(atom/target)
-		if (..())
-			return 1
+/datum/targetable/cruiser/exit_pod/cast(atom/target)
+	if (..())
+		return TRUE
 
-		if(istype(holder.owner.loc, /obj/machinery/cruiser_destroyable/cruiser_pod))
-			var/obj/machinery/cruiser_destroyable/cruiser_pod/C = holder.owner.loc
-			C.exitPod(holder.owner)
+	if(istype(holder.owner.loc, /obj/machinery/cruiser_destroyable/cruiser_pod))
+		var/obj/machinery/cruiser_destroyable/cruiser_pod/C = holder.owner.loc
+		C.exitPod(holder.owner)
 
 
 
@@ -68,16 +68,16 @@
 	dont_lock_holder = 1
 	ignore_holder_lock = 1
 
-	cast(atom/target)
-		if (..())
-			return 1
+/datum/targetable/cruiser/warp/cast(atom/target)
+	if (..())
+		return TRUE
 
-		var/obj/machinery/cruiser_destroyable/cruiser_pod/C = holder.owner.loc
-		var/area/cruiser/I = C.loc.loc
-		if (I) //ZeWaka: Fix for null.ship
-			var/obj/machinery/cruiser/P = I.ship
-			if (P.engine)
-				P.warp()
+	var/obj/machinery/cruiser_destroyable/cruiser_pod/C = holder.owner.loc
+	var/area/cruiser/I = C.loc.loc
+	if (I) //ZeWaka: Fix for null.ship
+		var/obj/machinery/cruiser/P = I.ship
+		if (P.engine)
+			P.warp()
 
 /datum/targetable/cruiser/fire_weapons
 	name = "Fire Weapons"
@@ -90,14 +90,14 @@
 	dont_lock_holder = 1
 	ignore_holder_lock = 1
 
-	cast(atom/target)
-		if (..())
-			return 1
+/datum/targetable/cruiser/fire_weapons/cast(atom/target)
+	if (..())
+		return TRUE
 
-		var/obj/machinery/cruiser_destroyable/cruiser_pod/C = holder.owner.loc
-		var/area/cruiser/I = C.loc.loc
-		var/obj/machinery/cruiser/P = I.ship
-		cooldown = P.fireAt(target)
+	var/obj/machinery/cruiser_destroyable/cruiser_pod/C = holder.owner.loc
+	var/area/cruiser/I = C.loc.loc
+	var/obj/machinery/cruiser/P = I.ship
+	cooldown = P.fireAt(target)
 
 /datum/targetable/cruiser/shield_overload
 	name = "Overload shield (90 Power/5)"
@@ -109,14 +109,14 @@
 	dont_lock_holder = 1
 	ignore_holder_lock = 1
 
-	cast(atom/target)
-		if (..())
-			return 1
+/datum/targetable/cruiser/shield_overload/cast(atom/target)
+	if (..())
+		return TRUE
 
-		var/obj/machinery/cruiser_destroyable/cruiser_pod/C = holder.owner.loc
-		var/area/cruiser/I = C.loc.loc
-		var/obj/machinery/cruiser/P = I.ship
-		P.overload_shields()
+	var/obj/machinery/cruiser_destroyable/cruiser_pod/C = holder.owner.loc
+	var/area/cruiser/I = C.loc.loc
+	var/obj/machinery/cruiser/P = I.ship
+	P.overload_shields()
 
 /datum/targetable/cruiser/weapon_overload
 	name = "Overload weapons (90 Power/5)"
@@ -128,14 +128,14 @@
 	dont_lock_holder = 1
 	ignore_holder_lock = 1
 
-	cast(atom/target)
-		if (..())
-			return 1
+/datum/targetable/cruiser/weapon_overload/cast(atom/target)
+	if (..())
+		return TRUE
 
-		var/obj/machinery/cruiser_destroyable/cruiser_pod/C = holder.owner.loc
-		var/area/cruiser/I = C.loc.loc
-		var/obj/machinery/cruiser/P = I.ship
-		P.overload_weapons()
+	var/obj/machinery/cruiser_destroyable/cruiser_pod/C = holder.owner.loc
+	var/area/cruiser/I = C.loc.loc
+	var/obj/machinery/cruiser/P = I.ship
+	P.overload_weapons()
 
 /datum/targetable/cruiser/shield_modulation
 	name = "Modulate shields (90 Power, Toggle)"
@@ -147,14 +147,14 @@
 	dont_lock_holder = 1
 	ignore_holder_lock = 1
 
-	cast(atom/target)
-		if (..())
-			return 1
+/datum/targetable/cruiser/shield_modulation/cast(atom/target)
+	if (..())
+		return TRUE
 
-		var/obj/machinery/cruiser_destroyable/cruiser_pod/C = holder.owner.loc
-		var/area/cruiser/I = C.loc.loc
-		var/obj/machinery/cruiser/P = I.ship
-		P.toggleShieldModulation()
+	var/obj/machinery/cruiser_destroyable/cruiser_pod/C = holder.owner.loc
+	var/area/cruiser/I = C.loc.loc
+	var/obj/machinery/cruiser/P = I.ship
+	P.toggleShieldModulation()
 
 /datum/targetable/cruiser/firemode
 	name = "Switch fire mode"
@@ -166,14 +166,14 @@
 	dont_lock_holder = 1
 	ignore_holder_lock = 1
 
-	cast(atom/target)
-		if (..())
-			return 1
+/datum/targetable/cruiser/firemode/cast(atom/target)
+	if (..())
+		return TRUE
 
-		var/obj/machinery/cruiser_destroyable/cruiser_pod/C = holder.owner.loc
-		var/area/cruiser/I = C.loc.loc
-		var/obj/machinery/cruiser/P = I.ship
-		P.switchFireMode()
+	var/obj/machinery/cruiser_destroyable/cruiser_pod/C = holder.owner.loc
+	var/area/cruiser/I = C.loc.loc
+	var/obj/machinery/cruiser/P = I.ship
+	P.switchFireMode()
 
 /datum/targetable/cruiser/ram
 	name = "Ramming mode"
@@ -185,11 +185,11 @@
 	dont_lock_holder = 1
 	ignore_holder_lock = 1
 
-	cast(atom/target)
-		if (..())
-			return 1
+/datum/targetable/cruiser/ram/cast(atom/target)
+	if (..())
+		return TRUE
 
-		var/obj/machinery/cruiser_destroyable/cruiser_pod/C = holder.owner.loc
-		var/area/cruiser/I = C.loc.loc
-		var/obj/machinery/cruiser/P = I.ship
-		P.enableRamming()
+	var/obj/machinery/cruiser_destroyable/cruiser_pod/C = holder.owner.loc
+	var/area/cruiser/I = C.loc.loc
+	var/obj/machinery/cruiser/P = I.ship
+	P.enableRamming()
