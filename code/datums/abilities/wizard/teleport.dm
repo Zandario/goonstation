@@ -9,38 +9,38 @@
 	restricted_area_check = 1
 	maptext_colors = list("#39ffba", "#05bd82", "#038463", "#05bd82")
 
-	cast()
-		if (!holder)
-			return 1
+/datum/targetable/spell/teleport/cast()
+	if (!holder)
+		return TRUE
 
-		if (holder.owner && ismob(holder.owner) && holder.owner.teleportscroll(1, 3, spell=src) == 1)
-			return 0
+	if (holder.owner && ismob(holder.owner) && holder.owner.teleportscroll(1, 3, spell=src) == 1)
+		return FALSE
 
-		return 1
+	return TRUE
 
 // These two procs were so similar that I combined them (Convair880).
-/mob/proc/teleportscroll(var/effect = 0, var/perform_check = 0, var/obj/item_to_check = null, var/datum/targetable/spell/teleport/spell, var/abort_if_incapacitated = FALSE)
+/mob/proc/teleportscroll(effect = 0, perform_check = 0, obj/item_to_check = null, datum/targetable/spell/teleport/spell, abort_if_incapacitated = FALSE)
 	var/voice_grim = 'sound/voice/wizard/TeleportGrim.ogg'
 	var/voice_fem = 'sound/voice/wizard/TeleportFem.ogg'
 	var/voice_other = 'sound/voice/wizard/TeleportLoud.ogg'
 
 	if (src.getStatusDuration("paralysis") || !isalive(src))
 		boutput(src, "<span class='alert'>Not when you're incapacitated.</span>")
-		return 0
+		return FALSE
 
 	if (!isturf(src.loc)) // Teleport doesn't go along well with doppelgaenger or phaseshift.
 		boutput(src, "<span class='alert'>You can't seem to teleport from here.</span>")
-		return 0
+		return FALSE
 
 	var/turf/T = get_turf(src)
 	if (!T || !isturf(T))
 		boutput(src, "<span class='alert'>You can't seem to teleport from here.</span>")
-		return 0
+		return FALSE
 	if (isrestrictedz(T.z))
 		var/area/A = get_area(T)
 		if (!istype(A, /area/wizard_station))
 			boutput(src, "<span class='alert'>You can't seem to teleport from here.</span>")
-			return 0
+			return FALSE
 
 	var/A
 	var/area/wizard_station/wiz_shuttle = locate(/area/wizard_station)
@@ -63,17 +63,17 @@
 
 	if(abort_if_incapacitated && !can_act(src))
 		boutput(src, "<span class='alert'>Not when you're incapacitated.</span>")
-		return 0
+		return FALSE
 
 	if(!thearea)
 		if (isnull(A))
 			boutput(src, "<span class='alert'>Invalid area selected.</span>")
-			return 0
+			return FALSE
 		thearea = get_telearea(A)
 
 	if (!thearea || !istype(thearea))
 		src.show_text("Invalid selection.", "red")
-		return 0
+		return FALSE
 
 	// You can keep the selection window open, so we have to do the checks again (individual item/spell procs handle the first batch).
 	switch (perform_check)
@@ -81,53 +81,53 @@
 			var/obj/item/teleportation_scroll/scroll_check = item_to_check
 			if (!scroll_check || !istype(scroll_check))
 				src.show_text("The scroll appears to have been destroyed.", "red")
-				return 0
+				return FALSE
 			if (!iswizard(src))
 				boutput(src, "<span class='alert'>The scroll is illegible!</span>")
-				return 0
+				return FALSE
 			if (scroll_check.uses < 1)
 				src.show_text("The scroll is depleted!", "src")
-				return 0
+				return FALSE
 			if (scroll_check.loc != src && scroll_check.loc != src.back) // Pocket or backpack.
 				src.show_text("You reach for the scroll, but it's just too far away.", "red")
-				return 0
+				return FALSE
 
 		if (2)
 			var/obj/machinery/computer/pod/comp_check = item_to_check
 			if (!comp_check || !istype(comp_check))
 				src.show_text("The computer appears to have been destroyed.", "red")
-				return 0
+				return FALSE
 			if (comp_check.status & (NOPOWER|BROKEN))
 				src.show_text("[comp_check] is out of order.", "red")
-				return 0
+				return FALSE
 			if (BOUNDS_DIST(src, comp_check) > 0)
 				src.show_text("[comp_check] is too far away.", "red")
-				return 0
+				return FALSE
 
 		if (3)
 			/*if (!iswizard(src))
 				boutput(src, "<span class='alert'>You seem to have lost all magical abilities.</span>")
-				return 0*/
+				return FALSE*/
 			if (src.wizard_castcheck(spell) == 0)
-				return 0 // Has own user feedback.
+				return FALSE // Has own user feedback.
 
 	if (src.getStatusDuration("paralysis") || !isalive(src))
 		boutput(src, "<span class='alert'>Not when you're incapacitated.</span>")
-		return 0
+		return FALSE
 
 	if (!isturf(src.loc))
 		boutput(src, "<span class='alert'>You can't seem to teleport from here.</span>")
-		return 0
+		return FALSE
 
 	var/turf/T2 = get_turf(src)
 	if (!T2 || !isturf(T2))
 		boutput(src, "<span class='alert'>You can't seem to teleport from here.</span>")
-		return 0
+		return FALSE
 	if (isrestrictedz(T2.z))
 		var/area/Arr = get_area(T2)
 		if (!istype(Arr, /area/wizard_station))
 			boutput(src, "<span class='alert'>You can't seem to teleport from here.</span>")
-			return 0
+			return FALSE
 
 	switch (perform_check)
 		if (1)
@@ -171,14 +171,14 @@
 	if (effect)
 		animate_teleport_wiz(src)
 		sleep(2 SECONDS) // Animation.
-		playsound(src.loc, 'sound/effects/mag_teleport.ogg', 25, 1, -1)
+		playsound(src.loc, 'sound/effects/mag_teleport.ogg', 25, TRUE, -1)
 		sleep(2 SECONDS) // Animation.
 		var/datum/effects/system/harmless_smoke_spread/smoke = new /datum/effects/system/harmless_smoke_spread()
 		smoke.set_up(5, 0, src.loc)
 		smoke.attach(src)
 
-		playsound(destination, 'sound/effects/mag_teleport.ogg', 25, 1, -1)
+		playsound(destination, 'sound/effects/mag_teleport.ogg', 25, TRUE, -1)
 		src.set_loc(destination)
 		smoke.start()
 
-	return 1
+	return TRUE

@@ -12,26 +12,26 @@
 	voice_other = 'sound/voice/wizard/MistFormLoud.ogg'
 	maptext_colors = list("#24639a", "#24bdc6", "#55eec2", "#24bdc6")
 
-	cast()
-		if(!holder)
-			return
-		if (spell_invisibility(holder.owner, 1, 0, 1, 1) != 1) // Dry run. Can we phaseshift?
-			return 1
+/datum/targetable/spell/phaseshift/cast()
+	if(!holder)
+		return
+	if (spell_invisibility(holder.owner, 1, 0, 1, 1) != 1) // Dry run. Can we phaseshift?
+		return TRUE
 
-		if(!istype(get_area(holder.owner), /area/sim/gunsim))
-			holder.owner.say("PHEE CABUE", FALSE, maptext_style, maptext_colors)
-		..()
+	if(!istype(get_area(holder.owner), /area/sim/gunsim))
+		holder.owner.say("PHEE CABUE", FALSE, maptext_style, maptext_colors)
+	..()
 
-		var/SPtime = 35
-		if(holder.owner.wizard_spellpower(src))
-			SPtime = 50
-		else
-			boutput(holder.owner, "<span class='alert'>Your spell doesn't last as long without a staff to focus it!</span>")
-		playsound(holder.owner.loc, 'sound/effects/mag_phase.ogg', 25, 1, -1)
-		spell_invisibility(holder.owner, SPtime, 0, 1)
+	var/SPtime = 35
+	if(holder.owner.wizard_spellpower(src))
+		SPtime = 50
+	else
+		boutput(holder.owner, "<span class='alert'>Your spell doesn't last as long without a staff to focus it!</span>")
+	playsound(holder.owner.loc, 'sound/effects/mag_phase.ogg', 25, TRUE, -1)
+	spell_invisibility(holder.owner, SPtime, 0, 1)
 
 // Merged some stuff from wizard and vampire phaseshift for easy of use (Convair880).
-/proc/spell_invisibility(var/mob/H, var/time, var/check_for_watchers = 0, var/stop_burning = 0, var/dry_run_only = 0)
+/proc/spell_invisibility(mob/H, time, check_for_watchers = 0, stop_burning = 0, dry_run_only = 0)
 	if (!H || !ismob(H))
 		return
 	if (!isturf(H.loc))
@@ -107,7 +107,7 @@
 	density = 0
 	anchored = 1
 
-/obj/dummy/spell_invis/relaymove(var/mob/user, direction, delay)
+/obj/dummy/spell_invis/relaymove(mob/user, direction, delay)
 	if (!src.canmove || src.movecd)
 		return
 	switch(direction)
@@ -142,7 +142,7 @@
 
 
 
-/proc/spell_batpoof(var/mob/H, var/cloak = 0)
+/proc/spell_batpoof(mob/H, cloak = 0)
 	if (!H || !ismob(H))
 		return
 	if (!isturf(H.loc))
@@ -164,7 +164,7 @@
 	//usecloak == check abilityholder
 	new /obj/dummy/spell_batpoof( get_turf(H), H , cloak)
 
-/proc/spell_firepoof(var/mob/H)
+/proc/spell_firepoof(mob/H)
 	if (!H || !ismob(H))
 		return
 	if (!isturf(H.loc))
@@ -196,173 +196,175 @@
 	//var/image/overlay_image
 	var/use_cloakofdarkness = 0
 
-	New(loc,ownermob,cloak)
-		..()
+/obj/dummy/spell_batpoof/New(loc,ownermob,cloak)
+	..()
 
-		if(ownermob)
-			src.owner = ownermob
-			src.owner.set_loc(src)
-			src.owner.remove_stamina(5)
+	if(ownermob)
+		src.owner = ownermob
+		src.owner.set_loc(src)
+		src.owner.remove_stamina(5)
 
-		use_cloakofdarkness = cloak
+	use_cloakofdarkness = cloak
 
-		if (isvampire(owner))
-			vampholder = owner.get_ability_holder(/datum/abilityHolder/vampire)
+	if (isvampire(owner))
+		vampholder = owner.get_ability_holder(/datum/abilityHolder/vampire)
 
-		var/obj/itemspecialeffect/poof/P = new /obj/itemspecialeffect/poof
-		P.setup(src.loc)
-		playsound(src.loc, 'sound/effects/poff.ogg', 50, 1, pitch = 1)
+	var/obj/itemspecialeffect/poof/P = new /obj/itemspecialeffect/poof
+	P.setup(src.loc)
+	playsound(src.loc, 'sound/effects/poff.ogg', 50, 1, pitch = 1)
 
-		//overlay_image = image("icon" = 'icons/effects/genetics.dmi', "icon_state" = "aurapulse", layer = MOB_LIMB_LAYER)
-		//overlay_image.color = "#333333"
+	//overlay_image = image("icon" = 'icons/effects/genetics.dmi', "icon_state" = "aurapulse", layer = MOB_LIMB_LAYER)
+	//overlay_image.color = "#333333"
 
 
-		if (use_cloakofdarkness)
-			processing_items |= src
+	if (use_cloakofdarkness)
+		processing_items |= src
 
-		SPAWN(-1)
-			var/reduc_count = 0
-			while(src && !src.qdeled && owner && owner.stamina >= STAMINA_SPRINT && owner.client && owner.client.check_key(KEY_RUN))
-				reduc_count++
-				if (reduc_count >= 4)
-					reduc_count = 0
-					owner.remove_stamina(1)
-				sleep(0.1 SECONDS)
+	SPAWN(-1)
+		var/reduc_count = 0
+		while(src && !src.qdeled && owner && owner.stamina >= STAMINA_SPRINT && owner.client && owner.client.check_key(KEY_RUN))
+			reduc_count++
+			if (reduc_count >= 4)
+				reduc_count = 0
+				owner.remove_stamina(1)
+			sleep(0.1 SECONDS)
 
-			if (src && !src.qdeled)
-				dispel()
+		if (src && !src.qdeled)
+			dispel()
 
-	disposing()
-		if(owner)
-			owner.set_loc(src.loc)
-			owner = 0
-		//overlay_image = 0
-		if (use_cloakofdarkness)
-			processing_items.Remove(src)
-		..()
+/obj/dummy/spell_batpoof/disposing()
+	if(owner)
+		owner.set_loc(src.loc)
+		owner = 0
+	//overlay_image = 0
+	if (use_cloakofdarkness)
+		processing_items.Remove(src)
+	..()
 
-	proc/process()
-		update_cloak_status()
+/obj/dummy/spell_batpoof/proc/process()
+	update_cloak_status()
 
-	proc/update_cloak_status()
-		var/turf/T = get_turf(owner)
-		if (T)
-			var/area/A = get_area(T)
-			if (T.turf_flags & CAN_BE_SPACE_SAMPLE || A.name == "Emergency Shuttle" || A.name == "Space" || A.name == "Ocean")
-				src.set_cloaked(0)
-
-			else
-				if (T.RL_GetBrightness() < 0.2 && can_act(owner))
-					src.set_cloaked(1)
-				else
-					src.set_cloaked(0)
-		else
+/obj/dummy/spell_batpoof/proc/update_cloak_status()
+	var/turf/T = get_turf(owner)
+	if (T)
+		var/area/A = get_area(T)
+		if (T.turf_flags & CAN_BE_SPACE_SAMPLE || A.name == "Emergency Shuttle" || A.name == "Space" || A.name == "Ocean")
 			src.set_cloaked(0)
 
-
-	proc/set_cloaked(var/cloaked = 1)
-		if (use_cloakofdarkness)
-			if (cloaked == 1)
-				src.invisibility = INVIS_INFRA
-				src.alpha = 120
-				//src.UpdateOverlays(overlay_image, "batpoof_cloak")
+		else
+			if (T.RL_GetBrightness() < 0.2 && can_act(owner))
+				src.set_cloaked(1)
 			else
-				src.invisibility = INVIS_NONE
-				src.alpha = 250
-				//src.UpdateOverlays(null, "batpoof_cloak")
+				src.set_cloaked(0)
+	else
+		src.set_cloaked(0)
 
-	proc/dispel(var/forced = 0)
-		if (forced && owner)
-			owner.stamina = max(owner.stamina - 40, STAMINA_SPRINT)
 
-		var/obj/itemspecialeffect/poof/P = new /obj/itemspecialeffect/poof
-		P.setup(src.loc, forced)
+/obj/dummy/spell_batpoof/proc/set_cloaked(cloaked = 1)
+	if (use_cloakofdarkness)
+		if (cloaked == 1)
+			src.invisibility = INVIS_INFRA
+			src.alpha = 120
+			//src.UpdateOverlays(overlay_image, "batpoof_cloak")
+		else
+			src.invisibility = INVIS_NONE
+			src.alpha = 250
+			//src.UpdateOverlays(null, "batpoof_cloak")
 
-		playsound(src.loc, 'sound/effects/poff.ogg', 50, 1, pitch = 1.3)
+/obj/dummy/spell_batpoof/proc/dispel(var/forced = 0)
+	if (forced && owner)
+		owner.stamina = max(owner.stamina - 40, STAMINA_SPRINT)
 
-		qdel(src)
+	var/obj/itemspecialeffect/poof/P = new /obj/itemspecialeffect/poof
+	P.setup(src.loc, forced)
 
-	relaymove(var/mob/user, direction, delay)//all relaymove should accept delay
-		delay = max(delay,1)			//0.75 sprint 1.25 run
-		if (direction & (direction-1))
-			delay *= DIAG_MOVE_DELAY_MULT
+	playsound(src.loc, 'sound/effects/poff.ogg', 50, 1, pitch = 1.3)
 
-		var/glide = ((32 / delay) * world.tick_lag)
-		src.glide_size = glide
-		src.animate_movement = SLIDE_STEPS
+	qdel(src)
 
-		user.animate_movement = SYNC_STEPS
-		user.glide_size = glide
+/obj/dummy/spell_batpoof/relaymove(mob/user, direction, delay)//all relaymove should accept delay
+	delay = max(delay,1)			//0.75 sprint 1.25 run
+	if (direction & (direction-1))
+		delay *= DIAG_MOVE_DELAY_MULT
 
-		var/turf/last_turf = get_turf(src)
+	var/glide = ((32 / delay) * world.tick_lag)
+	src.glide_size = glide
+	src.animate_movement = SLIDE_STEPS
 
-		step(src, direction)
+	user.animate_movement = SYNC_STEPS
+	user.glide_size = glide
 
-		src.glide_size = glide
-		src.animate_movement = SLIDE_STEPS
+	var/turf/last_turf = get_turf(src)
 
-		user.glide_size = glide
+	step(src, direction)
 
-		owner.remove_stamina(round(STAMINA_COST_SPRINT*stamina_mult))
+	src.glide_size = glide
+	src.animate_movement = SLIDE_STEPS
 
-		update_cloak_status()
+	user.glide_size = glide
 
-		if (isturf(src.loc) && src.loc != last_turf)
-			var/i = 0
-			for (var/atom in src.loc)
-				if (vampholder)
-					if (ishuman(atom) && vampholder.can_bite(atom, is_pointblank = 0))
-						vampholder.do_bite(atom, mult = 0.25)
-						playsound(src.loc, 'sound/impact_sounds/Flesh_Crush_1.ogg', 35, 1, pitch = 1.3)
-						break
-				if (istype(atom,/obj/machinery/door))
-					var/obj/machinery/door/D = atom
-					//D.bumpopen(owner)
-					D.try_force_open(owner)
-				i++
-				if (i > 20)
+	owner.remove_stamina(round(STAMINA_COST_SPRINT*stamina_mult))
+
+	update_cloak_status()
+
+	if (isturf(src.loc) && src.loc != last_turf)
+		var/i = 0
+		for (var/atom in src.loc)
+			if (vampholder)
+				if (ishuman(atom) && vampholder.can_bite(atom, is_pointblank = 0))
+					vampholder.do_bite(atom, mult = 0.25)
+					playsound(src.loc, 'sound/impact_sounds/Flesh_Crush_1.ogg', 35, 1, pitch = 1.3)
 					break
+			if (istype(atom,/obj/machinery/door))
+				var/obj/machinery/door/D = atom
+				//D.bumpopen(owner)
+				D.try_force_open(owner)
+			i++
+			if (i > 20)
+				break
 
-		actions.interrupt(user, INTERRUPT_MOVE)
+	actions.interrupt(user, INTERRUPT_MOVE)
 
-		.= delay
+	.= delay
 
-	mob_flip_inside(mob/user)
-		animate_spin(src, pick("L", "R"), 1, FALSE)
+/obj/dummy/spell_batpoof/mob_flip_inside(mob/user)
+	animate_spin(src, pick("L", "R"), 1, FALSE)
 
-	ex_act(severity)
-		dispel(1)
-		if(owner) owner.ex_act(severity)
+/obj/dummy/spell_batpoof/ex_act(severity)
+	dispel(1)
+	if(owner)
+		owner.ex_act(severity)
 
-	bullet_act()
-		.= owner
-		dispel(1)
+/obj/dummy/spell_batpoof/bullet_act()
+	.= owner
+	dispel(1)
 
-	attackby(obj/item/W, mob/M)
-		dispel(1)
-		if(owner) owner.Attackby(W,M)
+/obj/dummy/spell_batpoof/attackby(obj/item/W, mob/M)
+	dispel(1)
+	if(owner) owner.Attackby(W,M)
 
-	attack_hand(mob/M)
-		dispel(1)
-		if(owner) owner.Attackby(M)
-
-
-	firepoof
-		name = "fireball"
-		icon_state = "fireball"
-		icon = 'icons/obj/wizard.dmi'
-		flags = TABLEPASS
-		stamina_mult = 1.1
-
-		New()
-			..()
-			playsound(src.loc, 'sound/effects/mag_fireballlaunch.ogg', 15, 1, pitch = 1.8)
-
-		relaymove()
-			..()
-			tfireflash(get_turf(owner), 0, 100)
+/obj/dummy/spell_batpoof/attack_hand(mob/M)
+	dispel(1)
+	if(owner)
+		owner.Attackby(M)
 
 
-		dispel()
-			playsound(src.loc, 'sound/effects/mag_fireballlaunch.ogg', 15, 1, pitch = 2)
-			..()
+/obj/dummy/spell_batpoof/firepoof/
+	name = "fireball"
+	icon_state = "fireball"
+	icon = 'icons/obj/wizard.dmi'
+	flags = TABLEPASS
+	stamina_mult = 1.1
+
+/obj/dummy/spell_batpoof/firepoof/New()
+	..()
+	playsound(src.loc, 'sound/effects/mag_fireballlaunch.ogg', 15, TRUE, pitch = 1.8)
+
+/obj/dummy/spell_batpoof/firepoof/relaymove()
+	..()
+	tfireflash(get_turf(owner), 0, 100)
+
+
+/obj/dummy/spell_batpoof/firepoof/dispel()
+	playsound(src.loc, 'sound/effects/mag_fireballlaunch.ogg', 15, TRUE, pitch = 2)
+	..()
