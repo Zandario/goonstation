@@ -5,42 +5,46 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 	var/const/MAX_POINTS = 100000
 	var/points = 0
 	var/cur_meter_location = 0
-	var/last_meter_location = 0			//the amount of points at the last update. Used for deciding when to redraw the sprite to have less progress
-	var/earned_points = list()				//assoc list of ckeys to their gained points.
-	var/spent_points = list()				//assoc list of ckeys to their spent points.
-	var/maxed_out = 0					//set to 1 if the points get up to MAX_POINTS so we can play the special event/thing
+	/// The amount of points at the last update. Used for deciding when to redraw the sprite to have less progress.
+	var/last_meter_location = 0
+	/// Assoc list of ckeys to their gained points.
+	var/earned_points = list()
+	/// Assoc list of ckeys to their spent points.
+	var/spent_points = list()
+	/// Set to 1 if the points get up to MAX_POINTS so we can play the special event/thing.
+	var/maxed_out = 0
 
 	var/atom/movable/screen/spooktober_meter/meter = new()
 
-	proc/change_points(var/ckey, var/added as num)
-		if (ckey)
-			if (added > 0)
-				earned_points[ckey] += added
-			else
-				spent_points[ckey] += added
-		src.points += added
-		if (src.points >= MAX_POINTS)
-			do_event()
+/datum/spooktober_ghost_handler/proc/change_points(ckey, added as num)
+	if (ckey)
+		if (added > 0)
+			earned_points[ckey] += added
+		else
+			spent_points[ckey] += added
+	src.points += added
+	if (src.points >= MAX_POINTS)
+		do_event()
 
 
-	proc/update()
+/datum/spooktober_ghost_handler/proc/update()
 
-		cur_meter_location = round((points/MAX_POINTS)*145)	//length of meter
-		if (cur_meter_location != last_meter_location)
-			meter.overlays.Cut()
-			var/icon/IB = new('icons/mob/spooktober_ghost_hud160x32.dmi', "bar")
+	cur_meter_location = round((points/MAX_POINTS)*145)	//length of meter
+	if (cur_meter_location != last_meter_location)
+		meter.overlays.Cut()
+		var/icon/IB = new('icons/mob/spooktober_ghost_hud160x32.dmi', "bar")
 
-			IB.Crop(1,1,cur_meter_location+8,32) // mehhhh
-			IB.Blend(rgb(40,0,0))
-			meter.overlays += IB
+		IB.Crop(1,1,cur_meter_location+8,32) // mehhhh
+		IB.Blend(rgb(40,0,0))
+		meter.overlays += IB
 
-		last_meter_location = cur_meter_location
+	last_meter_location = cur_meter_location
 
-	proc/do_event()
-		//Only 1 per round
-		if (maxed_out)
-			return
-		maxed_out = 1
+/datum/spooktober_ghost_handler/proc/do_event()
+	//Only 1 per round
+	if (maxed_out)
+		return
+	maxed_out = 1
 
 
 /atom/movable/screen/spooktober_meter
@@ -50,44 +54,44 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 	desc = "Seems to indicate how spooky the current ghosts are in this sector."
 	var/theme = null // for wire's tooltips, it's about time this got varized
 
-	get_desc()
-		. += "[spooktober_GH.points] Points!"
+/atom/movable/screen/spooktober_meter/get_desc()
+	. += "[spooktober_GH.points] Points!"
 
-	//WIRE TOOLTIPS
-	MouseEntered(location, control, params)
-		if (usr.client.tooltipHolder && control == "mapwindow.map")
-			var/theme = src.theme
+//WIRE TOOLTIPS
+/atom/movable/screen/spooktober_meter/MouseEntered(location, control, params)
+	if (usr.client.tooltipHolder && control == "mapwindow.map")
+		var/theme = src.theme
 
-			usr.client.tooltipHolder.showHover(src, list(
-				"params" = params,
-				"title" = "spooktober spook points",//src.name,
-				"content" = "[spooktober_GH.points] Points <br>All Points are shared between ghosts. <br>Spinning chairs, flipping, using the ouija board, and farting on people as a ghost generates more points faster.",//(src.desc ? src.desc : null),
-				"theme" = theme
-			))
+		usr.client.tooltipHolder.showHover(src, list(
+			"params" = params,
+			"title" = "spooktober spook points",//src.name,
+			"content" = "[spooktober_GH.points] Points <br>All Points are shared between ghosts. <br>Spinning chairs, flipping, using the ouija board, and farting on people as a ghost generates more points faster.",//(src.desc ? src.desc : null),
+			"theme" = theme
+		))
 
-	MouseExited()
-		if (usr.client.tooltipHolder)
-			usr.client.tooltipHolder.hideHover()
+/atom/movable/screen/spooktober_meter/MouseExited()
+	if (usr.client.tooltipHolder)
+		usr.client.tooltipHolder.hideHover()
 
 #endif
 
-/atom/movable/screen/ability/topBar/ghost_observer
-	clicked(params)
-		var/datum/targetable/ghost_observer/abil = owner
-		if (!istype(abil))
-			return
-		if (!abil.holder)
-			return
-		SPAWN(0)
-			abil.handleCast()
+
+/atom/movable/screen/ability/topBar/ghost_observer/clicked(params)
+	var/datum/targetable/ghost_observer/abil = owner
+	if (!istype(abil))
+		return
+	if (!abil.holder)
+		return
+	SPAWN(0)
+		abil.handleCast()
 
 #ifdef HALLOWEEN
-	//total hack here, but lazy and in a hurry. -Kyle
-	update_cooldown_cost()
-		owner?.holder.points = spooktober_GH.points
-		..()
+//total hack here, but lazy and in a hurry. -Kyle
+/atom/movable/screen/ability/topBar/ghost_observer/update_cooldown_cost()
+	owner?.holder.points = spooktober_GH.points
+	..()
 #endif
-/datum/abilityHolder/ghost_observer
+/datum/abilityHolder/ghost_observer/
 	usesPoints = 0
 	regenRate = 0
 	tabName = "Abilities"
@@ -96,108 +100,110 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 
 #ifdef HALLOWEEN
 	usesPoints = 1
-	var/points_since_last_tick = 0		//resets every life tick, prevents you from getting more than 10 points a tick from spam nonsense.
-	var/spooking = 0		//if they're in their extra spooky form where they're visible and blurry.
+	/// Resets every life tick, prevents you from getting more than 10 points a tick from spam nonsense.
+	var/points_since_last_tick = 0
+	/// If they're in their extra spooky form where they're visible and blurry.
+	var/spooking = 0
 
-	proc/change_points(var/amt as num)
-		if (owner.client)
-			if (points_since_last_tick < 50)
-				var/k = 1
-				if (amt > 0)
-					points_since_last_tick += amt
-					k = 1 //3 //when ready with event.
+/datum/abilityHolder/ghost_observer/proc/change_points(amt as num)
+	if (owner.client)
+		if (points_since_last_tick < 50)
+			var/k = 1
+			if (amt > 0)
+				points_since_last_tick += amt
+				k = 1 //3 //when ready with event.
 
-				spooktober_GH.change_points(owner.client.ckey, amt*k)		//idk why I did this with the multiplying by a constant, but I'll keep it
-				src.points = spooktober_GH.points
+			spooktober_GH.change_points(owner.client.ckey, amt*k)		//idk why I did this with the multiplying by a constant, but I'll keep it
+			src.points = spooktober_GH.points
 
-	pointCheck(cost)
-		// if (!usesPoints)
-		// 	return 1
-		if (spooktober_GH.points < 0) // Just-in-case fallback.
-			logTheThing(LOG_DEBUG, usr, "'s ability holder ([src.type]) was set to an invalid value (points less than 0), resetting.")
-			spooktober_GH.points = 0
-		if (cost > spooktober_GH.points)
-			boutput(owner, notEnoughPointsMessage)
-			return 0
-		return 1
+/datum/abilityHolder/ghost_observer/pointCheck(cost)
+	// if (!usesPoints)
+	// 	return 1
+	if (spooktober_GH.points < 0) // Just-in-case fallback.
+		logTheThing(LOG_DEBUG, usr, "'s ability holder ([src.type]) was set to an invalid value (points less than 0), resetting.")
+		spooktober_GH.points = 0
+	if (cost > spooktober_GH.points)
+		boutput(owner, notEnoughPointsMessage)
+		return 0
+	return 1
 
-	deductPoints(cost)
-		..()
-		if (owner.client)
-			spooktober_GH.change_points(owner.client.ckey, -abs(cost))	//idk what format this comes in, I'll be safe
+/datum/abilityHolder/ghost_observer/deductPoints(cost)
+	..()
+	if (owner.client)
+		spooktober_GH.change_points(owner.client.ckey, -abs(cost))	//idk what format this comes in, I'll be safe
 
 
 #endif
 
-	New()
-		..()
-		add_all_abilities()
-		updateButtons()
+/datum/abilityHolder/ghost_observer/New()
+	..()
+	add_all_abilities()
+	updateButtons()
 
-	proc/toggle()
-		if (!islist(src.abilities))
-			boutput(usr, "You have no abilities! What happened?! Call 1-800-CODER!")
-			return
+/datum/abilityHolder/ghost_observer/proc/toggle()
+	if (!islist(src.abilities))
+		boutput(usr, "You have no abilities! What happened?! Call 1-800-CODER!")
+		return
 
-		display_buttons = !display_buttons
-		if (display_buttons)
-			for (var/datum/targetable/ghost_observer/A in src.abilities)
-				if (!istype (A, /datum/targetable/ghost_observer/toggle_HUD) && istype(A.object))
-					A.object.invisibility = INVIS_NONE
-		else
-			for (var/datum/targetable/ghost_observer/A in src.abilities)
-				if (!istype (A, /datum/targetable/ghost_observer/toggle_HUD) && istype(A.object))
-					A.object.invisibility = INVIS_ALWAYS_ISH
+	display_buttons = !display_buttons
+	if (display_buttons)
+		for (var/datum/targetable/ghost_observer/A in src.abilities)
+			if (!istype (A, /datum/targetable/ghost_observer/toggle_HUD) && istype(A.object))
+				A.object.invisibility = INVIS_NONE
+	else
+		for (var/datum/targetable/ghost_observer/A in src.abilities)
+			if (!istype (A, /datum/targetable/ghost_observer/toggle_HUD) && istype(A.object))
+				A.object.invisibility = INVIS_ALWAYS_ISH
 
-	proc/add_all_abilities()
-		src.addAbility(/datum/targetable/ghost_observer/toggle_HUD)
-		src.addAbility(/datum/targetable/ghost_observer/teleport)
-		src.addAbility(/datum/targetable/ghost_observer/observe)
-		src.addAbility(/datum/targetable/ghost_observer/reenter_corpse)
-		src.addAbility(/datum/targetable/ghost_observer/toggle_lighting)
-		// src.addAbility(/datum/targetable/ghost_observer/afterlife_Bar)
-		// src.addAbility(/datum/targetable/ghost_observer/respawn_animal)	//moved to respawn_options menu
-		src.addAbility(/datum/targetable/ghost_observer/respawn_options)
+/datum/abilityHolder/ghost_observer/proc/add_all_abilities()
+	src.addAbility(/datum/targetable/ghost_observer/toggle_HUD)
+	src.addAbility(/datum/targetable/ghost_observer/teleport)
+	src.addAbility(/datum/targetable/ghost_observer/observe)
+	src.addAbility(/datum/targetable/ghost_observer/reenter_corpse)
+	src.addAbility(/datum/targetable/ghost_observer/toggle_lighting)
+	// src.addAbility(/datum/targetable/ghost_observer/afterlife_Bar)
+	// src.addAbility(/datum/targetable/ghost_observer/respawn_animal)	//moved to respawn_options menu
+	src.addAbility(/datum/targetable/ghost_observer/respawn_options)
 
 
 #ifdef HALLOWEEN
-		src.addAbility(/datum/targetable/ghost_observer/spooktober_hud)
+	src.addAbility(/datum/targetable/ghost_observer/spooktober_hud)
 
-		src.addAbility(/datum/targetable/ghost_observer/decorate)
-		src.addAbility(/datum/targetable/ghost_observer/levitate_object)
-		// src.addAbility(/datum/targetable/ghost_observer/levitate_chair)
-		src.addAbility(/datum/targetable/ghost_observer/spooky_sounds)
-		src.addAbility(/datum/targetable/ghost_observer/summon_bat)
-		src.addAbility(/datum/targetable/ghost_observer/manifest)
+	src.addAbility(/datum/targetable/ghost_observer/decorate)
+	src.addAbility(/datum/targetable/ghost_observer/levitate_object)
+	// src.addAbility(/datum/targetable/ghost_observer/levitate_chair)
+	src.addAbility(/datum/targetable/ghost_observer/spooky_sounds)
+	src.addAbility(/datum/targetable/ghost_observer/summon_bat)
+	src.addAbility(/datum/targetable/ghost_observer/manifest)
 
-		src.addAbility(/datum/targetable/ghost_observer/spooktober_writing)
+	src.addAbility(/datum/targetable/ghost_observer/spooktober_writing)
 #endif
-		src.updateButtons()
+	src.updateButtons()
 
-	//this weird. doesn't remove from screen.
-	proc/remove_all_abilities()
-		src.removeAbility(/datum/targetable/ghost_observer/toggle_HUD)
-		src.removeAbility(/datum/targetable/ghost_observer/teleport)
-		src.removeAbility(/datum/targetable/ghost_observer/observe)
-		src.removeAbility(/datum/targetable/ghost_observer/reenter_corpse)
-		src.removeAbility(/datum/targetable/ghost_observer/toggle_lighting)
-		// src.removeAbility(/datum/targetable/ghost_observer/afterlife_Bar)
-		// src.removeAbility(/datum/targetable/ghost_observer/respawn_animal)
-		src.removeAbility(/datum/targetable/ghost_observer/respawn_options)
+//this weird. doesn't remove from screen.
+/datum/abilityHolder/ghost_observer/proc/remove_all_abilities()
+	src.removeAbility(/datum/targetable/ghost_observer/toggle_HUD)
+	src.removeAbility(/datum/targetable/ghost_observer/teleport)
+	src.removeAbility(/datum/targetable/ghost_observer/observe)
+	src.removeAbility(/datum/targetable/ghost_observer/reenter_corpse)
+	src.removeAbility(/datum/targetable/ghost_observer/toggle_lighting)
+	// src.removeAbility(/datum/targetable/ghost_observer/afterlife_Bar)
+	// src.removeAbility(/datum/targetable/ghost_observer/respawn_animal)
+	src.removeAbility(/datum/targetable/ghost_observer/respawn_options)
 
 #ifdef HALLOWEEN
-		src.removeAbility(/datum/targetable/ghost_observer/spooktober_hud)
+	src.removeAbility(/datum/targetable/ghost_observer/spooktober_hud)
 
 
-		src.removeAbility(/datum/targetable/ghost_observer/levitate_object)
-		// src.removeAbility(/datum/targetable/ghost_observer/levitate_chair)
-		src.removeAbility(/datum/targetable/ghost_observer/spooky_sounds)
-		src.removeAbility(/datum/targetable/ghost_observer/summon_bat)
-		src.removeAbility(/datum/targetable/ghost_observer/manifest)
-		src.removeAbility(/datum/targetable/ghost_observer/decorate)
-		src.removeAbility(/datum/targetable/ghost_observer/spooktober_writing)
+	src.removeAbility(/datum/targetable/ghost_observer/levitate_object)
+	// src.removeAbility(/datum/targetable/ghost_observer/levitate_chair)
+	src.removeAbility(/datum/targetable/ghost_observer/spooky_sounds)
+	src.removeAbility(/datum/targetable/ghost_observer/summon_bat)
+	src.removeAbility(/datum/targetable/ghost_observer/manifest)
+	src.removeAbility(/datum/targetable/ghost_observer/decorate)
+	src.removeAbility(/datum/targetable/ghost_observer/spooktober_writing)
 #endif
-		src.updateButtons()
+	src.updateButtons()
 
 #ifdef HALLOWEEN
 
@@ -225,13 +231,13 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 	cooldown = 0
 
 
-	cast(atom/target)
-		if (holder && istype(holder.owner, /mob/dead/observer))
-			var/mob/dead/observer/ghost = holder.owner
-			ghost.dead_tele()
+/datum/targetable/ghost_observer/teleport/cast(atom/target)
+	if (holder && istype(holder.owner, /mob/dead/observer))
+		var/mob/dead/observer/ghost = holder.owner
+		ghost.dead_tele()
 
-		else
-			boutput(usr, "Oop! Something broke! Just type \"teleport\" (without the quotation marks) into the bottom bar.")
+	else
+		boutput(usr, "Oop! Something broke! Just type \"teleport\" (without the quotation marks) into the bottom bar.")
 
 /datum/targetable/ghost_observer/observe
 	name = "Observe"
@@ -241,13 +247,13 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 	cooldown = 0
 
 
-	cast(atom/target)
-		if (holder && istype(holder.owner, /mob/dead/observer))
-			var/mob/dead/observer/ghost = holder.owner
-			ghost.observe()
+/datum/targetable/ghost_observer/observe/cast(atom/target)
+	if (holder && istype(holder.owner, /mob/dead/observer))
+		var/mob/dead/observer/ghost = holder.owner
+		ghost.observe()
 
-		else
-			boutput(usr, "Oop! Something broke! Just type \"Re-enter Corpse\" (without the quotation marks) into the bottom bar.")
+	else
+		boutput(usr, "Oop! Something broke! Just type \"Re-enter Corpse\" (without the quotation marks) into the bottom bar.")
 
 /datum/targetable/ghost_observer/reenter_corpse
 	name = "Re-enter Corpse"
@@ -257,13 +263,13 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 	cooldown = 0
 
 
-	cast(atom/target)
-		if (holder && istype(holder.owner, /mob/dead/observer))
-			var/mob/dead/observer/ghost = holder.owner
-			ghost.reenter_corpse()
+/datum/targetable/ghost_observer/reenter_corpse/cast(atom/target)
+	if (holder && istype(holder.owner, /mob/dead/observer))
+		var/mob/dead/observer/ghost = holder.owner
+		ghost.reenter_corpse()
 
-		else
-			boutput(usr, "Oop! Something broke! Just type \"Re-enter Corpse\" (without the quotation marks) into the bottom bar.")
+	else
+		boutput(usr, "Oop! Something broke! Just type \"Re-enter Corpse\" (without the quotation marks) into the bottom bar.")
 
 
 
@@ -274,19 +280,19 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 	targeted = 0
 	cooldown = 0
 
-	cast(atom/target)
-		if (holder && istype(holder.owner, /mob/dead/observer))
-			var/mob/dead/observer/ghost = holder.owner
-			ghost.toggle_lighting()
-			// var/atom/plane = ghost.client.get_plane(PLANE_LIGHTING)
-			// if (plane)
-			// 	if (plane.alpha)
-			// 		icon_state = "bulb-0"
-			// 	else
-			// 		icon_state = "bulb-1"
-			// holder.updateButtons()
-		else
-			boutput(usr, "Oop! Something broke! Just type \"Toggle Lighting\" (without the quotation marks) into the bottom bar.")
+/datum/targetable/ghost_observer/toggle_lighting/cast(atom/target)
+	if (holder && istype(holder.owner, /mob/dead/observer))
+		var/mob/dead/observer/ghost = holder.owner
+		ghost.toggle_lighting()
+		// var/atom/plane = ghost.client.get_plane(PLANE_LIGHTING)
+		// if (plane)
+		// 	if (plane.alpha)
+		// 		icon_state = "bulb-0"
+		// 	else
+		// 		icon_state = "bulb-1"
+		// holder.updateButtons()
+	else
+		boutput(usr, "Oop! Something broke! Just type \"Toggle Lighting\" (without the quotation marks) into the bottom bar.")
 
 /datum/targetable/ghost_observer/toggle_HUD
 	name = "Hide HUD"
@@ -295,25 +301,25 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 	targeted = 0
 	cooldown = 0
 
-	cast(atom/target)
-		if (holder && istype(holder, /datum/abilityHolder/ghost_observer) && istype(holder.owner, /mob/dead/observer))
-			var/datum/abilityHolder/ghost_observer/GH = holder
-			if (GH.display_buttons)
-				name = "Show HUD"
-				desc = "Show all HUD buttons."
-				icon_state = "show"
-			else
-				name = "Hide HUD"
-				desc = "Hide all HUD buttons."
-				icon_state = "hide"
-
-			GH.toggle()
-			GH.updateButtons(1)
-
-			boutput( usr, "Use the command \"Toggle Ability Buttons\" in the \"Ghost\" commands tab at the top right to re-enable buttons.." )
-
+/datum/targetable/ghost_observer/toggle_HUD/cast(atom/target)
+	if (holder && istype(holder, /datum/abilityHolder/ghost_observer) && istype(holder.owner, /mob/dead/observer))
+		var/datum/abilityHolder/ghost_observer/GH = holder
+		if (GH.display_buttons)
+			name = "Show HUD"
+			desc = "Show all HUD buttons."
+			icon_state = "show"
 		else
-			boutput(usr, "Oop! Something broke! Just type \"Toggle Ability Buttons\" (without the quotation marks) into the bottom bar.")
+			name = "Hide HUD"
+			desc = "Hide all HUD buttons."
+			icon_state = "hide"
+
+		GH.toggle()
+		GH.updateButtons(1)
+
+		boutput( usr, "Use the command \"Toggle Ability Buttons\" in the \"Ghost\" commands tab at the top right to re-enable buttons.." )
+
+	else
+		boutput(usr, "Oop! Something broke! Just type \"Toggle Ability Buttons\" (without the quotation marks) into the bottom bar.")
 
 /datum/targetable/ghost_observer/respawn_options
 	name = "Respawn Options"
@@ -325,28 +331,28 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 	tooltip_flags = TOOLTIP_LEFT
 	var/displaying_buttons = 0
 
-	New()
-		..()
-		object.contextLayout = new /datum/contextLayout/screen_HUD_default/click_to_close()
-		if (!object.contextActions)
-			object.contextActions = list()
+/datum/targetable/ghost_observer/respawn_options/New()
+	..()
+	object.contextLayout = new /datum/contextLayout/screen_HUD_default/click_to_close()
+	if (!object.contextActions)
+		object.contextActions = list()
 
-		object.contextActions += new /datum/contextAction/ghost_respawn/close()
-		object.contextActions += new /datum/contextAction/ghost_respawn/afterlife_bar()
-		object.contextActions += new /datum/contextAction/ghost_respawn/virtual_reality()
-		object.contextActions += new /datum/contextAction/ghost_respawn/respawn_animal()
-		object.contextActions += new /datum/contextAction/ghost_respawn/ghostdrone()
-		// object.contextActions += new /datum/contextAction/ghost_respawn_button/blobtutorial()
-		object.contextActions += new /datum/contextAction/ghost_respawn/respawn_mentor_mouse()
-		object.contextActions += new /datum/contextAction/ghost_respawn/respawn_admin_mouse()
+	object.contextActions += new /datum/contextAction/ghost_respawn/close()
+	object.contextActions += new /datum/contextAction/ghost_respawn/afterlife_bar()
+	object.contextActions += new /datum/contextAction/ghost_respawn/virtual_reality()
+	object.contextActions += new /datum/contextAction/ghost_respawn/respawn_animal()
+	object.contextActions += new /datum/contextAction/ghost_respawn/ghostdrone()
+	// object.contextActions += new /datum/contextAction/ghost_respawn_button/blobtutorial()
+	object.contextActions += new /datum/contextAction/ghost_respawn/respawn_mentor_mouse()
+	object.contextActions += new /datum/contextAction/ghost_respawn/respawn_admin_mouse()
 
-	cast(atom/target)
-		displaying_buttons = !displaying_buttons
-		if (ticker?.mode && istype(ticker.mode, /datum/game_mode/football))
-			boutput(holder.owner, "Sorry, respawn options aren't availbale during football mode.")
-			displaying_buttons = 0
-		if (!displaying_buttons)
-			holder.owner.closeContextActions()
+/datum/targetable/ghost_observer/respawn_options/cast(atom/target)
+	displaying_buttons = !displaying_buttons
+	if (ticker?.mode && istype(ticker.mode, /datum/game_mode/football))
+		boutput(holder.owner, "Sorry, respawn options aren't availbale during football mode.")
+		displaying_buttons = 0
+	if (!displaying_buttons)
+		holder.owner.closeContextActions()
 
 /datum/targetable/ghost_observer/respawn_animal
 	name = "Respawn As Animal"
@@ -355,13 +361,13 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 	targeted = 0
 	cooldown = 0
 
-	cast(atom/target)
-		if (holder && istype(holder.owner, /mob/dead/observer))
-			var/mob/dead/observer/ghost = holder.owner
-			ghost.respawn_as_animal()
+/datum/targetable/ghost_observer/respawn_animal/cast(atom/target)
+	if (holder && istype(holder.owner, /mob/dead/observer))
+		var/mob/dead/observer/ghost = holder.owner
+		ghost.respawn_as_animal()
 
-		else
-			boutput(usr, "Oop! Something broke! Just type \"Respawn-As-Animal\" (without the quotation marks) into the bottom bar.")
+	else
+		boutput(usr, "Oop! Something broke! Just type \"Respawn-As-Animal\" (without the quotation marks) into the bottom bar.")
 
 /datum/targetable/ghost_observer/ass_day_arena
 	name = "Fight for a new life!"
@@ -370,13 +376,13 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 	targeted = 0
 	cooldown = 0
 
-	cast(atom/target)
-		if (holder && istype(holder.owner, /mob/dead/observer))
-			var/mob/dead/observer/ghost = holder.owner
-			ghost.go_to_respawn_arena()
+/datum/targetable/ghost_observer/ass_day_arena/cast(atom/target)
+	if (holder && istype(holder.owner, /mob/dead/observer))
+		var/mob/dead/observer/ghost = holder.owner
+		ghost.go_to_respawn_arena()
 
-		else
-			boutput(usr, "Uhhh something broke. Oops. Please go yell at a coder to get this fixed.")
+	else
+		boutput(usr, "Uhhh something broke. Oops. Please go yell at a coder to get this fixed.")
 
 #ifdef HALLOWEEN
 /datum/targetable/ghost_observer/spooktober_hud
@@ -389,17 +395,17 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 	special_screen_loc = "NORTH,CENTER-2"
 	var/count = 0
 
-	onAttach(var/datum/abilityHolder/H)
-		object.mouse_opacity = 0
-		object.maptext_y = -32
-		object.vis_contents += spooktober_GH.meter
-		return
+/datum/targetable/ghost_observer/spooktober_hud/onAttach(var/datum/abilityHolder/H)
+	object.mouse_opacity = 0
+	object.maptext_y = -32
+	object.vis_contents += spooktober_GH.meter
+	return
 
-	// Stat()
-	// 	if (object)
-	// 		object.maptext = "[spooktober_GH.points]"
+// Stat()
+// 	if (object)
+// 		object.maptext = "[spooktober_GH.points]"
 
-	// 	spooktober_GH.update()
+// 	spooktober_GH.update()
 
 /datum/targetable/ghost_observer/levitate_object
 	name = "Levitate Object"
@@ -412,27 +418,27 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 	special_screen_loc = "SOUTH,CENTER-2"
 	pointCost = 50
 
-	cast(obj/item/target)
-		if (!holder)
-			return 1
+/datum/targetable/ghost_observer/levitate_object/cast(obj/item/target)
+	if (!holder)
+		return 1
 
-		boutput(holder.owner, "<span class='alert'>You exert some force to levitate [target]!</span>")
-		SPAWN(rand(30,50))
-			if (!holder)
-				return
-			//levitates the target chair, as well as any mobs mobs buckled in. Since buckled mobs are placed into the chair/bed's contents
-			//only doing chair. doing the bed levatate moves the mobs on it in a weird way, and I don't wanna spend the time to fix it
-			if (istype(target, /obj/stool/chair)/* || istype(target, /obj/stool/bed)*/)
-				for (var/mob/living/L in target.loc.contents)
-					if (L.buckled)
-						animate_levitate(L, 1, 10)
-				animate_levitate(target, 1, 10)
-				boutput(holder.owner, "<span class='alert'>You levitate[target] and its occupant(s)!</span>")
-			else if (istype(target, /obj/item))
-				animate_levitate(target, 1, 10)
-				boutput(holder.owner, "<span class='alert'>You levitate[target]!</span>")
-			else
-				boutput(holder.owner, "<span class='alert'>But it's beyond your power!</span>")
+	boutput(holder.owner, "<span class='alert'>You exert some force to levitate [target]!</span>")
+	SPAWN(rand(30,50))
+		if (!holder)
+			return
+		//levitates the target chair, as well as any mobs mobs buckled in. Since buckled mobs are placed into the chair/bed's contents
+		//only doing chair. doing the bed levatate moves the mobs on it in a weird way, and I don't wanna spend the time to fix it
+		if (istype(target, /obj/stool/chair)/* || istype(target, /obj/stool/bed)*/)
+			for (var/mob/living/L in target.loc.contents)
+				if (L.buckled)
+					animate_levitate(L, 1, 10)
+			animate_levitate(target, 1, 10)
+			boutput(holder.owner, "<span class='alert'>You levitate[target] and its occupant(s)!</span>")
+		else if (istype(target, /obj/item))
+			animate_levitate(target, 1, 10)
+			boutput(holder.owner, "<span class='alert'>You levitate[target]!</span>")
+		else
+			boutput(holder.owner, "<span class='alert'>But it's beyond your power!</span>")
 
 
 /datum/targetable/ghost_observer/spooky_sounds
@@ -448,14 +454,14 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 	special_screen_loc = "SOUTH,CENTER-1"
 	pointCost = 100
 
-	cast()
-		if (!holder)
-			return 1
+/datum/targetable/ghost_observer/spooky_sounds/cast()
+	if (!holder)
+		return 1
 
-		var/turf/T = get_turf(holder.owner)
-		var/S = pick('sound/ambience/nature/Wind_Cold1.ogg', 'sound/ambience/nature/Wind_Cold2.ogg', 'sound/ambience/nature/Wind_Cold3.ogg','sound/ambience/nature/Cave_Bugs.ogg', 'sound/ambience/nature/Glacier_DeepRumbling1.ogg', 'sound/effects/bones_break.ogg', 'sound/effects/glitchy1.ogg',	'sound/effects/gust.ogg', 'sound/effects/static_horror.ogg', 'sound/effects/blood.ogg', 'sound/effects/kaboom.ogg')
-		playsound(T, S, 30, 0, -1)
-		boutput(holder.owner, "<span class='alert'>You make a spooky sound!</span>")
+	var/turf/T = get_turf(holder.owner)
+	var/S = pick('sound/ambience/nature/Wind_Cold1.ogg', 'sound/ambience/nature/Wind_Cold2.ogg', 'sound/ambience/nature/Wind_Cold3.ogg','sound/ambience/nature/Cave_Bugs.ogg', 'sound/ambience/nature/Glacier_DeepRumbling1.ogg', 'sound/effects/bones_break.ogg', 'sound/effects/glitchy1.ogg',	'sound/effects/gust.ogg', 'sound/effects/static_horror.ogg', 'sound/effects/blood.ogg', 'sound/effects/kaboom.ogg')
+	playsound(T, S, 30, 0, -1)
+	boutput(holder.owner, "<span class='alert'>You make a spooky sound!</span>")
 
 
 /datum/targetable/ghost_observer/decorate
@@ -470,33 +476,33 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 	pointCost = 200
 	var/static/list/effects = list("ectoplasm"=1, "Cobweb"=2, "candle"=3, "pumpkin"=4, "skellington"=5, "spider vomit puddles"=6, "Random"=7)
 
-	// cast(turf/target, params)
-	cast(atom/target, params)
-		if (..())
-			return 1
+// cast(turf/target, params)
+/datum/targetable/ghost_observer/decorate/cast(atom/target, params)
+	if (..())
+		return 1
 
-		var/turf/T = get_turf(target)
-		if (isturf(T))
-			var/effect = input("Which effect?", "Effect", "Random") in effects
-			if (effect == "Random")
-				effect = rand(1, 6)
-			else
-				effect = effects[effect]
-			switch (effect)
-				if (1)
-					new/obj/item/reagent_containers/food/snacks/ectoplasm(T)
-				if (2)
-					new/obj/decal/cleanable/cobwebFloor(T)
-				if (3)
-					new/obj/item/device/light/candle/spooky/summon(T)
-				if (4)
-					new/obj/item/reagent_containers/food/snacks/plant/pumpkin/summon(T)
-				if (5)
-					new/obj/decal/fakeobjects/skeleton/unanchored/summon(T)
-				if (6)
-					new/obj/decal/cleanable/vomit/spiders(T)
+	var/turf/T = get_turf(target)
+	if (isturf(T))
+		var/effect = input("Which effect?", "Effect", "Random") in effects
+		if (effect == "Random")
+			effect = rand(1, 6)
+		else
+			effect = effects[effect]
+		switch (effect)
+			if (1)
+				new/obj/item/reagent_containers/food/snacks/ectoplasm(T)
+			if (2)
+				new/obj/decal/cleanable/cobwebFloor(T)
+			if (3)
+				new/obj/item/device/light/candle/spooky/summon(T)
+			if (4)
+				new/obj/item/reagent_containers/food/snacks/plant/pumpkin/summon(T)
+			if (5)
+				new/obj/decal/fakeobjects/skeleton/unanchored/summon(T)
+			if (6)
+				new/obj/decal/cleanable/vomit/spiders(T)
 
-			boutput(usr, "<span class='notice'>Matter from your realm appears near the designated location!</span>")
+		boutput(usr, "<span class='notice'>Matter from your realm appears near the designated location!</span>")
 
 
 /datum/targetable/ghost_observer/spooktober_writing
@@ -510,45 +516,45 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 	special_screen_loc = "SOUTH,CENTER+1"
 	pointCost = 300
 
-	// cast(turf/target, params)
-	cast(atom/target, params)
-		if (..())
-			return 1
+// cast(turf/target, params)
+/datum/targetable/ghost_observer/spooktober_writing/cast(atom/target, params)
+	if (..())
+		return 1
 
-		var/list/c_default = list("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
-		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Exclamation Point", "Question Mark", "Period", "Comma", "Colon", "Semicolon", "Ampersand", "Left Parenthesis", "Right Parenthesis",
-		"Left Bracket", "Right Bracket", "Percent", "Plus", "Minus", "Times", "Divided", "Equals", "Less Than", "Greater Than")
-		var/list/c_symbol = list("Dollar", "Euro", "Arrow North", "Arrow East", "Arrow South", "Arrow West",
-		"Square", "Circle", "Triangle", "Heart", "Star", "Smile", "Frown", "Neutral Face", "Bee", "Pentagram")
+	var/list/c_default = list("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+	"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Exclamation Point", "Question Mark", "Period", "Comma", "Colon", "Semicolon", "Ampersand", "Left Parenthesis", "Right Parenthesis",
+	"Left Bracket", "Right Bracket", "Percent", "Plus", "Minus", "Times", "Divided", "Equals", "Less Than", "Greater Than")
+	var/list/c_symbol = list("Dollar", "Euro", "Arrow North", "Arrow East", "Arrow South", "Arrow West",
+	"Square", "Circle", "Triangle", "Heart", "Star", "Smile", "Frown", "Neutral Face", "Bee", "Pentagram")
 
-		var/string = input(holder.owner, "What do you want to write?", null, null) as null|anything in (c_default + c_symbol)
+	var/string = input(holder.owner, "What do you want to write?", null, null) as null|anything in (c_default + c_symbol)
 
-		if (!string)
-			return 1
+	if (!string)
+		return 1
 
-		var/turf/T = get_turf(target)
-		if (isturf(T) && holder.owner)
-			write_on_turf(T, holder.owner, params, string)
+	var/turf/T = get_turf(target)
+	if (isturf(T) && holder.owner)
+		write_on_turf(T, holder.owner, params, string)
 
 
-	proc/write_on_turf(var/turf/T as turf, var/mob/user as mob, params, string)
-		if (!T && !user && !string)
-			return
+/datum/targetable/ghost_observer/spooktober_writing/proc/write_on_turf(turf/T as turf, mob/user as mob, params, string)
+	if (!T && !user && !string)
+		return
 
-		var/obj/decal/cleanable/writing/spooky/G = make_cleanable(/obj/decal/cleanable/writing/spooky,T)
-		G.artist = user.key
+	var/obj/decal/cleanable/writing/spooky/G = make_cleanable(/obj/decal/cleanable/writing/spooky,T)
+	G.artist = user.key
 
-		logTheThing(LOG_STATION, user, "writes on [T] with [src] [log_loc(T)]: [string]")
-		G.icon_state = string
-		G.words = string
-		if (islist(params) && params["icon-y"] && params["icon-x"])
-			// playsound(src.loc, 'sound/impact_sounds/Slimy_Splat_1.ogg', 50, 1)
+	logTheThing(LOG_STATION, user, "writes on [T] with [src] [log_loc(T)]: [string]")
+	G.icon_state = string
+	G.words = string
+	if (islist(params) && params["icon-y"] && params["icon-x"])
+		// playsound(src.loc, 'sound/impact_sounds/Slimy_Splat_1.ogg', 50, 1)
 
-			G.pixel_x = text2num(params["icon-x"]) - 16
-			G.pixel_y = text2num(params["icon-y"]) - 16
-		else
-			G.pixel_x = rand(-4,4)
-			G.pixel_y = rand(-4,4)
+		G.pixel_x = text2num(params["icon-x"]) - 16
+		G.pixel_y = text2num(params["icon-y"]) - 16
+	else
+		G.pixel_x = rand(-4,4)
+		G.pixel_y = rand(-4,4)
 
 /datum/targetable/ghost_observer/summon_bat
 	name = "Summon Bat"
@@ -562,19 +568,19 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 	special_screen_loc = "SOUTH,CENTER+2"
 	pointCost = 1000
 
-	cast()
-		if (!holder)
-			return 1
+/datum/targetable/ghost_observer/summon_bat/cast()
+	if (!holder)
+		return 1
 
-		var/turf/T = get_turf(holder.owner)
-		if (!istype(T, /turf/space) && !T.density)
-			var/obj/itemspecialeffect/poof/P = new /obj/itemspecialeffect/poof
-			P.setup(T)
-			playsound(T, 'sound/effects/poff.ogg', 50, 1, pitch = 1)
-			new /obj/critter/bat(T)
-			boutput(holder.owner, "<span class='alert'>You call forth a bat!</span>")
-		else
-			boutput(holder.owner, "<span class='alert'>You can't put a bat there!</span>")
+	var/turf/T = get_turf(holder.owner)
+	if (!istype(T, /turf/space) && !T.density)
+		var/obj/itemspecialeffect/poof/P = new /obj/itemspecialeffect/poof
+		P.setup(T)
+		playsound(T, 'sound/effects/poff.ogg', 50, 1, pitch = 1)
+		new /obj/critter/bat(T)
+		boutput(holder.owner, "<span class='alert'>You call forth a bat!</span>")
+	else
+		boutput(holder.owner, "<span class='alert'>You can't put a bat there!</span>")
 
 /datum/targetable/ghost_observer/manifest
 	name = "Manifest"
@@ -591,35 +597,35 @@ var/global/datum/spooktober_ghost_handler/spooktober_GH = new()
 	var/applied_filter_index
 
 
-	cast()
-		if (!holder)
-			return 1
+/datum/targetable/ghost_observer/manifest/cast()
+	if (!holder)
+		return 1
 
-		start_spooking()
-		//////////////////////////////////////////////////////////////////////
-		sleep(time_to_manifest)
-		//////////////////////////////////////////////////////////////////////
-		stop_spooking()
+	start_spooking()
+	//////////////////////////////////////////////////////////////////////
+	sleep(time_to_manifest)
+	//////////////////////////////////////////////////////////////////////
+	stop_spooking()
 
 
 
-	proc/start_spooking()
-		src.holder.owner.color = rgb(170, 0, 0)
-		anim_f_ghost_blur(src.holder.owner)
+/datum/targetable/ghost_observer/manifest/proc/start_spooking()
+	src.holder.owner.color = rgb(170, 0, 0)
+	anim_f_ghost_blur(src.holder.owner)
 
-		if (istype(holder, /datum/abilityHolder/ghost_observer))
-			var/datum/abilityHolder/ghost_observer/GAH = holder
-			GAH.spooking = 1
-		REMOVE_ATOM_PROPERTY(src.holder.owner, PROP_MOB_INVISIBILITY, src.holder.owner)
-		boutput(holder.owner, "<span class='notice'>You start being spooky! The living can all see you!</span>")
+	if (istype(holder, /datum/abilityHolder/ghost_observer))
+		var/datum/abilityHolder/ghost_observer/GAH = holder
+		GAH.spooking = 1
+	REMOVE_ATOM_PROPERTY(src.holder.owner, PROP_MOB_INVISIBILITY, src.holder.owner)
+	boutput(holder.owner, "<span class='notice'>You start being spooky! The living can all see you!</span>")
 
-	//remove the filter animation when we're done.
-	proc/stop_spooking()
-		src.holder.owner.color = null
-		if (istype(holder, /datum/abilityHolder/ghost_observer))
-			var/datum/abilityHolder/ghost_observer/GAH = holder
-			GAH.spooking = 0
-		APPLY_ATOM_PROPERTY(src.holder.owner, PROP_MOB_INVISIBILITY, src.holder.owner, ghost_invisibility)
-		boutput(holder.owner, "<span class='alert'>You stop being spooky!</span>")
+//remove the filter animation when we're done.
+/datum/targetable/ghost_observer/manifest/proc/stop_spooking()
+	src.holder.owner.color = null
+	if (istype(holder, /datum/abilityHolder/ghost_observer))
+		var/datum/abilityHolder/ghost_observer/GAH = holder
+		GAH.spooking = 0
+	APPLY_ATOM_PROPERTY(src.holder.owner, PROP_MOB_INVISIBILITY, src.holder.owner, ghost_invisibility)
+	boutput(holder.owner, "<span class='alert'>You stop being spooky!</span>")
 
 #endif

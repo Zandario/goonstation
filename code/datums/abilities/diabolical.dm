@@ -16,29 +16,28 @@
 	else return
 
 /* 	/		/		/		/		/		/		Ability Holder		/		/		/		/		/		/		/		/		*/
-/atom/movable/screen/ability/topBar/merchant
-	clicked(params)
-		var/datum/targetable/merchant/spell = owner
-		if (!istype(spell))
-			return
-		if (!spell.holder)
-			return
-		if (!isturf(owner.holder.owner.loc))
-			boutput(owner.holder.owner, "<span class='alert'>You can't use this ability here.</span>")
-			return
-		if (spell.targeted && usr.targeting_ability == owner)
-			usr.targeting_ability = null
-			usr.update_cursor()
-			return
-		if (spell.targeted)
-			if (world.time < spell.last_cast)
-				return
-			owner.holder.owner.targeting_ability = owner
-			owner.holder.owner.update_cursor()
-		else
-			SPAWN(0)
-				spell.handleCast()
+/atom/movable/screen/ability/topBar/merchant/clicked(params)
+	var/datum/targetable/merchant/spell = owner
+	if (!istype(spell))
 		return
+	if (!spell.holder)
+		return
+	if (!isturf(owner.holder.owner.loc))
+		boutput(owner.holder.owner, "<span class='alert'>You can't use this ability here.</span>")
+		return
+	if (spell.targeted && usr.targeting_ability == owner)
+		usr.targeting_ability = null
+		usr.update_cursor()
+		return
+	if (spell.targeted)
+		if (world.time < spell.last_cast)
+			return
+		owner.holder.owner.targeting_ability = owner
+		owner.holder.owner.update_cursor()
+	else
+		SPAWN(0)
+			spell.handleCast()
+	return
 
 
 /datum/abilityHolder/merchant
@@ -47,12 +46,12 @@
 	tabName = "Souls"
 	notEnoughPointsMessage = "<span class='alert'>You need more souls to use this ability!</span>"
 
-	onAbilityStat() // In the "Souls" tab.
-		..()
-		.= list()
-		.["Souls:"] = total_souls_value
-		.["Total Collected:"] = total_souls_sold
-		return
+/datum/abilityHolder/merchant/onAbilityStat() // In the "Souls" tab.
+	..()
+	.= list()
+	.["Souls:"] = total_souls_value
+	.["Total Collected:"] = total_souls_sold
+	return
 
 /////////////////////////////////////////////// Merchant spell parent ////////////////////////////
 
@@ -66,99 +65,99 @@
 	var/when_stunned = 1 // 0: Never | 1: Ignore mob.stunned and mob.weakened | 2: Ignore all incapacitation vars
 	var/not_when_handcuffed = 0
 
-	New()
-		var/atom/movable/screen/ability/topBar/merchant/B = new /atom/movable/screen/ability/topBar/merchant(null)
-		B.icon = src.icon
-		B.icon_state = src.icon_state
-		B.owner = src
-		B.name = src.name
-		B.desc = src.desc
-		src.object = B
-		return
+/datum/targetable/merchant/New()
+	var/atom/movable/screen/ability/topBar/merchant/B = new /atom/movable/screen/ability/topBar/merchant(null)
+	B.icon = src.icon
+	B.icon_state = src.icon_state
+	B.owner = src
+	B.name = src.name
+	B.desc = src.desc
+	src.object = B
+	return
 
-	updateObject()
-		..()
-		if (!src.object)
-			src.object = new /atom/movable/screen/ability/topBar/merchant()
-			object.icon = src.icon
-			object.owner = src
-		if (src.last_cast > world.time)
-			var/pttxt = ""
-			if (pointCost)
-				pttxt = " \[[pointCost]\]"
-			object.name = "[src.name][pttxt] ([round((src.last_cast-world.time)/10)])"
-			object.icon_state = src.icon_state + "_cd"
-		else
-			var/pttxt = ""
-			if (pointCost)
-				pttxt = " \[[pointCost]\]"
-			object.name = "[src.name][pttxt]"
-			object.icon_state = src.icon_state
-		return
+/datum/targetable/merchant/updateObject()
+	..()
+	if (!src.object)
+		src.object = new /atom/movable/screen/ability/topBar/merchant()
+		object.icon = src.icon
+		object.owner = src
+	if (src.last_cast > world.time)
+		var/pttxt = ""
+		if (pointCost)
+			pttxt = " \[[pointCost]\]"
+		object.name = "[src.name][pttxt] ([round((src.last_cast-world.time)/10)])"
+		object.icon_state = src.icon_state + "_cd"
+	else
+		var/pttxt = ""
+		if (pointCost)
+			pttxt = " \[[pointCost]\]"
+		object.name = "[src.name][pttxt]"
+		object.icon_state = src.icon_state
+	return
 
-	proc/incapacitation_check(var/stunned_only_is_okay = 0)
-		if (!holder)
-			return 0
+/datum/targetable/merchant/proc/incapacitation_check(stunned_only_is_okay = 0)
+	if (!holder)
+		return 0
 
-		var/mob/living/M = holder.owner
-		if (!M || !ismob(M))
-			return 0
+	var/mob/living/M = holder.owner
+	if (!M || !ismob(M))
+		return 0
 
-		switch (stunned_only_is_okay)
-			if (0)
-				if (!isalive(M) || M.hasStatus(list("stunned", "paralysis", "weakened")))
-					return 0
-				else
-					return 1
-			if (1)
-				if (!isalive(M) || M.getStatusDuration("paralysis") > 0)
-					return 0
-				else
-					return 1
+	switch (stunned_only_is_okay)
+		if (0)
+			if (!isalive(M) || M.hasStatus(list("stunned", "paralysis", "weakened")))
+				return 0
 			else
 				return 1
+		if (1)
+			if (!isalive(M) || M.getStatusDuration("paralysis") > 0)
+				return 0
+			else
+				return 1
+		else
+			return 1
 
-	castcheck()
-		if (!holder)
-			return 0
+/datum/targetable/merchant/castcheck()
+	if (!holder)
+		return 0
 
-		var/mob/living/M = holder.owner
+	var/mob/living/M = holder.owner
 
-		if (!M)
-			return 0
+	if (!M)
+		return 0
 
-		if (!ishuman(M))
-			boutput(M, "<span class='alert'>You cannot use any powers in your current form.</span>")
-			return 0
+	if (!ishuman(M))
+		boutput(M, "<span class='alert'>You cannot use any powers in your current form.</span>")
+		return 0
 
-		if (M.transforming)
-			boutput(M, "<span class='alert'>You can't use any powers right now.</span>")
-			return 0
+	if (M.transforming)
+		boutput(M, "<span class='alert'>You can't use any powers right now.</span>")
+		return 0
 
-		if (incapacitation_check(src.when_stunned) != 1)
-			boutput(M, "<span class='alert'>You can't use this ability while incapacitated!</span>")
-			return 0
+	if (incapacitation_check(src.when_stunned) != 1)
+		boutput(M, "<span class='alert'>You can't use this ability while incapacitated!</span>")
+		return 0
 
-		if (src.not_when_handcuffed == 1 && M.restrained())
-			boutput(M, "<span class='alert'>You can't use this ability when restrained!</span>")
-			return 0
+	if (src.not_when_handcuffed == 1 && M.restrained())
+		boutput(M, "<span class='alert'>You can't use this ability when restrained!</span>")
+		return 0
 
-		if (!(isdiabolical(M)))
-			boutput(M, "<span class='alert'>You aren't evil enough to use this power!</span>")
-			boutput(M, "<span class='alert'>Also, you should probably contact a coder because something has gone horribly wrong.</span>")
-			return 0
+	if (!(isdiabolical(M)))
+		boutput(M, "<span class='alert'>You aren't evil enough to use this power!</span>")
+		boutput(M, "<span class='alert'>Also, you should probably contact a coder because something has gone horribly wrong.</span>")
+		return 0
 
-		if (!(total_souls_value >= CONTRACT_COST))
-			boutput(M, "<span class='alert'>You don't have enough souls in your satanic bank account to buy another contract!</span>")
-			boutput(M, "<span class='alert'>You need [CONTRACT_COST - total_souls_value] more to afford a contract!</span>")
-			return 0
+	if (!(total_souls_value >= CONTRACT_COST))
+		boutput(M, "<span class='alert'>You don't have enough souls in your satanic bank account to buy another contract!</span>")
+		boutput(M, "<span class='alert'>You need [CONTRACT_COST - total_souls_value] more to afford a contract!</span>")
+		return 0
 
-		return 1
+	return 1
 
-	cast(atom/target)
-		. = ..()
-		actions.interrupt(holder.owner, INTERRUPT_ACT)
-		return
+/datum/targetable/merchant/cast(atom/target)
+	. = ..()
+	actions.interrupt(holder.owner, INTERRUPT_ACT)
+	return
 
 /////////////////////////////////////////////// Contract Summoning Spell ////////////////////////////
 
@@ -174,29 +173,29 @@
 	when_stunned = 1
 	not_when_handcuffed = 0
 
-	New()
-		..()
-		desc = "Spend [CONTRACT_COST] souls to summon a random new contract to your location"
+/datum/targetable/merchant/summon_contract/New()
+	..()
+	desc = "Spend [CONTRACT_COST] souls to summon a random new contract to your location"
 
-	cast(mob/target)
-		if (!holder)
-			return 1
-		var/mob/living/M = holder.owner
-		if (!M)
-			return 1
-		if (!(total_souls_value >= CONTRACT_COST))
-			boutput(M, "<span class='alert'>You don't have enough souls in your satanic bank account to buy another contract!</span>")
-			boutput(M, "<span class='alert'>You need [CONTRACT_COST - total_souls_value] more to afford a contract!</span>")
-			return 1
-		if (!isdiabolical(M))
-			boutput(M, "<span class='alert'>You aren't evil enough to use this power!</span>")
-			boutput(M, "<span class='alert'>Also, you should probably contact a coder because something has gone horribly wrong.</span>")
-			return 1
-		souladjust(-CONTRACT_COST)
-		boutput(M, "<span class='alert'>You spend [CONTRACT_COST] souls and summon a brand new contract along with a pen! However, losing the power of those souls has weakened your weapons.</span>")
-		spawncontract(M, 1, 1) //strong contract + pen
-		soulcheck(M)
-		return 0
+/datum/targetable/merchant/summon_contract/cast(mob/target)
+	if (!holder)
+		return 1
+	var/mob/living/M = holder.owner
+	if (!M)
+		return 1
+	if (!(total_souls_value >= CONTRACT_COST))
+		boutput(M, "<span class='alert'>You don't have enough souls in your satanic bank account to buy another contract!</span>")
+		boutput(M, "<span class='alert'>You need [CONTRACT_COST - total_souls_value] more to afford a contract!</span>")
+		return 1
+	if (!isdiabolical(M))
+		boutput(M, "<span class='alert'>You aren't evil enough to use this power!</span>")
+		boutput(M, "<span class='alert'>Also, you should probably contact a coder because something has gone horribly wrong.</span>")
+		return 1
+	souladjust(-CONTRACT_COST)
+	boutput(M, "<span class='alert'>You spend [CONTRACT_COST] souls and summon a brand new contract along with a pen! However, losing the power of those souls has weakened your weapons.</span>")
+	spawncontract(M, 1, 1) //strong contract + pen
+	soulcheck(M)
+	return 0
 
 /////////////////////////Random Satan Gimmick Spells/////////////////////////////////////////////
 /datum/abilityHolder/gimmick
@@ -214,26 +213,26 @@
 	max_range = 5
 	cooldown = 300
 
-	cast(mob/target)
-		var/mob/living/carbon/human/H = target
-		if (!istype(H))
-			boutput(holder.owner, "Your target must be human!")
-			return 1
+/datum/targetable/gimmick/highway2hell/cast(mob/target)
+	var/mob/living/carbon/human/H = target
+	if (!istype(H))
+		boutput(holder.owner, "Your target must be human!")
+		return 1
 
-		holder.owner.visible_message("<span class='alert'><b>[holder.owner] shoots finger guns in [target]s direction.</b></span>")
-		playsound(holder.owner.loc, 'sound/effects/fingersnap.ogg', 50, 0, -1)
+	holder.owner.visible_message("<span class='alert'><b>[holder.owner] shoots finger guns in [target]s direction.</b></span>")
+	playsound(holder.owner.loc, 'sound/effects/fingersnap.ogg', 50, 0, -1)
 
-		if (H.traitHolder.hasTrait("training_chaplain"))
-			boutput(holder.owner, "<span class='alert'>[H] has divine protection from magic.</span>")
-			H.visible_message("<span class='alert'>The spell has no effect on [H]!</span>")
-			JOB_XP(H, "Chaplain", 2)
-			return
+	if (H.traitHolder.hasTrait("training_chaplain"))
+		boutput(holder.owner, "<span class='alert'>[H] has divine protection from magic.</span>")
+		H.visible_message("<span class='alert'>The spell has no effect on [H]!</span>")
+		JOB_XP(H, "Chaplain", 2)
+		return
 
-		holder.owner.say("See you in hell.")
-		H.mind?.damned = 1
-		animate_blink(H)
-		sleep(0.5 SECONDS)
-		H.implode()
+	holder.owner.say("See you in hell.")
+	H.mind?.damned = 1
+	animate_blink(H)
+	sleep(0.5 SECONDS)
+	H.implode()
 
 /datum/targetable/gimmick/go2hell
 	icon_state = "blink"
@@ -243,21 +242,21 @@
 	cooldown = 50
 	var/turf/spawnturf = null
 
-	cast(atom/T)
-		holder.owner.say("So long folks!")
-		playsound(holder.owner.loc, 'sound/voice/wizard/BlinkGrim.ogg', 50, 0, -1)
-		sleep(0.5 SECONDS)
+/datum/targetable/gimmick/go2hell/cast(atom/T)
+	holder.owner.say("So long folks!")
+	playsound(holder.owner.loc, 'sound/voice/wizard/BlinkGrim.ogg', 50, 0, -1)
+	sleep(0.5 SECONDS)
 
-		if(!spawnturf)
-			spawnturf = get_turf(usr)
-			usr.set_loc(pick(get_area_turfs(/area/afterlife/hell/hellspawn)))
+	if(!spawnturf)
+		spawnturf = get_turf(usr)
+		usr.set_loc(pick(get_area_turfs(/area/afterlife/hell/hellspawn)))
 
+	else
+		if(usr.mind.damned) //Backup plan incase Satan gets himself stuck in hell.
+			usr.set_loc(pick(get_area_turfs(/area/station/chapel)))
 		else
-			if(usr.mind.damned) //Backup plan incase Satan gets himself stuck in hell.
-				usr.set_loc(pick(get_area_turfs(/area/station/chapel)))
-			else
-				usr.set_loc(spawnturf)
-				spawnturf = null
+			usr.set_loc(spawnturf)
+			spawnturf = null
 
 /datum/targetable/gimmick/spawncontractsatan
 	icon_state = "clairvoyance"
@@ -268,14 +267,14 @@
 	max_range = 0
 	cooldown = 0
 
-	cast(mob/target)
-		if (!holder)
-			return 1
-		var/mob/living/M = holder.owner
-		if (!M)
-			return 1
-		spawncontract(usr, 0, 1)
-		return 0
+/datum/targetable/gimmick/spawncontractsatan/cast(mob/target)
+	if (!holder)
+		return 1
+	var/mob/living/M = holder.owner
+	if (!M)
+		return 1
+	spawncontract(usr, 0, 1)
+	return 0
 
 ////////////////////////Kill Jesta///////////////////////////////
 /datum/targetable/gimmick/Jestershift
@@ -285,15 +284,15 @@
 	var/original = null
 	cooldown = 0
 
-	cast(atom/T)
-		if(!isliving(usr))
-			return
-		if(usr.alpha == 0)
-			usr.alpha = 255
-		else
-			usr.alpha = 0
+/datum/targetable/gimmick/Jestershift/cast(atom/T)
+	if(!isliving(usr))
+		return
+	if(usr.alpha == 0)
+		usr.alpha = 255
+	else
+		usr.alpha = 0
 
-		usr.client.flying = !usr.client.flying
+	usr.client.flying = !usr.client.flying
 
 /datum/targetable/gimmick/spooky
 	icon_state = "corruption"
@@ -301,9 +300,9 @@
 	desc = "Break some lights and laugh a bit."
 	cooldown = 5
 
-	cast(atom/T)
-		sonic_attack_environmental_effect(usr, 5, list("light"))
-		playsound(holder.owner.loc, 'sound/misc/jester_laugh.ogg', 125)
+/datum/targetable/gimmick/spooky/cast(atom/T)
+	sonic_attack_environmental_effect(usr, 5, list("light"))
+	playsound(holder.owner.loc, 'sound/misc/jester_laugh.ogg', 125)
 
 //////////////////////////Dumb Floorclown stuff//////////////////////////
 /datum/targetable/gimmick/reveal
@@ -313,48 +312,48 @@
 	targeted = 0
 	cooldown = 0
 
-	tryCast()
-		if (is_incapacitated(holder.owner))
-			boutput(holder.owner, "<span class='alert'>You cannot cast this ability while you are incapacitated.</span>")
-			src.holder.locked = 0
-			return 999
-		. = ..()
+/datum/targetable/gimmick/reveal/tryCast()
+	if (is_incapacitated(holder.owner))
+		boutput(holder.owner, "<span class='alert'>You cannot cast this ability while you are incapacitated.</span>")
+		src.holder.locked = 0
+		return 999
+	. = ..()
 
-	cast(atom/T)
-		var/floorturf = get_turf(usr)
-		var/x_coeff = rand(0, 1)	// open the floor horizontally
-		var/y_coeff = !x_coeff // or vertically but not both - it looks weird
-		var/slide_amount = 22 // around 20-25 is just wide enough to show most of the person hiding underneath
+/datum/targetable/gimmick/reveal/cast(atom/T)
+	var/floorturf = get_turf(usr)
+	var/x_coeff = rand(0, 1)	// open the floor horizontally
+	var/y_coeff = !x_coeff // or vertically but not both - it looks weird
+	var/slide_amount = 22 // around 20-25 is just wide enough to show most of the person hiding underneath
 
-		if(usr.plane == PLANE_UNDERFLOOR)
-			usr.flags &= ~(NODRIFT | DOORPASS | TABLEPASS)
-			APPLY_ATOM_PROPERTY(usr, PROP_MOB_CANTMOVE, "floorswitching")
-			REMOVE_ATOM_PROPERTY(usr, PROP_MOB_NO_MOVEMENT_PUFFS, "floorswitching")
-			REMOVE_ATOM_PROPERTY(usr, PROP_ATOM_NEVER_DENSE, "floorswitching")
-			usr.set_density(initial(usr.density))
-			animate_slide(floorturf, x_coeff * -slide_amount, y_coeff * -slide_amount, 4)
-			SPAWN(0.4 SECONDS)
-				if(usr)
-					usr.plane = PLANE_DEFAULT
-					usr.layer = 4
-					REMOVE_ATOM_PROPERTY(usr, PROP_MOB_CANTMOVE, "floorswitching")
-				if(floorturf)
-					animate_slide(floorturf, 0, 0, 4)
+	if(usr.plane == PLANE_UNDERFLOOR)
+		usr.flags &= ~(NODRIFT | DOORPASS | TABLEPASS)
+		APPLY_ATOM_PROPERTY(usr, PROP_MOB_CANTMOVE, "floorswitching")
+		REMOVE_ATOM_PROPERTY(usr, PROP_MOB_NO_MOVEMENT_PUFFS, "floorswitching")
+		REMOVE_ATOM_PROPERTY(usr, PROP_ATOM_NEVER_DENSE, "floorswitching")
+		usr.set_density(initial(usr.density))
+		animate_slide(floorturf, x_coeff * -slide_amount, y_coeff * -slide_amount, 4)
+		SPAWN(0.4 SECONDS)
+			if(usr)
+				usr.plane = PLANE_DEFAULT
+				usr.layer = 4
+				REMOVE_ATOM_PROPERTY(usr, PROP_MOB_CANTMOVE, "floorswitching")
+			if(floorturf)
+				animate_slide(floorturf, 0, 0, 4)
 
-		else
-			APPLY_ATOM_PROPERTY(usr, PROP_MOB_CANTMOVE, "floorswitching")
-			animate_slide(floorturf, x_coeff * -slide_amount, y_coeff * -slide_amount, 4)
-			SPAWN(0.4 SECONDS)
-				if(usr)
-					REMOVE_ATOM_PROPERTY(usr, PROP_MOB_CANTMOVE, "floorswitching")
-					APPLY_ATOM_PROPERTY(usr, PROP_MOB_NO_MOVEMENT_PUFFS, "floorswitching")
-					APPLY_ATOM_PROPERTY(usr, PROP_ATOM_NEVER_DENSE, "floorswitching")
-					usr.flags |= NODRIFT | DOORPASS | TABLEPASS
-					usr.set_density(0)
-					usr.layer = 4
-					usr.plane = PLANE_UNDERFLOOR
-				if(floorturf)
-					animate_slide(floorturf, 0, 0, 4)
+	else
+		APPLY_ATOM_PROPERTY(usr, PROP_MOB_CANTMOVE, "floorswitching")
+		animate_slide(floorturf, x_coeff * -slide_amount, y_coeff * -slide_amount, 4)
+		SPAWN(0.4 SECONDS)
+			if(usr)
+				REMOVE_ATOM_PROPERTY(usr, PROP_MOB_CANTMOVE, "floorswitching")
+				APPLY_ATOM_PROPERTY(usr, PROP_MOB_NO_MOVEMENT_PUFFS, "floorswitching")
+				APPLY_ATOM_PROPERTY(usr, PROP_ATOM_NEVER_DENSE, "floorswitching")
+				usr.flags |= NODRIFT | DOORPASS | TABLEPASS
+				usr.set_density(0)
+				usr.layer = 4
+				usr.plane = PLANE_UNDERFLOOR
+			if(floorturf)
+				animate_slide(floorturf, 0, 0, 4)
 
 /datum/targetable/gimmick/movefloor
 	icon_state = "pandemonium"
@@ -364,14 +363,14 @@
 	cooldown = 5
 	max_range = 50
 
-	cast(atom/T)
-		if (!holder)
-			return 1
+/datum/targetable/gimmick/movefloor/cast(atom/T)
+	if (!holder)
+		return 1
 
-		var/movedistX = input(usr,"How far would you like to move the floor tile.","How far to move left or right.","4") as num
-		var/movedistY = input(usr,"How far would you like to move the floor tile.","How far to move up or down.","4") as num
-		var/movetime = input(usr,"How fast would you like to move it.","How long it takes to move it.","4") as num
-		animate_slide(get_turf(usr), movedistX, movedistY, movetime)
+	var/movedistX = input(usr,"How far would you like to move the floor tile.","How far to move left or right.","4") as num
+	var/movedistY = input(usr,"How far would you like to move the floor tile.","How far to move up or down.","4") as num
+	var/movetime = input(usr,"How fast would you like to move it.","How long it takes to move it.","4") as num
+	animate_slide(get_turf(usr), movedistX, movedistY, movetime)
 
 /datum/targetable/gimmick/floorgrab
 	icon_state = "clownrevenge"
@@ -382,9 +381,9 @@
 	max_range = 1
 	var/grabtime = 65
 
-	cast(mob/target)
-		usr.plane = PLANE_UNDERFLOOR
-		target.cluwnegib(grabtime)
+/datum/targetable/gimmick/floorgrab/cast(mob/target)
+	usr.plane = PLANE_UNDERFLOOR
+	target.cluwnegib(grabtime)
 
 //// Crayon-related stuff ////
 
@@ -424,58 +423,58 @@
 		">" = "Greater Than"
 	)
 
-	// cast(turf/target, params)
-	cast(atom/target, params)
-		if (..())
-			return 1
+// cast(turf/target, params)
+/datum/targetable/gimmick/scribble/cast(atom/target, params)
+	if (..())
+		return 1
 
-		var/turf/T = get_turf(target)
-		if (isturf(T))
-			write_on_turf(T, holder.owner, params)
+	var/turf/T = get_turf(target)
+	if (isturf(T))
+		write_on_turf(T, holder.owner, params)
 
-	proc/write_on_turf(var/turf/T as turf, var/mob/user as mob, params)
-		if (!T || !user)
-			return
-		var/list/t // t is for what we're drawing
+/datum/targetable/gimmick/scribble/proc/write_on_turf(turf/T as turf, mob/user as mob, params)
+	if (!T || !user)
+		return
+	var/list/t // t is for what we're drawing
 
-		if (!length(src.symbol_setting))
-			var/inp = input(user, "Type letters you want to write.", "Letter Queue", null)
-			inp = uppertext(inp)
-			t = list()
-			for(var/i = 1 to min(length(inp), 100))
-				var/c = copytext(inp, i, i + 1)
-				if(c != " " || (c in src.c_default) || (c in src.c_char_to_symbol))
-					t += c
+	if (!length(src.symbol_setting))
+		var/inp = input(user, "Type letters you want to write.", "Letter Queue", null)
+		inp = uppertext(inp)
+		t = list()
+		for(var/i = 1 to min(length(inp), 100))
+			var/c = copytext(inp, i, i + 1)
+			if(c != " " || (c in src.c_default) || (c in src.c_char_to_symbol))
+				t += c
 
-			if(!isnull(t) || !length(t))
-				src.symbol_setting = t
+		if(!isnull(t) || !length(t))
+			src.symbol_setting = t
 
-		t = src.symbol_setting
+	t = src.symbol_setting
 
-		if(isnull(t) || !length(t))
-			return
+	if(isnull(t) || !length(t))
+		return
 
-		if(length(t) == 1)
-			src.symbol_setting = null
-			t = t[1]
-		else
-			src.symbol_setting = t.Copy(2) // remove first
-			t = t[1]
+	if(length(t) == 1)
+		src.symbol_setting = null
+		t = t[1]
+	else
+		src.symbol_setting = t.Copy(2) // remove first
+		t = t[1]
 
-		if(t in src.c_char_to_symbol)
-			t = src.c_char_to_symbol[t]
+	if(t in src.c_char_to_symbol)
+		t = src.c_char_to_symbol[t]
 
-		var/obj/decal/cleanable/writing/spooky/G = make_cleanable(/obj/decal/cleanable/writing/spooky,T)
-		G.artist = user.key
+	var/obj/decal/cleanable/writing/spooky/G = make_cleanable(/obj/decal/cleanable/writing/spooky,T)
+	G.artist = user.key
 
-		logTheThing(LOG_STATION, user, "writes on [T] with [src] [log_loc(T)]: [t]")
-		G.icon_state = t
-		G.words = t
-		if (islist(params) && params["icon-y"] && params["icon-x"])
-			// playsound(src.loc, 'sound/impact_sounds/Slimy_Splat_1.ogg', 50, 0)
+	logTheThing(LOG_STATION, user, "writes on [T] with [src] [log_loc(T)]: [t]")
+	G.icon_state = t
+	G.words = t
+	if (islist(params) && params["icon-y"] && params["icon-x"])
+		// playsound(src.loc, 'sound/impact_sounds/Slimy_Splat_1.ogg', 50, 0)
 
-			G.pixel_x = text2num(params["icon-x"]) - 16
-			G.pixel_y = text2num(params["icon-y"]) - 16
-		else
-			G.pixel_x = rand(-4,4)
-			G.pixel_y = rand(-4,4)
+		G.pixel_x = text2num(params["icon-x"]) - 16
+		G.pixel_y = text2num(params["icon-y"]) - 16
+	else
+		G.pixel_x = rand(-4,4)
+		G.pixel_y = rand(-4,4)

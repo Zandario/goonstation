@@ -1,6 +1,6 @@
 /mob/var/datum/targetable/chairflip/chair_flip_ability = null
 
-/mob/proc/start_chair_flip_targeting(var/extrarange = 0)
+/mob/proc/start_chair_flip_targeting(extrarange = 0)
 	if (src.abilityHolder)
 		if (istype(src.abilityHolder,/datum/abilityHolder/composite))
 			var/datum/abilityHolder/composite/C = src.abilityHolder
@@ -46,65 +46,65 @@
 	var/extrarange = 0 //affects next flip only
 	var/dist = 0
 
-	proc/check_mutantrace(mob/user)
-		if(isfrog(user))
-			dist = 6 + extrarange
-		else
-			dist = 3 + extrarange
+/datum/targetable/chairflip/proc/check_mutantrace(mob/user)
+	if(isfrog(user))
+		dist = 6 + extrarange
+	else
+		dist = 3 + extrarange
 
-	flip_callback()
-		var/mob/M = holder.owner
+/datum/targetable/chairflip/flip_callback()
+	var/mob/M = holder.owner
+	var/turf/T = get_turf(M)
+	check_mutantrace(M)
+	while (T && dist > 0)
+		T = get_step(T,M.dir)
+		dist -= 1
+
+	src.cast(T)
+
+/datum/targetable/chairflip/cast(atom/target) //the effect is in throw_impact at the bottom of mob.dm
+	..()
+
+	var/mob/M = holder.owner
+	check_mutantrace(M)
+	if (GET_DIST(M,target) > dist)
+		var/steps = 0
 		var/turf/T = get_turf(M)
-		check_mutantrace(M)
-		while (T && dist > 0)
-			T = get_step(T,M.dir)
-			dist -= 1
+		while (steps < dist)
+			T = get_step(T,get_dir(T,target))
+			steps += 1
 
-		src.cast(T)
+		target = T
 
-	cast(atom/target) //the effect is in throw_impact at the bottom of mob.dm
-		..()
-
-		var/mob/M = holder.owner
-		check_mutantrace(M)
-		if (GET_DIST(M,target) > dist)
-			var/steps = 0
-			var/turf/T = get_turf(M)
-			while (steps < dist)
-				T = get_step(T,get_dir(T,target))
-				steps += 1
-
-			target = T
-
-		extrarange = 0
+	extrarange = 0
 
 
-		if (istype(M.buckled,/obj/stool/chair))
-			var/obj/stool/chair/C = M.buckled
-			M.buckled.unbuckle()
-			C.buckledIn = 0
-			C.buckled_guy = null
-		M.pixel_y = 0
-		M.buckled = null
-		reset_anchored(M)
+	if (istype(M.buckled,/obj/stool/chair))
+		var/obj/stool/chair/C = M.buckled
+		M.buckled.unbuckle()
+		C.buckledIn = 0
+		C.buckled_guy = null
+	M.pixel_y = 0
+	M.buckled = null
+	reset_anchored(M)
 
-		M.targeting_ability = null
-		M.update_cursor()
+	M.targeting_ability = null
+	M.update_cursor()
 
-		if (ishuman(M))
-			var/mob/living/carbon/human/H = M
-			H.on_chair = null
+	if (ishuman(M))
+		var/mob/living/carbon/human/H = M
+		H.on_chair = null
 
-		playsound(M.loc, 'sound/effects/flip.ogg', 50, 1)
-		M.throw_at(target, 10, 1, throw_type = THROW_CHAIRFLIP)
+	playsound(M.loc, 'sound/effects/flip.ogg', 50, 1)
+	M.throw_at(target, 10, 1, throw_type = THROW_CHAIRFLIP)
 
 
-		if (!iswrestler(M) && M.traitHolder && !M.traitHolder.hasTrait("glasscannon"))
-			M.remove_stamina(STAMINA_FLIP_COST)
-			M.stamina_stun()
+	if (!iswrestler(M) && M.traitHolder && !M.traitHolder.hasTrait("glasscannon"))
+		M.remove_stamina(STAMINA_FLIP_COST)
+		M.stamina_stun()
 
-		//if (!M.reagents.has_reagent("fliptonium"))
-			//animate_spin(src, prob(50) ? "L" : "R", 1, 0)
+	//if (!M.reagents.has_reagent("fliptonium"))
+		//animate_spin(src, prob(50) ? "L" : "R", 1, 0)
 
 
 /mob/throw_impact(atom/hit_atom, datum/thrown_thing/thr)
@@ -126,7 +126,7 @@
 			if (check_target_immunity(M, source = src))
 				src.visible_message("<b><span class='alert'>[src] bounces off [M] harmlessly!</span></b>")
 				return
-			playsound(src.loc, 'sound/impact_sounds/Flesh_Break_1.ogg', 75, 1)
+			playsound(src.loc, 'sound/impact_sounds/Flesh_Break_1.ogg', 75, TRUE)
 			if (prob(25))
 				M.emote("scream")
 
@@ -170,43 +170,43 @@
 	targeted = FALSE
 	cooldown = 0
 
-	onAttach(datum/abilityHolder/holder)
-		. = ..()
-		var/atom/movable/screen/ability/topBar/B = src.object
-		B.UpdateOverlays(image('icons/obj/surgery.dmi', "brain1"), "brain_state")
+/datum/targetable/ai_toggle/onAttach(datum/abilityHolder/holder)
+	. = ..()
+	var/atom/movable/screen/ability/topBar/B = src.object
+	B.UpdateOverlays(image('icons/obj/surgery.dmi', "brain1"), "brain_state")
 
-	castcheck()
-		. = isadmin(holder.owner)
+/datum/targetable/ai_toggle/castcheck()
+	. = isadmin(holder.owner)
 
-	cast(atom/target)
-		..()
-		var/mob/living/M = holder.owner
-		if (M.ai && M.is_npc)
-			if(M.ai.enabled )
-				M.ai.enabled = FALSE
-			else
-				M.ai.enabled = TRUE
-				M.ai.interrupt()
-		else if( M.is_npc && ishuman(M) )
-			var/mob/living/carbon/human/H = M
-			H.ai_set_active(!H.ai_active)
-		updateObject()
-
-	updateObject()
-		var/mob/living/M = holder.owner
-		var/atom/movable/screen/ability/topBar/B = src.object
-		var/image/I = B.SafeGetOverlayImage("brain_state", 'icons/obj/surgery.dmi', "brain1")
-		if(M.ai?.enabled || M.ai_active)
-			I.icon_state = "ai_brain"
+/datum/targetable/ai_toggle/cast(atom/target)
+	..()
+	var/mob/living/M = holder.owner
+	if (M.ai && M.is_npc)
+		if(M.ai.enabled )
+			M.ai.enabled = FALSE
 		else
-			I.icon_state = "brain1"
+			M.ai.enabled = TRUE
+			M.ai.interrupt()
+	else if( M.is_npc && ishuman(M) )
+		var/mob/living/carbon/human/H = M
+		H.ai_set_active(!H.ai_active)
+	updateObject()
 
-		B.UpdateOverlays(I, "brain_state")
+/datum/targetable/ai_toggle/updateObject()
+	var/mob/living/M = holder.owner
+	var/atom/movable/screen/ability/topBar/B = src.object
+	var/image/I = B.SafeGetOverlayImage("brain_state", 'icons/obj/surgery.dmi', "brain1")
+	if(M.ai?.enabled || M.ai_active)
+		I.icon_state = "ai_brain"
+	else
+		I.icon_state = "brain1"
 
-	display_available()
-		. = ..()
-		if(.)
-			. = isadmin(holder.owner)
+	B.UpdateOverlays(I, "brain_state")
+
+/datum/targetable/ai_toggle/display_available()
+	. = ..()
+	if(.)
+		. = isadmin(holder.owner)
 
 
 /datum/targetable/camera_shoot
@@ -217,9 +217,8 @@
 	cooldown = 1 SECOND
 	var/current_projectile = new/datum/projectile/laser/eyebeams
 
-	cast(atom/target)
-		. = ..()
-		var/turf/T = get_turf(target)
-		for(var/obj/O in T.cameras)
-			shoot_projectile_ST(O, current_projectile, T)
-
+/datum/targetable/camera_shoot/cast(atom/target)
+	. = ..()
+	var/turf/T = get_turf(target)
+	for(var/obj/O in T.cameras)
+		shoot_projectile_ST(O, current_projectile, T)

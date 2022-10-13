@@ -1,7 +1,8 @@
 /* 	/		/		/		/		/		/		Setup		/		/		/		/		/		/		/		/		*/
 
-/proc/equip_wizard(mob/living/carbon/human/wizard_mob, var/robe = 0, var/vr = 0)
-	if (!ishuman(wizard_mob)) return
+/proc/equip_wizard(mob/living/carbon/human/wizard_mob, robe = 0, vr = 0)
+	if (!ishuman(wizard_mob))
+		return
 
 	if (vr && wizard_mob.get_ability_holder(/datum/abilityHolder/wizard))
 		// you're already a wizard you shithead, get out of here
@@ -66,12 +67,13 @@
 
 ////////////////////////////////////////////// Helper procs ////////////////////////////////////////////////////
 
-/mob/proc/wizard_spellpower(var/datum/targetable/spell/spell = null)
+/mob/proc/wizard_spellpower(datum/targetable/spell/spell = null)
 	return 0
 
-/mob/living/carbon/human/wizard_spellpower(var/datum/targetable/spell/spell = null)
+/mob/living/carbon/human/wizard_spellpower(datum/targetable/spell/spell = null)
 	var/magcount = 0
-	if (!src) return 0 // ??
+	if (!src)
+		return 0 // ??
 	if (src.bioHolder.HasEffect("arcane_power") == 2)
 		magcount += 10
 	for (var/obj/item/clothing/C in src.contents)
@@ -84,10 +86,12 @@
 		magcount += 2
 	if (istype(src.l_hand, /obj/item/staff))
 		magcount += 2
-	if (magcount >= 4) return 1
-	else return 0
+	if (magcount >= 4)
+		return 1
+	else
+		return 0
 
-/mob/living/critter/wizard_spellpower(var/datum/targetable/spell/spell = null)
+/mob/living/critter/wizard_spellpower(datum/targetable/spell/spell = null)
 	var/magcount = 0
 	for (var/obj/item/clothing/C in src.contents)
 		if (C.magical)
@@ -98,13 +102,15 @@
 					magcount += 10
 	if (src.find_type_in_hand(/obj/item/staff))
 		magcount += 2
-	if (magcount >= 4) return 1
-	else return 0
+	if (magcount >= 4)
+		return 1
+	else
+		return 0
 
-/mob/proc/wizard_castcheck(var/datum/targetable/spell/spell = null)
+/mob/proc/wizard_castcheck(datum/targetable/spell/spell = null)
 	return 0
 
-/mob/living/carbon/human/wizard_castcheck(var/datum/targetable/spell/spell = null)
+/mob/living/carbon/human/wizard_castcheck(datum/targetable/spell/spell = null)
 	if(src.stat)
 		boutput(src, "You can't cast spells while incapacitated.")
 		return 0
@@ -141,7 +147,7 @@
 			return 0
 	return 1
 
-/mob/living/critter/wizard_castcheck(var/datum/targetable/spell/spell = null)
+/mob/living/critter/wizard_castcheck(datum/targetable/spell/spell = null)
 	if(src.stat)
 		boutput(src, "You can't cast spells while incapacitated.")
 		return 0
@@ -166,43 +172,42 @@
 
 //////////////////////////////////////////// Ability holder /////////////////////////////////////////
 
-/atom/movable/screen/ability/topBar/spell
-	clicked(params)
-		var/datum/targetable/spell/spell = owner
-		var/datum/abilityHolder/holder = owner.holder
+/atom/movable/screen/ability/topBar/spell/clicked(params)
+	var/datum/targetable/spell/spell = owner
+	var/datum/abilityHolder/holder = owner.holder
 
-		if (!istype(spell))
-			return
-		if (!spell.holder)
-			return
+	if (!istype(spell))
+		return
+	if (!spell.holder)
+		return
 
-		if(params["shift"] && params["ctrl"])
-			if(owner.waiting_for_hotkey)
-				holder.cancel_action_binding()
-				return
-			else
-				owner.waiting_for_hotkey = 1
-				src.UpdateIcon()
-				boutput(usr, "<span class='notice'>Please press a number to bind this ability to...</span>")
-				return
-
-		if (!isturf(usr.loc))
+	if(params["shift"] && params["ctrl"])
+		if(owner.waiting_for_hotkey)
+			holder.cancel_action_binding()
 			return
-		if (world.time < spell.last_cast)
-			return
-		if (spell.targeted && usr.targeting_ability == owner)
-			usr.targeting_ability = null
-			usr.update_cursor()
-			return
-		var/mob/user = spell.holder.owner
-		if (!istype(spell, /datum/targetable/spell/prismatic_spray/admin) && !user.wizard_castcheck(spell))
-			return
-		if (spell.targeted)
-			usr.targeting_ability = owner
-			usr.update_cursor()
 		else
-			SPAWN(0)
-				spell.handleCast()
+			owner.waiting_for_hotkey = 1
+			src.UpdateIcon()
+			boutput(usr, "<span class='notice'>Please press a number to bind this ability to...</span>")
+			return
+
+	if (!isturf(usr.loc))
+		return
+	if (world.time < spell.last_cast)
+		return
+	if (spell.targeted && usr.targeting_ability == owner)
+		usr.targeting_ability = null
+		usr.update_cursor()
+		return
+	var/mob/user = spell.holder.owner
+	if (!istype(spell, /datum/targetable/spell/prismatic_spray/admin) && !user.wizard_castcheck(spell))
+		return
+	if (spell.targeted)
+		usr.targeting_ability = owner
+		usr.update_cursor()
+	else
+		SPAWN(0)
+			spell.handleCast()
 
 /datum/abilityHolder/wizard
 	usesPoints = 0
@@ -225,128 +230,128 @@
 	var/maptext_style = "color: white !important; text-shadow: 1px 1px 3px white; -dm-text-outline: 1px black;"
 	var/maptext_colors = null
 
-	proc/calculate_cooldown()
-		var/cool = src.cooldown
-		var/mob/user = src.holder.owner
-		if (user?.bioHolder)
-			switch (user.bioHolder.HasEffect("arcane_power"))
-				if (1)
-					cool /= 2
-				if (2)
-					cool = 1
-		if (src.cooldown_staff && !user.wizard_spellpower(src))
-			cool *= 1.5
-		return cool
+/datum/targetable/spell/proc/calculate_cooldown()
+	var/cool = src.cooldown
+	var/mob/user = src.holder.owner
+	if (user?.bioHolder)
+		switch (user.bioHolder.HasEffect("arcane_power"))
+			if (1)
+				cool /= 2
+			if (2)
+				cool = 1
+	if (src.cooldown_staff && !user.wizard_spellpower(src))
+		cool *= 1.5
+	return cool
 
-	disposing()
-		if (object)
-			qdel(object)
-		..()
+/datum/targetable/spell/disposing()
+	if (object)
+		qdel(object)
+	..()
 
-	doCooldown()
-		src.last_cast = world.time + calculate_cooldown()
-		SPAWN(calculate_cooldown() + 5)
-			holder.updateButtons()
+/datum/targetable/spell/doCooldown()
+	src.last_cast = world.time + calculate_cooldown()
+	SPAWN(calculate_cooldown() + 5)
+		holder.updateButtons()
 
-	//mbc : i don't see why the wizard needs a specialized tryCast() proc. someone fix it later for me!
-	tryCast(atom/target)
-		if (!holder || !holder.owner)
-			return 1
-		var/datum/abilityHolder/wizard/H = holder
-		if (H.locked && src.ignore_holder_lock != 1)
-			boutput(holder.owner, "<span class='alert'>You're already casting an ability.</span>")
-			return 1 // ASSHOLES
-		if (src.last_cast > world.time)
-			return 1
-		if (isunconscious(holder.owner))
-			boutput(holder.owner, "<span class='alert'>You cannot cast this ability while you are unconscious.</span>")
-			src.holder.locked = 0
-			return 999
-		if (!holder.cast_while_dead && isdead(holder.owner))
-			boutput(holder.owner, "<span class='alert'>You cannot cast this ability while you are dead.</span>")
-			src.holder.locked = 0
-			return 999
-		if (!istype(src, /datum/targetable/spell/prismatic_spray/admin) && !H.owner.wizard_castcheck(src)) // oh god this is ugly but it's technically not duplicating code so it fixes to problem with the move to ability buttons
-			src.holder.locked = 0
-			return 999
-		if (src.requires_being_on_turf && !isturf(holder.owner.loc))
+//mbc : i don't see why the wizard needs a specialized tryCast() proc. someone fix it later for me!
+/datum/targetable/spell/tryCast(atom/target)
+	if (!holder || !holder.owner)
+		return 1
+	var/datum/abilityHolder/wizard/H = holder
+	if (H.locked && src.ignore_holder_lock != 1)
+		boutput(holder.owner, "<span class='alert'>You're already casting an ability.</span>")
+		return 1 // ASSHOLES
+	if (src.last_cast > world.time)
+		return 1
+	if (isunconscious(holder.owner))
+		boutput(holder.owner, "<span class='alert'>You cannot cast this ability while you are unconscious.</span>")
+		src.holder.locked = 0
+		return 999
+	if (!holder.cast_while_dead && isdead(holder.owner))
+		boutput(holder.owner, "<span class='alert'>You cannot cast this ability while you are dead.</span>")
+		src.holder.locked = 0
+		return 999
+	if (!istype(src, /datum/targetable/spell/prismatic_spray/admin) && !H.owner.wizard_castcheck(src)) // oh god this is ugly but it's technically not duplicating code so it fixes to problem with the move to ability buttons
+		src.holder.locked = 0
+		return 999
+	if (src.requires_being_on_turf && !isturf(holder.owner.loc))
+		boutput(holder.owner, "<span class='alert'>That ability doesn't seem to work here.</span>")
+		return 999
+	var/turf/T = get_turf(holder.owner)
+	if( offensive && T.loc:sanctuary )
+		boutput(holder.owner, "<span class='alert'>You cannot cast offensive spells on someone in a sanctuary.</span>")
+	if (src.restricted_area_check)
+		if (!T || !isturf(T))
 			boutput(holder.owner, "<span class='alert'>That ability doesn't seem to work here.</span>")
-			return 999
-		var/turf/T = get_turf(holder.owner)
-		if( offensive && T.loc:sanctuary )
-			boutput(holder.owner, "<span class='alert'>You cannot cast offensive spells on someone in a sanctuary.</span>")
-		if (src.restricted_area_check)
-			if (!T || !isturf(T))
-				boutput(holder.owner, "<span class='alert'>That ability doesn't seem to work here.</span>")
-				return 1
+			return 1
 
-			switch (src.restricted_area_check)
-				if (1)
-					if (isrestrictedz(T.z))
-						var/area/Arr = get_area(T)
-						if (!istype(Arr, /area/wizard_station))
-							boutput(holder.owner, "<span class='alert'>That ability doesn't seem to work here.</span>")
-							return 1
-				if (2)
-					var/area/A = get_area(T)
-					if (A && istype(A, /area/sim))
-						boutput(holder.owner, "<span class='alert'>You can't use this ability in virtual reality.</span>")
+		switch (src.restricted_area_check)
+			if (1)
+				if (isrestrictedz(T.z))
+					var/area/Arr = get_area(T)
+					if (!istype(Arr, /area/wizard_station))
+						boutput(holder.owner, "<span class='alert'>That ability doesn't seem to work here.</span>")
 						return 1
-		if (src.dont_lock_holder != 1)
-			H.locked = 1
-		if (src.cooldown_staff && !holder.owner.wizard_spellpower(src))
-			boutput(holder.owner, "<span class='alert'>Your spell takes longer to recharge without a staff to focus it!</span>")
-		var/val = cast(target)
-		H.locked = 0
-		return val
+			if (2)
+				var/area/A = get_area(T)
+				if (A && istype(A, /area/sim))
+					boutput(holder.owner, "<span class='alert'>You can't use this ability in virtual reality.</span>")
+					return 1
+	if (src.dont_lock_holder != 1)
+		H.locked = 1
+	if (src.cooldown_staff && !holder.owner.wizard_spellpower(src))
+		boutput(holder.owner, "<span class='alert'>Your spell takes longer to recharge without a staff to focus it!</span>")
+	var/val = cast(target)
+	H.locked = 0
+	return val
 
-	proc/targetSpellImmunity(mob/living/carbon/human/H, var/messages, var/chaplain_xp)
-		if (H.traitHolder.hasTrait("training_chaplain"))
-			if (messages)
-				boutput(holder.owner, "<span class='alert'>[H] has divine protection from magic.</span>")
-				H.visible_message("<span class='alert'>The spell has no effect on [H]!</span>")
-			if (chaplain_xp)
-				JOB_XP(H, "Chaplain", chaplain_xp)
-			return 1
+/datum/targetable/spell/proc/targetSpellImmunity(mob/living/carbon/human/H, messages, chaplain_xp)
+	if (H.traitHolder.hasTrait("training_chaplain"))
+		if (messages)
+			boutput(holder.owner, "<span class='alert'>[H] has divine protection from magic.</span>")
+			H.visible_message("<span class='alert'>The spell has no effect on [H]!</span>")
+		if (chaplain_xp)
+			JOB_XP(H, "Chaplain", chaplain_xp)
+		return 1
 
-		if (iswizard(H))
-			if (messages)
-				H.visible_message("<span class='alert'>The spell has no effect on [H]!</span>")
-			return 1
+	if (iswizard(H))
+		if (messages)
+			H.visible_message("<span class='alert'>The spell has no effect on [H]!</span>")
+		return 1
 
-		if (check_target_immunity(H))
-			if (messages)
-				H.visible_message("<span class='alert'>[H] seems to be warded from the effects!</span>")
-			return 1
+	if (check_target_immunity(H))
+		if (messages)
+			H.visible_message("<span class='alert'>[H] seems to be warded from the effects!</span>")
+		return 1
 
-		return 0
+	return 0
 
-	updateObject()
-		if (!holder || !holder.owner)
-			qdel(src)
-		if (!src.object)
-			src.object = new /atom/movable/screen/ability/topBar/spell()
-		object.icon = src.icon
-		if (src.last_cast > world.time)
-			object.name = "[src.name] ([round((src.last_cast-world.time)/10)])"
-			object.icon_state = src.icon_state + "_cd"
-		else
-			object.name = src.name
-			object.icon_state = src.icon_state
-		object.owner = src
+/datum/targetable/spell/updateObject()
+	if (!holder || !holder.owner)
+		qdel(src)
+	if (!src.object)
+		src.object = new /atom/movable/screen/ability/topBar/spell()
+	object.icon = src.icon
+	if (src.last_cast > world.time)
+		object.name = "[src.name] ([round((src.last_cast-world.time)/10)])"
+		object.icon_state = src.icon_state + "_cd"
+	else
+		object.name = src.name
+		object.icon_state = src.icon_state
+	object.owner = src
 
-	castcheck()
-		return holder.owner.wizard_castcheck(src)
+/datum/targetable/spell/castcheck()
+	return holder.owner.wizard_castcheck(src)
 
-	cast(atom/target)
-		if(ishuman(holder.owner))
-			var/mob/living/carbon/human/O = holder.owner
-			if(src.voice_grim && O && istype(O.wear_suit, /obj/item/clothing/suit/wizrobe/necro) && istype(O.head, /obj/item/clothing/head/wizard/necro))
-				playsound(O.loc, src.voice_grim, 50, 0, -1)
-			else if(src.voice_fem && O.gender == "female")
-				playsound(O.loc, src.voice_fem, 50, 0, -1)
-			else if (src.voice_other)
-				playsound(O.loc, src.voice_other, 50, 0, -1)
+/datum/targetable/spell/cast(atom/target)
+	if(ishuman(holder.owner))
+		var/mob/living/carbon/human/O = holder.owner
+		if(src.voice_grim && O && istype(O.wear_suit, /obj/item/clothing/suit/wizrobe/necro) && istype(O.head, /obj/item/clothing/head/wizard/necro))
+			playsound(O.loc, src.voice_grim, 50, 0, -1)
+		else if(src.voice_fem && O.gender == "female")
+			playsound(O.loc, src.voice_fem, 50, 0, -1)
+		else if (src.voice_other)
+			playsound(O.loc, src.voice_other, 50, 0, -1)
 
-		var/log_target = constructTarget(target,"combat")
-		logTheThing(LOG_COMBAT, holder.owner, "casts [src.name] from [log_loc(holder.owner)][targeted ? ", at [log_target]" : ""].")
+	var/log_target = constructTarget(target,"combat")
+	logTheThing(LOG_COMBAT, holder.owner, "casts [src.name] from [log_loc(holder.owner)][targeted ? ", at [log_target]" : ""].")

@@ -102,7 +102,7 @@
 		return
 
 // There used to be more stuff here, most of which was moved to limb datums.
-/mob/proc/werewolf_attack(var/mob/target = null, var/attack_type = "")
+/mob/proc/werewolf_attack(mob/target = null, attack_type = "")
 	if (!iswerewolf(src))
 		return 0
 
@@ -268,7 +268,7 @@
 	return 1
 
 // Also called by limb datums.
-/mob/proc/werewolf_audio_effects(var/mob/target = null, var/type = "disarm")
+/mob/proc/werewolf_audio_effects(mob/target = null, type = "disarm")
 	if (!src || !ismob(src) || !target || !ismob(target))
 		return
 
@@ -306,29 +306,28 @@
 
 //////////////////////////////////////////// Ability holder /////////////////////////////////////////
 
-/atom/movable/screen/ability/topBar/werewolf
-	clicked(params)
-		var/datum/targetable/werewolf/spell = owner
-		if (!istype(spell))
-			return
-		if (!spell.holder)
-			return
-		if (!isturf(owner.holder.owner.loc))
-			boutput(owner.holder.owner, "<span class='alert'>You can't use this ability here.</span>")
-			return
-		if (spell.targeted && usr.targeting_ability == owner)
-			usr.targeting_ability = null
-			usr.update_cursor()
-			return
-		if (spell.targeted)
-			if (world.time < spell.last_cast)
-				return
-			usr.targeting_ability = owner
-			usr.update_cursor()
-		else
-			SPAWN(0)
-				spell.handleCast()
+/atom/movable/screen/ability/topBar/werewolf/clicked(params)
+	var/datum/targetable/werewolf/spell = owner
+	if (!istype(spell))
 		return
+	if (!spell.holder)
+		return
+	if (!isturf(owner.holder.owner.loc))
+		boutput(owner.holder.owner, "<span class='alert'>You can't use this ability here.</span>")
+		return
+	if (spell.targeted && usr.targeting_ability == owner)
+		usr.targeting_ability = null
+		usr.update_cursor()
+		return
+	if (spell.targeted)
+		if (world.time < spell.last_cast)
+			return
+		usr.targeting_ability = owner
+		usr.update_cursor()
+	else
+		SPAWN(0)
+			spell.handleCast()
+	return
 
 /datum/abilityHolder/werewolf
 	usesPoints = 0
@@ -339,22 +338,22 @@
 	var/datum/reagents/tainted_saliva_reservoir = null
 	var/awaken_time //don't really need this here, but admins might want to know when the werewolf's awaken time is.
 
-	New()
-		..()
-		awaken_time = rand(5, 10)*100
-		src.tainted_saliva_reservoir = new/datum/reagents(500)
+/datum/abilityHolder/werewolf/New()
+	..()
+	awaken_time = rand(5, 10)*100
+	src.tainted_saliva_reservoir = new/datum/reagents(500)
 
-	onAbilityStat() // In the 'Werewolf' tab.
-		..()
-		.= list()
-		if (src.owner && src.owner.mind && src.owner.mind.special_role == ROLE_WEREWOLF)
-			for (var/datum/objective/specialist/werewolf/feed/O in src.owner.mind.objectives)
-				src.feed_objective = O
+/datum/abilityHolder/werewolf/onAbilityStat() // In the 'Werewolf' tab.
+	..()
+	.= list()
+	if (src.owner && src.owner.mind && src.owner.mind.special_role == ROLE_WEREWOLF)
+		for (var/datum/objective/specialist/werewolf/feed/O in src.owner.mind.objectives)
+			src.feed_objective = O
 
-			if (src.feed_objective && istype(src.feed_objective))
-				.["Feedings:"] = src.feed_objective.feed_count
+		if (src.feed_objective && istype(src.feed_objective))
+			.["Feedings:"] = src.feed_objective.feed_count
 
-		return
+	return
 
 //percent, give number 0-1
 /datum/abilityHolder/proc/lower_cooldowns(var/percent)
@@ -374,91 +373,91 @@
 	var/not_when_handcuffed = 0
 	var/werewolf_only = 0
 
-	New()
-		..()
-		var/atom/movable/screen/ability/topBar/werewolf/B = new /atom/movable/screen/ability/topBar/werewolf(null)
-		B.icon = src.icon
-		B.icon_state = src.icon_state
-		B.owner = src
-		B.name = src.name
-		B.desc = src.desc
-		src.object = B
-		return
+/datum/targetable/werewolf/New()
+	..()
+	var/atom/movable/screen/ability/topBar/werewolf/B = new /atom/movable/screen/ability/topBar/werewolf(null)
+	B.icon = src.icon
+	B.icon_state = src.icon_state
+	B.owner = src
+	B.name = src.name
+	B.desc = src.desc
+	src.object = B
+	return
 
-	updateObject()
-		..()
-		if (!src.object)
-			src.object = new /atom/movable/screen/ability/topBar/werewolf()
-			object.icon = src.icon
-			object.owner = src
-		if (src.last_cast > world.time)
-			var/pttxt = ""
-			if (pointCost)
-				pttxt = " \[[pointCost]\]"
-			object.name = "[src.name][pttxt] ([round((src.last_cast-world.time)/10)])"
-			object.icon_state = src.icon_state + "_cd"
-		else
-			var/pttxt = ""
-			if (pointCost)
-				pttxt = " \[[pointCost]\]"
-			object.name = "[src.name][pttxt]"
-			object.icon_state = src.icon_state
-		return
+/datum/targetable/werewolf/updateObject()
+	..()
+	if (!src.object)
+		src.object = new /atom/movable/screen/ability/topBar/werewolf()
+		object.icon = src.icon
+		object.owner = src
+	if (src.last_cast > world.time)
+		var/pttxt = ""
+		if (pointCost)
+			pttxt = " \[[pointCost]\]"
+		object.name = "[src.name][pttxt] ([round((src.last_cast-world.time)/10)])"
+		object.icon_state = src.icon_state + "_cd"
+	else
+		var/pttxt = ""
+		if (pointCost)
+			pttxt = " \[[pointCost]\]"
+		object.name = "[src.name][pttxt]"
+		object.icon_state = src.icon_state
+	return
 
-	proc/incapacitation_check(var/stunned_only_is_okay = 0)
-		if (!holder)
-			return 0
+/datum/targetable/werewolf/proc/incapacitation_check(stunned_only_is_okay = 0)
+	if (!holder)
+		return 0
 
-		var/mob/living/M = holder.owner
-		if (!M || !ismob(M))
-			return 0
+	var/mob/living/M = holder.owner
+	if (!M || !ismob(M))
+		return 0
 
-		switch (stunned_only_is_okay)
-			if (0)
-				if (!isalive(M) || M.hasStatus(list("stunned", "paralysis", "weakened")))
-					return 0
-				else
-					return 1
-			if (1)
-				if (!isalive(M) || M.getStatusDuration("paralysis") > 0)
-					return 0
-				else
-					return 1
+	switch (stunned_only_is_okay)
+		if (0)
+			if (!isalive(M) || M.hasStatus(list("stunned", "paralysis", "weakened")))
+				return 0
 			else
 				return 1
+		if (1)
+			if (!isalive(M) || M.getStatusDuration("paralysis") > 0)
+				return 0
+			else
+				return 1
+		else
+			return 1
 
-	castcheck()
-		if (!holder)
-			return 0
+/datum/targetable/werewolf/castcheck()
+	if (!holder)
+		return 0
 
-		var/mob/living/carbon/human/M = holder.owner
+	var/mob/living/carbon/human/M = holder.owner
 
-		if (!M)
-			return 0
+	if (!M)
+		return 0
 
-		if (!ishuman(M)) // Only humans use mutantrace datums.
-			boutput(M, "<span class='alert'>You cannot use any powers in your current form.</span>")
-			return 0
+	if (!ishuman(M)) // Only humans use mutantrace datums.
+		boutput(M, "<span class='alert'>You cannot use any powers in your current form.</span>")
+		return 0
 
-		if (M.transforming)
-			boutput(M, "<span class='alert'>You can't use any powers right now.</span>")
-			return 0
+	if (M.transforming)
+		boutput(M, "<span class='alert'>You can't use any powers right now.</span>")
+		return 0
 
-		if (werewolf_only == 1 && !iswerewolf(M))
-			boutput(M, "<span class='alert'>You must be in your wolf form to use this ability.</span>")
-			return 0
+	if (werewolf_only == 1 && !iswerewolf(M))
+		boutput(M, "<span class='alert'>You must be in your wolf form to use this ability.</span>")
+		return 0
 
-		if (incapacitation_check(src.when_stunned) != 1)
-			boutput(M, "<span class='alert'>You can't use this ability while incapacitated!</span>")
-			return 0
+	if (incapacitation_check(src.when_stunned) != 1)
+		boutput(M, "<span class='alert'>You can't use this ability while incapacitated!</span>")
+		return 0
 
-		if (src.not_when_handcuffed == 1 && M.restrained())
-			boutput(M, "<span class='alert'>You can't use this ability when restrained!</span>")
-			return 0
+	if (src.not_when_handcuffed == 1 && M.restrained())
+		boutput(M, "<span class='alert'>You can't use this ability when restrained!</span>")
+		return 0
 
-		return 1
+	return 1
 
-	cast(atom/target)
-		. = ..()
-		actions.interrupt(holder.owner, INTERRUPT_ACT)
-		return
+/datum/targetable/werewolf/cast(atom/target)
+	. = ..()
+	actions.interrupt(holder.owner, INTERRUPT_ACT)
+	return
