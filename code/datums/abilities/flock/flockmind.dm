@@ -13,9 +13,9 @@
 	notEnoughPointsMessage = "<span class='alert'>Insufficient available compute resources.</span>"
 	var/datum/targetable/flockmindAbility/droneControl/drone_controller = null
 
-	New()
-		..()
-		drone_controller = addAbility(/datum/targetable/flockmindAbility/droneControl)
+/datum/abilityHolder/flockmind/New()
+	..()
+	drone_controller = acddAbility(/datum/targetable/flockmindAbility/droneControl)
 
 /datum/abilityHolder/flockmind/proc/updateCompute(usedCompute, totalCompute)
 	var/mob/living/intangible/flock/F = owner
