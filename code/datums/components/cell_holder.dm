@@ -147,28 +147,28 @@ TYPEINFO(/datum/component/cell_holder)
 	var/atom/movable/cell
 	var/obj/item/cell_holder
 
-	New(User, Cell, Cell_holder)
-		src.user = User
-		src.cell = Cell
-		src.cell_holder = Cell_holder
-		..()
+/datum/action/bar/icon/cellswap/New(User, Cell, Cell_holder)
+	src.user = User
+	src.cell = Cell
+	src.cell_holder = Cell_holder
+	..()
 
-	onStart()
-		..()
-		if(BOUNDS_DIST(user, cell_holder) > 0 || QDELETED(user) || QDELETED(cell) || QDELETED(cell_holder) || get_turf(cell_holder) != get_turf(cell) )
-			interrupt(INTERRUPT_ALWAYS)
-			return
+/datum/action/bar/icon/cellswap/onStart()
+	..()
+	if(BOUNDS_DIST(user, cell_holder) > 0 || QDELETED(user) || QDELETED(cell) || QDELETED(cell_holder) || get_turf(cell_holder) != get_turf(cell) )
+		interrupt(INTERRUPT_ALWAYS)
+		return
+	return
+
+/datum/action/bar/icon/cellswap/onUpdate()
+	..()
+	if(BOUNDS_DIST(user, cell_holder) > 0 || QDELETED(user) || QDELETED(cell) || QDELETED(cell_holder) || get_turf(cell_holder) != get_turf(cell) )
+		interrupt(INTERRUPT_ALWAYS)
 		return
 
-	onUpdate()
-		..()
-		if(BOUNDS_DIST(user, cell_holder) > 0 || QDELETED(user) || QDELETED(cell) || QDELETED(cell_holder) || get_turf(cell_holder) != get_turf(cell) )
-			interrupt(INTERRUPT_ALWAYS)
-			return
-
-	onEnd()
-		..()
-		if(BOUNDS_DIST(user, cell_holder) > 0 || QDELETED(user) || QDELETED(cell) || QDELETED(cell_holder) || get_turf(cell_holder) != get_turf(cell) )
-			interrupt(INTERRUPT_ALWAYS)
-			return
-		SEND_SIGNAL(cell_holder, COMSIG_CELL_SWAP, cell, user)
+/datum/action/bar/icon/cellswap/onEnd()
+	..()
+	if(BOUNDS_DIST(user, cell_holder) > 0 || QDELETED(user) || QDELETED(cell) || QDELETED(cell_holder) || get_turf(cell_holder) != get_turf(cell) )
+		interrupt(INTERRUPT_ALWAYS)
+		return
+	SEND_SIGNAL(cell_holder, COMSIG_CELL_SWAP, cell, user)

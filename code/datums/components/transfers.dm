@@ -214,41 +214,41 @@
 	/// The type of the item we are stuffing into the target.
 	var/load_type
 
-	New(atom/target, load_type)
-		..()
-		src.target = target
-		src.load_type = load_type
+/datum/action/bar/quickload/New(atom/target, load_type)
+	..()
+	src.target = target
+	src.load_type = load_type
 
-	onStart()
-		. = ..()
-		loopStart()
-		owner.visible_message("<span class='notice'>[owner] begins quickly stuffing things into [target]!</span>")
-
-	onUpdate()
-		. = ..()
-		if(BOUNDS_DIST(owner, target) > 0)
-			src.interrupt(INTERRUPT_ALWAYS)
-
+/datum/action/bar/quickload/onStart()
+	. = ..()
 	loopStart()
-		. = ..()
-		if(BOUNDS_DIST(owner, target) > 0)
-			src.interrupt(INTERRUPT_ALWAYS)
+	owner.visible_message("<span class='notice'>[owner] begins quickly stuffing things into [target]!</span>")
 
-	onEnd()
-		. = ..()
-		if (!load_type)
+/datum/action/bar/quickload/onUpdate()
+	. = ..()
+	if(BOUNDS_DIST(owner, target) > 0)
+		src.interrupt(INTERRUPT_ALWAYS)
+
+/datum/action/bar/quickload/loopStart()
+	. = ..()
+	if(BOUNDS_DIST(owner, target) > 0)
+		src.interrupt(INTERRUPT_ALWAYS)
+
+/datum/action/bar/quickload/onEnd()
+	. = ..()
+	if (!load_type)
+		return
+	if(BOUNDS_DIST(owner, target) > 0)
+		src.interrupt(INTERRUPT_ALWAYS)
+		return
+	for(var/obj/item/M in view(1, owner))
+		if (!M || M.loc == owner)
+			continue
+		if (M.type != load_type)
+			continue
+		if(SEND_SIGNAL(target, COMSIG_TRANSFER_INCOMING, M))
+			playsound(target, 'sound/items/Deconstruct.ogg', 40, 1)
+			onRestart()
 			return
-		if(BOUNDS_DIST(owner, target) > 0)
-			src.interrupt(INTERRUPT_ALWAYS)
-			return
-		for(var/obj/item/M in view(1, owner))
-			if (!M || M.loc == owner)
-				continue
-			if (M.type != load_type)
-				continue
-			if(SEND_SIGNAL(target, COMSIG_TRANSFER_INCOMING, M))
-				playsound(target, 'sound/items/Deconstruct.ogg', 40, 1)
-				onRestart()
-				return
 
 #undef cant_do_shit

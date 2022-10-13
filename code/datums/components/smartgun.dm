@@ -17,57 +17,57 @@ TYPEINFO(/datum/component/holdertargeting/smartgun)
 	var/list/image/targeting_images
 	var/shotcount = 0
 
-	InheritComponent(datum/component/holdertargeting/smartgun/C, i_am_original, _maxlocks)
-		if(C)
-			src.maxlocks = C.maxlocks
-		else
-			src.maxlocks = _maxlocks
+/datum/component/holdertargeting/smartgun/InheritComponent(datum/component/holdertargeting/smartgun/C, i_am_original, _maxlocks)
+	if(C)
+		src.maxlocks = C.maxlocks
+	else
+		src.maxlocks = _maxlocks
 
-	Initialize(_maxlocks = 3)
-		if(..() == COMPONENT_INCOMPATIBLE || !istype(parent, /obj/item/gun))
-			return COMPONENT_INCOMPATIBLE
-		else
-			var/obj/item/G = parent
-			src.maxlocks = _maxlocks
-			tracked_targets = list()
-			targeting_images = list()
-			for(var/x in 1 to WIDE_TILE_WIDTH)
-				for(var/y in 1 to 15)
-					var/atom/movable/screen/fullautoAimHUD/hudSquare = new /atom/movable/screen/fullautoAimHUD
-					hudSquare.screen_loc = "[x],[y]"
-					hudSquare.xOffset = x
-					hudSquare.yOffset = y
-					hudSquares["[x],[y]"] = hudSquare
-			RegisterSignal(G, COMSIG_ITEM_SWAP_TO, .proc/init_smart_aim)
-			RegisterSignal(G, COMSIG_ITEM_SWAP_AWAY, .proc/end_smart_aim)
-			if(ismob(G.loc))
-				on_pickup(null, G.loc)
+/datum/component/holdertargeting/smartgun/Initialize(_maxlocks = 3)
+	if(..() == COMPONENT_INCOMPATIBLE || !istype(parent, /obj/item/gun))
+		return COMPONENT_INCOMPATIBLE
+	else
+		var/obj/item/G = parent
+		src.maxlocks = _maxlocks
+		tracked_targets = list()
+		targeting_images = list()
+		for(var/x in 1 to WIDE_TILE_WIDTH)
+			for(var/y in 1 to 15)
+				var/atom/movable/screen/fullautoAimHUD/hudSquare = new /atom/movable/screen/fullautoAimHUD
+				hudSquare.screen_loc = "[x],[y]"
+				hudSquare.xOffset = x
+				hudSquare.yOffset = y
+				hudSquares["[x],[y]"] = hudSquare
+		RegisterSignal(G, COMSIG_ITEM_SWAP_TO, .proc/init_smart_aim)
+		RegisterSignal(G, COMSIG_ITEM_SWAP_AWAY, .proc/end_smart_aim)
+		if(ismob(G.loc))
+			on_pickup(null, G.loc)
 
-	UnregisterFromParent()
-		if(aimer)
-			for(var/hudSquare in hudSquares)
-				aimer?.screen -= hudSquares[hudSquare]
-			aimer = null
-		if(current_user)
-			src.end_smart_aim(src, current_user)
-		. = ..()
-
-	disposing()
+/datum/component/holdertargeting/smartgun/UnregisterFromParent()
+	if(aimer)
 		for(var/hudSquare in hudSquares)
-			qdel(hudSquares[hudSquare])
-		tracked_targets = null
-		targeting_images = null
-		hudSquares = null
-		. = ..()
+			aimer?.screen -= hudSquares[hudSquare]
+		aimer = null
+	if(current_user)
+		src.end_smart_aim(src, current_user)
+	. = ..()
 
-	on_pickup(datum/source, mob/user)
-		. = ..()
-		if(user.equipped() == parent)
-			src.init_smart_aim(source, user)
+/datum/component/holdertargeting/smartgun/disposing()
+	for(var/hudSquare in hudSquares)
+		qdel(hudSquares[hudSquare])
+	tracked_targets = null
+	targeting_images = null
+	hudSquares = null
+	. = ..()
 
-	on_dropped(datum/source, mob/user)
-		. = ..()
-		src.end_smart_aim(source, user)
+/datum/component/holdertargeting/smartgun/on_pickup(datum/source, mob/user)
+	. = ..()
+	if(user.equipped() == parent)
+		src.init_smart_aim(source, user)
+
+/datum/component/holdertargeting/smartgun/on_dropped(datum/source, mob/user)
+	. = ..()
+	src.end_smart_aim(source, user)
 
 /datum/component/holdertargeting/smartgun/proc/init_smart_aim(datum/source, mob/user)
 	RegisterSignal(user, COMSIG_FULLAUTO_MOUSEMOVE, .proc/retarget)

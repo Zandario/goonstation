@@ -1,22 +1,26 @@
 /**
-  * Makes a [turf] or [atom/movable] hold a plant datum by attaching an invisible plantpot ([/obj/machinery/plantpot/bareplant])
-  *
-  * Seed will then be planted and then grow out of target and become interactible through clicking directly for atom/movable
-  *
-  *   Note: Bareplant pots are less effective than typical plantpots so hydroponics trays are goto.
-  */
+ * Makes a [turf] or [atom/movable] hold a plant datum by attaching an invisible plantpot ([/obj/machinery/plantpot/bareplant])
+ *
+ * Seed will then be planted and then grow out of target and become interactible through clicking directly for atom/movable
+ *
+ *   Note: Bareplant pots are less effective than typical plantpots so hydroponics trays are goto.
+ */
 /datum/component/arable
 	var/auto_water = TRUE
 	var/multi_plant = TRUE
 	var/obj/machinery/plantpot/bareplant/P
 
-	/** Component will destoy itself after plantpot is destroyed */
-	single_use
-		multi_plant = FALSE
+/**
+ * Component will destoy itself after plantpot is destroyed
+ */
+/datum/component/arable/single_use
+	multi_plant = FALSE
 
-	/** Plantpot must be watered manually (interacted with like a hydroponics tray clicking directly on the plant) */
-	manual_water
-		auto_water = FALSE
+/**
+ * Plantpot must be watered manually (interacted with like a hydroponics tray clicking directly on the plant)
+ */
+/datum/component/arable/manual_water
+	auto_water = FALSE
 
 TYPEINFO(/datum/component/arable)
 	initialization_args = list()

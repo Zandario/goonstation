@@ -13,7 +13,7 @@ TYPEINFO(/datum/component/foldable)
 		ARG_INFO("briefcase_path", DATA_INPUT_TYPE, "Path of item that will be folded up into", /obj/item/objBriefcase)
 	)
 
-/datum/component/foldable/Initialize(var/briefcase_path = /obj/item/objBriefcase)
+/datum/component/foldable/Initialize(briefcase_path = /obj/item/objBriefcase)
 	if(!istype(parent, /atom/movable))
 		return COMPONENT_INCOMPATIBLE
 	if(!ispath(briefcase_path, /obj/item/objBriefcase))
@@ -91,43 +91,45 @@ TYPEINFO(/datum/component/foldable)
 
 	var/atom/movable/thingInside
 
-	New(var/loc, var/obj/object)
-		..(loc)
-		src.set_loc(loc)
-		if(object)
-			src.thingInside = object
-			src.name = "foldable [object.name]"
-			src.desc = "A briefcase with a [object.name] inside. A breakthrough in briefcase technology!"
-		BLOCK_SETUP(BLOCK_BOOK)
+/obj/item/objBriefcase/New(loc, obj/object)
+	..(loc)
+	src.set_loc(loc)
+	if(object)
+		src.thingInside = object
+		src.name = "foldable [object.name]"
+		src.desc = "A briefcase with a [object.name] inside. A breakthrough in briefcase technology!"
+	BLOCK_SETUP(BLOCK_BOOK)
 
-	attack_self(mob/user)
-		deploy(user)
+/obj/item/objBriefcase/attack_self(mob/user)
+	deploy(user)
 
-	verb/unfold()
-		set src in view(1)
-		set category = "Local"
-		set name = "Unfold"
-		deploy(usr)
+/obj/item/objBriefcase/verb/unfold()
+	set src in view(1)
+	set category = "Local"
+	set name = "Unfold"
+	deploy(usr)
 
-	proc/deploy(var/mob/user)
-		if(!thingInside)
-			return
-		thingInside.set_loc(get_turf(src))
-		if(src.loc == user)
-			user.drop_from_slot(src)
-		src.set_loc(null)
-		user.visible_message("<span class='alert'>[user] unfolds [thingInside] from a briefcase!</span>")
+/obj/item/objBriefcase/proc/deploy(mob/user)
+	if(!thingInside)
+		return
+	thingInside.set_loc(get_turf(src))
+	if(src.loc == user)
+		user.drop_from_slot(src)
+	src.set_loc(null)
+	user.visible_message("<span class='alert'>[user] unfolds [thingInside] from a briefcase!</span>")
 
-	disposing()
-		if(src.thingInside)
-			var/datum/component/foldable/fold_component = src.thingInside.GetComponent(/datum/component/foldable)
-			if(fold_component && fold_component.the_briefcase == src)
-				fold_component.the_briefcase = null
-			src.thingInside = null
-		..()
-	blue_stripe
-		icon_state = "hopcase"
-		item_state = "hopcase"
-	blue_green_stripe
-		icon_state = "hopcaseC"
-		item_state = "hopcaseC"
+/obj/item/objBriefcase/disposing()
+	if(src.thingInside)
+		var/datum/component/foldable/fold_component = src.thingInside.GetComponent(/datum/component/foldable)
+		if(fold_component && fold_component.the_briefcase == src)
+			fold_component.the_briefcase = null
+		src.thingInside = null
+	..()
+
+/obj/item/objBriefcase/blue_stripe
+	icon_state = "hopcase"
+	item_state = "hopcase"
+
+/obj/item/objBriefcase/blue_green_stripe
+	icon_state = "hopcaseC"
+	item_state = "hopcaseC"

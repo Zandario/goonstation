@@ -15,12 +15,12 @@
 	proctype = .proc/geigerclick
 	var/list/cooldowns = list()
 
-	on_dropped(datum/source, mob/user)
-		var/obj/item/I = parent
-		if(I.loc != user)
-			. = ..()
+/datum/component/holdertargeting/geiger/on_dropped(datum/source, mob/user)
+	var/obj/item/I = parent
+	if(I.loc != user)
+		. = ..()
 
-/datum/component/holdertargeting/geiger/proc/geigerclick(var/mob/owner, var/stage)
+/datum/component/holdertargeting/geiger/proc/geigerclick(mob/owner, stage)
 	if(owner)
 		var/obj/item/I = parent
 		if(!ON_COOLDOWN(src, "playsound", 1 SECOND))

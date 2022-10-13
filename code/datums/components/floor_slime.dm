@@ -10,7 +10,7 @@ TYPEINFO(/datum/component/floor_slime)
 	var/slime_prob
 	var/slippery
 
-/datum/component/floor_slime/Initialize(var/reagent_id, var/slime_prob, var/slippery)
+/datum/component/floor_slime/Initialize(reagent_id, slime_prob, slippery)
 	if (!ismovable(src.parent))
 		return COMPONENT_INCOMPATIBLE
 	RegisterSignal(src.parent, COMSIG_MOVABLE_MOVED, .proc/slime)
