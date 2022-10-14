@@ -4,7 +4,7 @@
 // in case you wanted a vent to always smoke north for example
 /////////////////////////////////////////////
 
-proc/ClearBadsmokeRefs(var/atom/A)
+/proc/ClearBadsmokeRefs(atom/A)
 	for_by_tcl(BS, /datum/effects/system/bad_smoke_spread)
 		if (BS.holder == A)
 			BS.holder = null
