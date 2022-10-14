@@ -15,22 +15,22 @@
 	var/datum/contextLayout/contextLayout = null
 
 	//you could enter some maptext stuff here and then have buttons auto expand
-	New(var/mob/M, var/question)
-		user = M
-		contextLayout = new /datum/contextLayout/flexdefault(4, 32, 32)
+/datum/yesno_dialog/New(var/mob/M, var/question)
+	user = M
+	contextLayout = new /datum/contextLayout/flexdefault(4, 32, 32)
 
-		user.showContextActions(contextActions, src)
+	user.showContextActions(contextActions, src)
 
-		..()
+	..()
 
-	disposing()
-		..()
+/datum/yesno_dialog/disposing()
+	..()
 
 
 	//override these
-	proc/accept
-		qdel(src)
+/datum/yesno_dialog/proc/accept
+	qdel(src)
 
-	proc/deny
-		qdel(src)
+/datum/yesno_dialog/proc/deny
+	qdel(src)
 */
