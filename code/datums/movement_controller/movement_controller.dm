@@ -1,15 +1,14 @@
-/datum/movement_controller
-	proc
-		keys_changed(mob/owner, keys, changed)
-			// stub
+/// stub
+/datum/movement_controller/proc/keys_changed(mob/owner, keys, changed)
 
-		process_move(mob/owner, keys)
-			// stub
+/// stub
+/datum/movement_controller/proc/process_move(mob/owner, keys)
 
-		hotkey(mob/user, name)
+/// stub
+/datum/movement_controller/proc/hotkey(mob/user, name)
+/// stub
+/datum/movement_controller/proc/modify_keymap(client/C)
+	SHOULD_CALL_PARENT(TRUE)
 
-		modify_keymap(client/C)
-			SHOULD_CALL_PARENT(TRUE)
-			// stub
-
-		update_owner_dir()
+/// stub
+/datum/movement_controller/proc/update_owner_dir()
