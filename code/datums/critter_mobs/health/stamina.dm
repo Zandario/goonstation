@@ -9,11 +9,11 @@
 
 	var/regeneration_rate = 20
 
-	on_life()
-		HealDamage(regeneration_rate)
+/datum/healthHolder/stamina/on_life()
+	HealDamage(regeneration_rate)
 
-	on_deplete()
-		holder.visible_message("<span class='alert'>[holder] collapses!</span>")
-		holder.changeStatus("paralysis", 6 SECONDS)
+/datum/healthHolder/stamina/on_deplete()
+	holder.visible_message("<span class='alert'>[holder] collapses!</span>")
+	holder.changeStatus("paralysis", 6 SECONDS)
 
-	// @todo finish this
+// @todo finish this

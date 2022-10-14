@@ -7,10 +7,8 @@
 	depletion_threshold = 0
 	count_in_total = 0
 
-	on_life()
-		if (!holder.does_it_metabolize())
-			return
-		if (holder.reagents.has_reagent("mannitol"))
-			HealDamage(3)
-
-
+/datum/healthHolder/brain/on_life()
+	if (!holder.does_it_metabolize())
+		return
+	if (holder.reagents.has_reagent("mannitol"))
+		HealDamage(3)
