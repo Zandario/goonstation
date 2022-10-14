@@ -1,9 +1,10 @@
 /datum/tag/cssinclude
-	New()
-		..("link")
-		setAttribute("rel", "stylesheet")
-		setAttribute("type", "text/css")
-		selfCloses = 1
 
-	proc/setHref(var/href as text)
-		setAttribute("href", href)
+/datum/tag/cssinclude/New()
+	..("link")
+	setAttribute("rel", "stylesheet")
+	setAttribute("type", "text/css")
+	selfCloses = 1
+
+/datum/tag/cssinclude/proc/setHref(href as text)
+	setAttribute("href", href)

@@ -1,3 +1,4 @@
 /datum/tag/doctype
-	toHtml()
-		return "<!doctype html>"
+
+/datum/tag/doctype/toHtml()
+	return "<!doctype html>"

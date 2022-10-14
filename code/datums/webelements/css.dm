@@ -1,7 +1,8 @@
 /datum/tag/css
-	New()
-		..("style")
-		setAttribute("type", "text/css")
 
-	proc/setContent(var/content as text)
-		innerHtml = content
+/datum/tag/css/New()
+	..("style")
+	setAttribute("type", "text/css")
+
+/datum/tag/css/proc/setContent(content as text)
+	innerHtml = content

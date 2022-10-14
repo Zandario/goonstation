@@ -1,6 +1,7 @@
 /datum/tag/paragraph
-	New()
-		..("p")
 
-	proc/setText(txt as text)
-		innerHtml = txt
+/datum/tag/paragraph/New()
+	..("p")
+
+/datum/tag/paragraph/proc/setText(txt as text)
+	innerHtml = txt

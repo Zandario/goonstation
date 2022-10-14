@@ -1,3 +1,4 @@
 /datum/tag/div
-	New()
-		..("div")
+
+/datum/tag/div/New()
+	..("div")

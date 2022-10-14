@@ -7,72 +7,72 @@
 	var/tmp/selfCloses = 0
 	var/tmp/innerHtml
 
-	New(var/_tagName as text)
-		..()
-		tagName = _tagName
+/datum/tag/New(_tagName as text)
+	..()
+	tagName = _tagName
 
-	proc/addChildElement(var/datum/tag/child)
-		children.Add(child)
-		return src
+/datum/tag/proc/addChildElement(datum/tag/child)
+	children.Add(child)
+	return src
 
-	proc/addClass(var/class as text)
-		var/list/classlist = kText.text2list(class, " ")
+/datum/tag/proc/addClass(class as text)
+	var/list/classlist = kText.text2list(class, " ")
 
-		for(var/cls in classlist)
-			if(!classes.Find(cls))
-				classes.Add(cls)
+	for(var/cls in classlist)
+		if(!classes.Find(cls))
+			classes.Add(cls)
 
-	proc/setAttribute(var/attribute as text, var/value as text)
-		attributes[attribute] = "[attribute]=\"[value]\""
+/datum/tag/proc/setAttribute(attribute as text, value as text)
+	attributes[attribute] = "[attribute]=\"[value]\""
 
-	proc/setStyle(var/attribute as text, var/value as text)
-		styles[attribute] = "[attribute]:[value];"
+/datum/tag/proc/setStyle(attribute as text, value as text)
+	styles[attribute] = "[attribute]:[value];"
 
-	proc/toHtml()
-		beforeToHtmlHook()
-		var/html = "";
+/datum/tag/proc/toHtml()
+	beforeToHtmlHook()
+	var/html = "";
 
-		html = "<[tagName]"
+	html = "<[tagName]"
 
-		if(classes.len)
-			var/cls = kText.list2text(classes, " ")
-			setAttribute("class", cls)
+	if(classes.len)
+		var/cls = kText.list2text(classes, " ")
+		setAttribute("class", cls)
 
-		if(styles.len)
-			var/st = ""
-			for(var/atr in styles)
-				st += styles[atr]
-			setAttribute("style", st)
+	if(styles.len)
+		var/st = ""
+		for(var/atr in styles)
+			st += styles[atr]
+		setAttribute("style", st)
 
-		if(attributes.len)
-			for(var/atr in attributes)
-				html += " "
-				html += attributes[atr]
+	if(attributes.len)
+		for(var/atr in attributes)
+			html += " "
+			html += attributes[atr]
 
-		if(!selfCloses)
-			html += ">"
+	if(!selfCloses)
+		html += ">"
 
-			for(var/datum/tag/child in children)
-				html += child.toHtml()
-
-			if(innerHtml)
-				html += "[innerHtml]"
-
-			html += "</[tagName]>"
-		else
-			html += "/>"
-
-		return html
-
-	proc/beforeToHtmlHook()
-		return
-
-	proc/setId(var/id as text)
-		setAttribute("id", id)
-
-	proc/addJavascriptEvent(var/event as text, var/js as text)
-		setAttribute(event, js)
-
-	proc/sendAssets()
 		for(var/datum/tag/child in children)
-			child.sendAssets()
+			html += child.toHtml()
+
+		if(innerHtml)
+			html += "[innerHtml]"
+
+		html += "</[tagName]>"
+	else
+		html += "/>"
+
+	return html
+
+/datum/tag/proc/beforeToHtmlHook()
+	return
+
+/datum/tag/proc/setId(id as text)
+	setAttribute("id", id)
+
+/datum/tag/proc/addJavascriptEvent(event as text, js as text)
+	setAttribute(event, js)
+
+/datum/tag/proc/sendAssets()
+	for(var/datum/tag/child in children)
+		child.sendAssets()

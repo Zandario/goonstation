@@ -1,9 +1,10 @@
 /datum/tag/anchor
-	New()
-		..("a")
 
-	proc/setHref(var/href as text)
-		setAttribute("href", href)
+/datum/tag/anchor/New()
+	..("a")
 
-	proc/setText(var/txt as text)
-		innerHtml = txt
+/datum/tag/anchor/proc/setHref(href as text)
+	setAttribute("href", href)
+
+/datum/tag/anchor/proc/setText(txt as text)
+	innerHtml = txt

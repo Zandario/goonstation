@@ -1,6 +1,7 @@
 /datum/tag/heading
-	New(var/level = 1)
-		..("h[level]")
 
-	proc/setText(txt as text)
-		innerHtml = txt
+/datum/tag/heading/New(level = 1)
+	..("h[level]")
+
+/datum/tag/heading/proc/setText(txt as text)
+	innerHtml = txt

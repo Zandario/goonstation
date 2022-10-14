@@ -1,7 +1,8 @@
 /datum/tag/script
-	New()
-		..("script")
-		setAttribute("type", "text/javascript")
 
-	proc/setContent(var/content as text)
-		innerHtml = content
+/datum/tag/script/New()
+	..("script")
+	setAttribute("type", "text/javascript")
+
+/datum/tag/script/proc/setContent(content as text)
+	innerHtml = content

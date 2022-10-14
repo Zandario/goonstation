@@ -1,6 +1,7 @@
 /datum/tag/span
-	New(var/type as text)
-		..("span")
 
-	proc/setText(var/txt as text)
-		src.innerHtml = txt
+/datum/tag/span/New(type as text)
+	..("span")
+
+/datum/tag/span/proc/setText(txt as text)
+	src.innerHtml = txt

@@ -1,13 +1,14 @@
 /datum/tag/input
-	New(var/type as text)
-		..("input")
-		selfCloses = 1
 
-	proc/setType(var/type as text)
-		setAttribute("type", type)
+/datum/tag/input/New(type as text)
+	..("input")
+	selfCloses = 1
 
-	proc/setValue(var/value as text)
-		setAttribute("value", value)
+/datum/tag/input/proc/setType(type as text)
+	setAttribute("type", type)
 
-	proc/setName(var/name as text)
-		setAttribute("name", name)
+/datum/tag/input/proc/setValue(value as text)
+	setAttribute("value", value)
+
+/datum/tag/input/proc/setName(name as text)
+	setAttribute("name", name)

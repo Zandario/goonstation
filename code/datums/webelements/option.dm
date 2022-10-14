@@ -1,9 +1,10 @@
 /datum/tag/option
-	New()
-		..("option")
 
-	proc/setValue(var/val as text)
-		setAttribute("value", val)
+/datum/tag/option/New()
+	..("option")
 
-	proc/setText(var/txt as text)
-		innerHtml = txt
+/datum/tag/option/proc/setValue(val as text)
+	setAttribute("value", val)
+
+/datum/tag/option/proc/setText(txt as text)
+	innerHtml = txt
