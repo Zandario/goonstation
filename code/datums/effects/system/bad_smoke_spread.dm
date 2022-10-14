@@ -18,9 +18,9 @@
 	var/direction
 	var/color = null
 
-	New()
-		..()
-		START_TRACKING
+/datum/effects/system/bad_smoke_spread/New()
+	..()
+	START_TRACKING
 
 /datum/effects/system/bad_smoke_spread/proc/set_up(n = 5, c = 0, loca, direct, color)
 	if(n > 20)
