@@ -376,10 +376,10 @@
 	var/target_byond_key = null
 	var/issuer_byond_key = null
 
-	New()
-		..()
-		SPAWN(1 SECOND)
-			statlog_ticket(src, usr)
+/datum/ticket/New()
+	..()
+	SPAWN(1 SECOND)
+		statlog_ticket(src, usr)
 
 /datum/fine
 	var/ID = null
@@ -398,13 +398,13 @@
 	var/issuer_byond_key = null
 	var/approver_byond_key = null
 
-	New()
-		..()
-		generate_ID()
-		SPAWN(1 SECOND)
-			bank_record = data_core.bank.find_record("name", target)
-			if(!bank_record) qdel(src)
-			statlog_fine(src, usr)
+/datum/fine/New()
+	..()
+	generate_ID()
+	SPAWN(1 SECOND)
+		bank_record = data_core.bank.find_record("name", target)
+		if(!bank_record) qdel(src)
+		statlog_fine(src, usr)
 
 /datum/fine/proc/approve(var/approved_by,var/their_job)
 	if(approver || paid) return

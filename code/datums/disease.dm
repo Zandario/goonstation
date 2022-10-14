@@ -26,24 +26,24 @@
 	var/tickcount = 0
 	//IM SORRY
 
-	proc/stage_act(var/mob/living/affected_mob, var/datum/ailment_data/D, mult)
-		if (QDELETED(affected_mob) || !D)
-			return 1
-		return 0
-
-	proc/on_remove(var/mob/living/affected_mob,var/datum/ailment_data/D)
-		disposed = 1 // set to avoid bizarre interactions (such as surgerizing out a single disease multiple times)
-		return
-
-	proc/on_infection(var/mob/living/affected_mob,var/datum/ailment_data/D)
-		return
-
-	// This is still subject to serious change. For now it's mostly a mockup.
-	// Determines things that may happen during a surgery for different ailments
-	// requiring a surgeon's intervention. Currently used for the parasites.
-	// Returns a true value if the surgery was successful.
-	proc/surgery(var/mob/living/surgeon, var/mob/living/affected_mob, var/datum/ailment_data/D)
+/datum/ailment/proc/stage_act(mob/living/affected_mob, datum/ailment_data/D, mult)
+	if (QDELETED(affected_mob) || !D)
 		return 1
+	return 0
+
+/datum/ailment/proc/on_remove(mob/living/affected_mob, datum/ailment_data/D)
+	disposed = 1 // set to avoid bizarre interactions (such as surgerizing out a single disease multiple times)
+	return
+
+/datum/ailment/proc/on_infection(mob/living/affected_mob, datum/ailment_data/D)
+	return
+
+/// This is still subject to serious change. For now it's mostly a mockup.
+/// Determines things that may happen during a surgery for different ailments
+/// requiring a surgeon's intervention. Currently used for the parasites.
+/// Returns a true value if the surgery was successful.
+/datum/ailment/proc/surgery(mob/living/surgeon, mob/living/affected_mob, datum/ailment_data/D)
+	return 1
 
 /datum/ailment/parasite
 	name = "Parasite"
@@ -86,66 +86,66 @@
 	var/temperature_cure = 406				// this temp or higher will cure the disease
 	var/resistance_prob = 0					// how likely this disease is to grant immunity once cured
 
-	disposing()
-		if (affected_mob)
-			if (affected_mob.ailments)
-				affected_mob.ailments -= src
-			affected_mob = null
+/datum/ailment_data/disposing()
+	if (affected_mob)
+		if (affected_mob.ailments)
+			affected_mob.ailments -= src
+		affected_mob = null
 
-		master = null
-		reagentcure = null
+	master = null
+	reagentcure = null
 
-		..()
+	..()
 
-	proc/stage_act(var/mult)
-		if (!affected_mob || disposed)
-			return 1
-
-		if (!istype(master,/datum/ailment/))
-			affected_mob.cure_disease(src)
-			return 1
-
-		if (stage > master.max_stages)
-			stage = master.max_stages
-
-		if (probmult(stage_prob) && stage < master.max_stages)
-			stage++
-
-		master.stage_act(affected_mob, src, mult)
-
-		return 0
-
-	proc/scan_info()
-		var/text = "<span class='alert'><b>"
-		if (istype(src.master,/datum/ailment/disease) || istype(src.master,/datum/ailment/malady))
-			if (src.state == "Active" || src.state == "Acute")
-				text += "[src.state] "
-			else
-				text += "<span class='notice'>[src.state] </span>"
-		text += "[src.scantype ? src.scantype : src.master.scantype]:"
-
-		text += " [src.name ? src.name : src.master.name]</b> <small>(Stage [src.stage]/[src.master.max_stages])<br>"
-		if (src.info)
-			text += "Info: [src.info]<br>"
-		if (istype(src.master,/datum/ailment/disease) && src.spread)
-			text += "Spread: [src.spread]<br>"
-		if (src.cure == "Incurable")
-			text += "Infection is incurable. Suggest quarantine measures."
-		else if (src.cure == "Unknown")
-			text += "No suggested remedies."
-		else
-			text += "Suggested Remedy: [src.cure]"
-		text += "</small></span>"
-		return text
-
-	proc/on_infection()
-		master.on_infection(affected_mob, src)
-		return
-
-	proc/surgery(var/mob/living/surgeon, var/mob/living/affected_mob)
-		if (master && istype(master, /datum/ailment))
-			return master.surgery(surgeon, affected_mob, src)
+/datum/ailment_data/proc/stage_act(mult)
+	if (!affected_mob || disposed)
 		return 1
+
+	if (!istype(master,/datum/ailment/))
+		affected_mob.cure_disease(src)
+		return 1
+
+	if (stage > master.max_stages)
+		stage = master.max_stages
+
+	if (probmult(stage_prob) && stage < master.max_stages)
+		stage++
+
+	master.stage_act(affected_mob, src, mult)
+
+	return 0
+
+/datum/ailment_data/proc/scan_info()
+	var/text = "<span class='alert'><b>"
+	if (istype(src.master,/datum/ailment/disease) || istype(src.master,/datum/ailment/malady))
+		if (src.state == "Active" || src.state == "Acute")
+			text += "[src.state] "
+		else
+			text += "<span class='notice'>[src.state] </span>"
+	text += "[src.scantype ? src.scantype : src.master.scantype]:"
+
+	text += " [src.name ? src.name : src.master.name]</b> <small>(Stage [src.stage]/[src.master.max_stages])<br>"
+	if (src.info)
+		text += "Info: [src.info]<br>"
+	if (istype(src.master,/datum/ailment/disease) && src.spread)
+		text += "Spread: [src.spread]<br>"
+	if (src.cure == "Incurable")
+		text += "Infection is incurable. Suggest quarantine measures."
+	else if (src.cure == "Unknown")
+		text += "No suggested remedies."
+	else
+		text += "Suggested Remedy: [src.cure]"
+	text += "</small></span>"
+	return text
+
+/datum/ailment_data/proc/on_infection()
+	master.on_infection(affected_mob, src)
+	return
+
+/datum/ailment_data/proc/surgery(mob/living/surgeon, mob/living/affected_mob)
+	if (master && istype(master, /datum/ailment))
+		return master.surgery(surgeon, affected_mob, src)
+	return 1
 
 /datum/ailment_data/disease
 	var/virulence = 100    // how likely is this disease to spread
@@ -153,84 +153,84 @@
 	var/cycles = 0         // does this disease have a cyclical nature? if so, how many cycles have elapsed?
 	var/list/strain_data = list()  // Used for Rhinovirus, basically arbitrary data storage
 
-	stage_act(var/mult)
-		if (!affected_mob || disposed)
+/datum/ailment_data/disease/stage_act(mult)
+	if (!affected_mob || disposed)
+		return 1
+
+	if (!istype(master,/datum/ailment/))
+		affected_mob.ailments -= src
+		qdel(src)
+		return 1
+
+	if (stage > master.max_stages)
+		stage = master.max_stages
+
+	if (stage < 1) // if it's less than one just get rid of it, goddamn
+		affected_mob.cure_disease(src)
+		return 1
+
+	var/advance_prob = stage_prob
+	if (state == "Acute")
+		advance_prob *= 2
+
+	if (probmult(advance_prob))
+		if (state == "Remissive")
+			stage--
+			if (stage < 1)
+				affected_mob.cure_disease(src)
+			return 1
+		else if (stage < master.max_stages)
+			stage++
+
+	// Common cures
+	if (cure != "Incurable")
+		if (cure == "Sleep" && affected_mob.sleeping && probmult(33))
+			state = "Remissive"
 			return 1
 
-		if (!istype(master,/datum/ailment/))
-			affected_mob.ailments -= src
-			qdel(src)
+		else if (cure == "Self-Curing" && probmult(5))
+			state = "Remissive"
 			return 1
 
-		if (stage > master.max_stages)
-			stage = master.max_stages
-
-		if (stage < 1) // if it's less than one just get rid of it, goddamn
-			affected_mob.cure_disease(src)
+		else if (cure == "Beatings" && affected_mob.get_brute_damage() >= 40)
+			state = "Remissive"
 			return 1
 
-		var/advance_prob = stage_prob
-		if (state == "Acute")
-			advance_prob *= 2
+		else if (cure == "Burnings" && (affected_mob.get_burn_damage() >= 40 || affected_mob.getStatusDuration("burning")))
+			state = "Remissive"
+			return 1
 
-		if (probmult(advance_prob))
-			if (state == "Remissive")
-				stage--
-				if (stage < 1)
-					affected_mob.cure_disease(src)
-				return 1
-			else if (stage < master.max_stages)
-				stage++
+		else if (affected_mob.bodytemperature >= temperature_cure)
+			state = "Remissive"
+			return 1
 
-		// Common cures
-		if (cure != "Incurable")
-			if (cure == "Sleep" && affected_mob.sleeping && probmult(33))
-				state = "Remissive"
-				return 1
-
-			else if (cure == "Self-Curing" && probmult(5))
-				state = "Remissive"
-				return 1
-
-			else if (cure == "Beatings" && affected_mob.get_brute_damage() >= 40)
-				state = "Remissive"
-				return 1
-
-			else if (cure == "Burnings" && (affected_mob.get_burn_damage() >= 40 || affected_mob.getStatusDuration("burning")))
-				state = "Remissive"
-				return 1
-
-			else if (affected_mob.bodytemperature >= temperature_cure)
-				state = "Remissive"
-				return 1
-
-			if (reagentcure.len && affected_mob.reagents)
-				for (var/current_id in affected_mob.reagents.reagent_list)
-					if (reagentcure.Find(current_id))
-						var/we_are_cured = 0
-						var/reagcure_prob = reagentcure[current_id]
-						if (isnum(reagcure_prob))
-							if (probmult(reagcure_prob))
-								we_are_cured = 1
-						else if (probmult(recureprob))
+		if (reagentcure.len && affected_mob.reagents)
+			for (var/current_id in affected_mob.reagents.reagent_list)
+				if (reagentcure.Find(current_id))
+					var/we_are_cured = 0
+					var/reagcure_prob = reagentcure[current_id]
+					if (isnum(reagcure_prob))
+						if (probmult(reagcure_prob))
 							we_are_cured = 1
-						if (we_are_cured)
-							state = "Remissive"
-							return 1
+					else if (probmult(recureprob))
+						we_are_cured = 1
+					if (we_are_cured)
+						state = "Remissive"
+						return 1
 
-		if (state == "Asymptomatic" || state == "Dormant")
-			return 1
+	if (state == "Asymptomatic" || state == "Dormant")
+		return 1
 
-		SPAWN(rand(1,5))
-			// vary it up a bit so the processing doesnt look quite as transparent
-			if (master)
-				master.stage_act(affected_mob, src, mult)
+	SPAWN(rand(1,5))
+		// vary it up a bit so the processing doesnt look quite as transparent
+		if (master)
+			master.stage_act(affected_mob, src, mult)
 
-		return 0
+	return 0
 
-	disposing()
-		strain_data = null
-		..()
+/datum/ailment_data/disease/disposing()
+	strain_data = null
+	..()
 
 /datum/ailment_data/addiction
 	var/associated_reagent = null
@@ -238,9 +238,9 @@
 	var/withdrawal_duration = 4800
 	var/max_severity = "HIGH"
 
-	New()
-		..()
-		master = get_disease_from_path(/datum/ailment/addiction)
+/datum/ailment_data/addiction/New()
+	..()
+	master = get_disease_from_path(/datum/ailment/addiction)
 
 /datum/ailment_data/parasite
 	var/was_setup = 0
@@ -248,39 +248,40 @@
 
 	var/source = null // for headspiders
 	var/stealth_asymptomatic = 0
-	proc/setup()
-		src.stage_prob = master.stage_prob
-		src.cure = master.cure
-		src.was_setup = 1
 
-	stage_act(var/mult)
-		if (!affected_mob)
-			return
+/datum/ailment_data/parasite/proc/setup()
+	src.stage_prob = master.stage_prob
+	src.cure = master.cure
+	src.was_setup = 1
 
-		if (!istype(master, /datum/ailment/))
-			affected_mob.cure_disease(src)
-			return
-
-		if (istype(master, /datum/ailment/parasite/headspider) && !ismind(source))
-			affected_mob.cure_disease(src)
-			return
-
-		if (!was_setup)
-			src.setup()
-
-		if (stage > master.max_stages)
-			stage = master.max_stages
-
-		if (probmult(stage_prob) && stage < master.max_stages)
-			stage++
-
-
-		if(!stealth_asymptomatic)
-			master.stage_act(affected_mob,src,mult,source)
-
+/datum/ailment_data/parasite/stage_act(mult)
+	if (!affected_mob)
 		return
 
-/mob/living/proc/disease_resistance_check(var/ailment_path, var/ailment_name)
+	if (!istype(master, /datum/ailment/))
+		affected_mob.cure_disease(src)
+		return
+
+	if (istype(master, /datum/ailment/parasite/headspider) && !ismind(source))
+		affected_mob.cure_disease(src)
+		return
+
+	if (!was_setup)
+		src.setup()
+
+	if (stage > master.max_stages)
+		stage = master.max_stages
+
+	if (probmult(stage_prob) && stage < master.max_stages)
+		stage++
+
+
+	if(!stealth_asymptomatic)
+		master.stage_act(affected_mob,src,mult,source)
+
+	return
+
+/mob/living/proc/disease_resistance_check(ailment_path, ailment_name)
 	if (!src)
 		return 0
 

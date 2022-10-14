@@ -12,8 +12,8 @@ ABSTRACT_TYPE(/datum/cookingrecipe)
 	var/output = null // what you get from this recipe
 	var/useshumanmeat = 0 // used for naming of human meat dishes after their victims
 
-	proc/specialOutput(var/obj/submachine/ourCooker)
-		return null //If returning an object, that is used as the output
+/datum/cookingrecipe/proc/specialOutput(var/obj/submachine/ourCooker)
+	return null //If returning an object, that is used as the output
 
 /datum/cookingrecipe/humanburger
 	item1 = /obj/item/reagent_containers/food/snacks/ingredient/dough
@@ -612,164 +612,164 @@ ABSTRACT_TYPE(/datum/cookingrecipe)
 	cookbonus = 12
 	output = /obj/item/reagent_containers/food/snacks/sandwich/banhmi
 
-/datum/cookingrecipe/sandwich_custom
+/datum/cookingrecipe/sandwich_custom/
 	item1 = /obj/item/reagent_containers/food/snacks/breadslice
 	amt1 = 2
 	cookbonus = 12
 	output = null
 
-	specialOutput(obj/submachine/ourCooker)
-		if (!ourCooker)
-			return null
+/datum/cookingrecipe/sandwich_custom/specialOutput(obj/submachine/ourCooker)
+	if (!ourCooker)
+		return null
 
-		var/obj/item/reagent_containers/food/snacks/sandwich/customSandwich = new /obj/item/reagent_containers/food/snacks/sandwich (ourCooker)
-		customSandwich.heal_amt = 1 // no filling yet, so less than regular sandwich
-		customSandwich.reagents = new /datum/reagents(100)
-		customSandwich.reagents.my_atom = customSandwich
+	var/obj/item/reagent_containers/food/snacks/sandwich/customSandwich = new /obj/item/reagent_containers/food/snacks/sandwich (ourCooker)
+	customSandwich.heal_amt = 1 // no filling yet, so less than regular sandwich
+	customSandwich.reagents = new /datum/reagents(100)
+	customSandwich.reagents.my_atom = customSandwich
 
-		var/obj/item/reagent_containers/food/snacks/breadslice/slice1
-		var/obj/item/reagent_containers/food/snacks/breadslice/slice2
-		var/list/fillings = list()
-		var/list/fillingColors = list()
-		var/onBreadText = ""
-		var/extraSlices = 0
-		var/isToast = FALSE
+	var/obj/item/reagent_containers/food/snacks/breadslice/slice1
+	var/obj/item/reagent_containers/food/snacks/breadslice/slice2
+	var/list/fillings = list()
+	var/list/fillingColors = list()
+	var/onBreadText = ""
+	var/extraSlices = 0
+	var/isToast = FALSE
 
-		var/i = 1
-		for (var/obj/item/reagent_containers/food/snacks/snack in ourCooker)
-			if (snack == customSandwich)
-				continue
+	var/i = 1
+	for (var/obj/item/reagent_containers/food/snacks/snack in ourCooker)
+		if (snack == customSandwich)
+			continue
 
-			else if (istype(snack, /obj/item/reagent_containers/food/snacks/breadslice))
-				if (slice1 && slice2)
-					// fix up ordering of toast sandwich components
-					var/toast1 = istype(slice1, /obj/item/reagent_containers/food/snacks/breadslice/toastslice)
-					var/toast2 = istype(slice2, /obj/item/reagent_containers/food/snacks/breadslice/toastslice)
-					var/toast3 = istype(snack, /obj/item/reagent_containers/food/snacks/breadslice/toastslice)
-					if (extraSlices == 0 && toast1 + toast2 + toast3 == 1)
-						var/obj/item/reagent_containers/food/snacks/breadslice/temp = snack
-						if (toast1)
-							snack = slice1
-							slice1 = temp
-						else if (toast2)
-							snack = slice2
-							slice2 = temp
-						isToast = TRUE
-						onBreadText = "on [slice1.real_name == "bread" ? "plain bread" : slice1.real_name]"
-						if (slice1.real_name != slice2.real_name)
-							onBreadText += " and [slice2.real_name == "bread" ? "plain" : slice2.real_name]"
-					else
-						isToast = FALSE
-
-					extraSlices++
-
-					if (snack.reagents)
-						snack.reagents.trans_to(customSandwich, 25)
-					customSandwich.food_effects += snack.food_effects
-
-					//fillings += snack.name
-					if (snack.food_color)
-						if (fillingColors.len % 2 || fillingColors.len < (i*2))
-							fillingColors += "B[snack.food_color]"
-						else
-							fillingColors.Insert((i++*2), "B[snack.food_color]")
-					qdel(snack)
-
-				else if (slice1)
-					slice2 = snack
-					if (slice1.real_name != snack.real_name)
-						onBreadText += " and [snack.real_name == "bread" ? "plain" : snack.real_name]"
+		else if (istype(snack, /obj/item/reagent_containers/food/snacks/breadslice))
+			if (slice1 && slice2)
+				// fix up ordering of toast sandwich components
+				var/toast1 = istype(slice1, /obj/item/reagent_containers/food/snacks/breadslice/toastslice)
+				var/toast2 = istype(slice2, /obj/item/reagent_containers/food/snacks/breadslice/toastslice)
+				var/toast3 = istype(snack, /obj/item/reagent_containers/food/snacks/breadslice/toastslice)
+				if (extraSlices == 0 && toast1 + toast2 + toast3 == 1)
+					var/obj/item/reagent_containers/food/snacks/breadslice/temp = snack
+					if (toast1)
+						snack = slice1
+						slice1 = temp
+					else if (toast2)
+						snack = slice2
+						slice2 = temp
+					isToast = TRUE
+					onBreadText = "on [slice1.real_name == "bread" ? "plain bread" : slice1.real_name]"
+					if (slice1.real_name != slice2.real_name)
+						onBreadText += " and [slice2.real_name == "bread" ? "plain" : slice2.real_name]"
 				else
-					slice1 = snack
-					onBreadText = "on [snack.real_name == "bread" ? "plain bread" : snack.real_name]"
-			else
+					isToast = FALSE
+
+				extraSlices++
+
 				if (snack.reagents)
 					snack.reagents.trans_to(customSandwich, 25)
 				customSandwich.food_effects += snack.food_effects
 
-				fillings += snack.name
-				if (snack.food_color && !istype(snack, /obj/item/reagent_containers/food/snacks/ingredient) && prob(50))
-					fillingColors += snack.food_color
-				else
-					var/obj/transformedFilling = image(snack.icon, snack.icon_state)
-					transformedFilling.transform = matrix(0.75, MATRIX_SCALE)
-					fillingColors += transformedFilling
-
-				// spread the total healing left for the added food among the sandwich bites
-				customSandwich.heal_amt += snack.heal_amt * snack.bites_left / customSandwich.bites_left
-
+				//fillings += snack.name
+				if (snack.food_color)
+					if (fillingColors.len % 2 || fillingColors.len < (i*2))
+						fillingColors += "B[snack.food_color]"
+					else
+						fillingColors.Insert((i++*2), "B[snack.food_color]")
 				qdel(snack)
 
-		if (!fillings.len && isToast)
-			customSandwich.name = "toast"
-			customSandwich.desc = "A slice of toast between two slices of bread. Apparently this counts as a sandwich?"
-			extraSlices--
-			customSandwich.reagents.add_reagent("worcestershire_sauce", 25)
-		else if (!fillings.len)
-			customSandwich.name = "wish"
-			customSandwich.desc = "So named because you 'wish' you had something to put between the slices of bread. Ha.  ha.  Ha..."
-		else
-			var/fillingText = copytext(html_encode(english_list(fillings)), 1, 512)
-			customSandwich.name = fillingText
-			customSandwich.desc = "A sandwich filled with [fillingText]."
-
-		switch (extraSlices)
-			if (0)
-				customSandwich.name += " sandwich"
-
-			if (1)
-				customSandwich.name += " club"
-
-			if (2)
-				customSandwich.name += " double-decker sandwich"
-
-			if (3)
-				customSandwich.name += " dagwood"
-
-		customSandwich.name += " [onBreadText]"
-
-		var/obj/sandwichIcon
-		customSandwich.icon = 'icons/obj/foodNdrink/food_meals.dmi'
-		if (slice1)
-			sandwichIcon = image('icons/obj/foodNdrink/food_meals.dmi', "sandwich-bread")//, 1, 1)
-			//sandwichIcon.Blend(slice1.food_color, ICON_ADD)
-			sandwichIcon.color = slice1.food_color
-
-			customSandwich.overlays += sandwichIcon
-			//qdel(slice1)
-
-		var/fillingOffset = 2
-		var/obj/newFilling
-		while (fillingColors.len)
-			if (istype(fillingColors[fillingColors.len], /image))
-				newFilling = fillingColors[fillingColors.len]
-
-			else if (copytext(fillingColors[fillingColors.len],1,2) == "B")
-				newFilling = image('icons/obj/foodNdrink/food_meals.dmi', "sandwich-bread")
-				fillingColors[fillingColors.len] = copytext(fillingColors[fillingColors.len], 2)
-
+			else if (slice1)
+				slice2 = snack
+				if (slice1.real_name != snack.real_name)
+					onBreadText += " and [snack.real_name == "bread" ? "plain" : snack.real_name]"
 			else
-				newFilling = image('icons/obj/foodNdrink/food_meals.dmi', "sandwich-filling[rand(1,4)]")//, 1, 1)
-			//newFilling.Blend(fillingColors[fillingColors.len], ICON_ADD)
-			newFilling.pixel_y = fillingOffset
-			newFilling.color = fillingColors[fillingColors.len]
-			fillingColors.len--
-			fillingOffset += 2
+				slice1 = snack
+				onBreadText = "on [snack.real_name == "bread" ? "plain bread" : snack.real_name]"
+		else
+			if (snack.reagents)
+				snack.reagents.trans_to(customSandwich, 25)
+			customSandwich.food_effects += snack.food_effects
 
-			customSandwich.overlays += newFilling
+			fillings += snack.name
+			if (snack.food_color && !istype(snack, /obj/item/reagent_containers/food/snacks/ingredient) && prob(50))
+				fillingColors += snack.food_color
+			else
+				var/obj/transformedFilling = image(snack.icon, snack.icon_state)
+				transformedFilling.transform = matrix(0.75, MATRIX_SCALE)
+				fillingColors += transformedFilling
+
+			// spread the total healing left for the added food among the sandwich bites
+			customSandwich.heal_amt += snack.heal_amt * snack.bites_left / customSandwich.bites_left
+
+			qdel(snack)
+
+	if (!fillings.len && isToast)
+		customSandwich.name = "toast"
+		customSandwich.desc = "A slice of toast between two slices of bread. Apparently this counts as a sandwich?"
+		extraSlices--
+		customSandwich.reagents.add_reagent("worcestershire_sauce", 25)
+	else if (!fillings.len)
+		customSandwich.name = "wish"
+		customSandwich.desc = "So named because you 'wish' you had something to put between the slices of bread. Ha.  ha.  Ha..."
+	else
+		var/fillingText = copytext(html_encode(english_list(fillings)), 1, 512)
+		customSandwich.name = fillingText
+		customSandwich.desc = "A sandwich filled with [fillingText]."
+
+	switch (extraSlices)
+		if (0)
+			customSandwich.name += " sandwich"
+
+		if (1)
+			customSandwich.name += " club"
+
+		if (2)
+			customSandwich.name += " double-decker sandwich"
+
+		if (3)
+			customSandwich.name += " dagwood"
+
+	customSandwich.name += " [onBreadText]"
+
+	var/obj/sandwichIcon
+	customSandwich.icon = 'icons/obj/foodNdrink/food_meals.dmi'
+	if (slice1)
+		sandwichIcon = image('icons/obj/foodNdrink/food_meals.dmi', "sandwich-bread")//, 1, 1)
+		//sandwichIcon.Blend(slice1.food_color, ICON_ADD)
+		sandwichIcon.color = slice1.food_color
+
+		customSandwich.overlays += sandwichIcon
+		//qdel(slice1)
+
+	var/fillingOffset = 2
+	var/obj/newFilling
+	while (fillingColors.len)
+		if (istype(fillingColors[fillingColors.len], /image))
+			newFilling = fillingColors[fillingColors.len]
+
+		else if (copytext(fillingColors[fillingColors.len],1,2) == "B")
+			newFilling = image('icons/obj/foodNdrink/food_meals.dmi', "sandwich-bread")
+			fillingColors[fillingColors.len] = copytext(fillingColors[fillingColors.len], 2)
+
+		else
+			newFilling = image('icons/obj/foodNdrink/food_meals.dmi', "sandwich-filling[rand(1,4)]")//, 1, 1)
+		//newFilling.Blend(fillingColors[fillingColors.len], ICON_ADD)
+		newFilling.pixel_y = fillingOffset
+		newFilling.color = fillingColors[fillingColors.len]
+		fillingColors.len--
+		fillingOffset += 2
+
+		customSandwich.overlays += newFilling
 
 
-		if (slice2)
-			newFilling = image('icons/obj/foodNdrink/food_meals.dmi', "sandwich-bread")//, 1, 1)
-			//newFilling.Blend( slice2.food_color, ICON_ADD)
-			newFilling.color = slice2.food_color
-			newFilling.pixel_y = fillingOffset
+	if (slice2)
+		newFilling = image('icons/obj/foodNdrink/food_meals.dmi', "sandwich-bread")//, 1, 1)
+		//newFilling.Blend( slice2.food_color, ICON_ADD)
+		newFilling.color = slice2.food_color
+		newFilling.pixel_y = fillingOffset
 
-			//qdel(slice2)
+		//qdel(slice2)
 
-			customSandwich.overlays += newFilling
+		customSandwich.overlays += newFilling
 
-		return customSandwich
+	return customSandwich
 
 /datum/cookingrecipe/pizza_fresh
 	item1 = /obj/item/reagent_containers/food/snacks/ingredient/pizza3
@@ -796,31 +796,31 @@ ABSTRACT_TYPE(/datum/cookingrecipe)
 	cookbonus = 18
 	output = null
 
-	specialOutput(obj/submachine/ourCooker)
-		if (!ourCooker)
-			return null
+/datum/cookingrecipe/pizza/specialOutput(obj/submachine/ourCooker)
+	if (!ourCooker)
+		return null
 
-		var/obj/item/reagent_containers/food/snacks/pizza/customPizza = new /obj/item/reagent_containers/food/snacks/pizza (ourCooker)
+	var/obj/item/reagent_containers/food/snacks/pizza/customPizza = new /obj/item/reagent_containers/food/snacks/pizza (ourCooker)
 
-		for (var/obj/item/reagent_containers/food/snacks/ingredient/pizza3/P in ourCooker)
-			var/toppingstext = null
-			if(P.toppingstext)
-				toppingstext = P.toppingstext
-				customPizza.name = "[toppingstext] pizza"
-				customPizza.desc = "A pizza with [toppingstext] toppings. Looks pretty [pick("good","dang good","delicious","scrumptious","heavenly","alright")]."
-			else
-				customPizza.name = "pizza"
-				customPizza.desc = 	"A plain cheese and tomato pizza. Looks pretty alright."
-			customPizza.overlays += P.overlays
-			customPizza.num = P.num
-			customPizza.topping = P.topping
-			customPizza.topping_types = P.topping_types
-			customPizza.topping_colors = P.topping_colors
-			customPizza.heal_amt = P.heal_amt
-			P.reagents.trans_to(customPizza, P.reagents.total_volume)
-			customPizza.food_effects += P.food_effects
+	for (var/obj/item/reagent_containers/food/snacks/ingredient/pizza3/P in ourCooker)
+		var/toppingstext = null
+		if(P.toppingstext)
+			toppingstext = P.toppingstext
+			customPizza.name = "[toppingstext] pizza"
+			customPizza.desc = "A pizza with [toppingstext] toppings. Looks pretty [pick("good","dang good","delicious","scrumptious","heavenly","alright")]."
+		else
+			customPizza.name = "pizza"
+			customPizza.desc = 	"A plain cheese and tomato pizza. Looks pretty alright."
+		customPizza.overlays += P.overlays
+		customPizza.num = P.num
+		customPizza.topping = P.topping
+		customPizza.topping_types = P.topping_types
+		customPizza.topping_colors = P.topping_colors
+		customPizza.heal_amt = P.heal_amt
+		P.reagents.trans_to(customPizza, P.reagents.total_volume)
+		customPizza.food_effects += P.food_effects
 
-		return customPizza
+	return customPizza
 
 /datum/cookingrecipe/cheesetoast
 	item1 = /obj/item/reagent_containers/food/snacks/breadslice
@@ -1204,34 +1204,34 @@ ABSTRACT_TYPE(/datum/cookingrecipe)
 	cookbonus = 4
 	output = /obj/item/reagent_containers/food/snacks/pie/cream
 
-	specialOutput(var/obj/submachine/ourCooker)
-		if (!ourCooker)
-			return null
+/datum/cookingrecipe/pie_cream/specialOutput(obj/submachine/ourCooker)
+	if (!ourCooker)
+		return null
 
-		var/obj/item/reagent_containers/food/snacks/custom_pie_food
-		for (var/obj/item/reagent_containers/food/snacks/S in ourCooker.contents)
-			if (S.type == item1 || S.type == item2)
-				continue
+	var/obj/item/reagent_containers/food/snacks/custom_pie_food
+	for (var/obj/item/reagent_containers/food/snacks/S in ourCooker.contents)
+		if (S.type == item1 || S.type == item2)
+			continue
 
-			custom_pie_food = S
-			break
+		custom_pie_food = S
+		break
 
-		if (!custom_pie_food)
-			return null
+	if (!custom_pie_food)
+		return null
 
-		var/obj/item/reagent_containers/food/snacks/pie/cream/custom_pie = new
-		custom_pie_food.reagents.trans_to(custom_pie, 50)
-		if(custom_pie.real_name)
-			custom_pie.name = "[custom_pie_food.real_name] cream pie"
+	var/obj/item/reagent_containers/food/snacks/pie/cream/custom_pie = new
+	custom_pie_food.reagents.trans_to(custom_pie, 50)
+	if(custom_pie.real_name)
+		custom_pie.name = "[custom_pie_food.real_name] cream pie"
 
-		else
-			custom_pie.name = "[custom_pie_food.name] cream pie"
+	else
+		custom_pie.name = "[custom_pie_food.name] cream pie"
 
-		var/icon/I = new /icon('icons/obj/foodNdrink/food_dessert.dmi',"creampie")
-		I.Blend(custom_pie_food.food_color, ICON_ADD)
-		custom_pie.icon = I
+	var/icon/I = new /icon('icons/obj/foodNdrink/food_dessert.dmi',"creampie")
+	I.Blend(custom_pie_food.food_color, ICON_ADD)
+	custom_pie.icon = I
 
-		return custom_pie
+	return custom_pie
 
 /datum/cookingrecipe/pie_anything
 	item1 = /obj/item/reagent_containers/food/snacks/ingredient/dough_s
@@ -1239,68 +1239,68 @@ ABSTRACT_TYPE(/datum/cookingrecipe)
 	cookbonus = 4
 	output = /obj/item/reagent_containers/food/snacks/pie/anything
 
-	specialOutput(var/obj/submachine/ourCooker)
-		if (!ourCooker)
-			return null
+/datum/cookingrecipe/pie_anything/specialOutput(obj/submachine/ourCooker)
+	if (!ourCooker)
+		return null
 
-		var/obj/item/reagent_containers/food/snacks/anItem
-		var/obj/item/reagent_containers/food/snacks/pie/anything/custom_pie = new
-		var/pieDesc
-		var/pieName
-		var/contentAmount = ourCooker.contents.len - 2
-		var/count = 1
-		var/found1 = 0
-		var/found2 = 0
-		for (var/obj/item/T in ourCooker.contents)
+	var/obj/item/reagent_containers/food/snacks/anItem
+	var/obj/item/reagent_containers/food/snacks/pie/anything/custom_pie = new
+	var/pieDesc
+	var/pieName
+	var/contentAmount = ourCooker.contents.len - 2
+	var/count = 1
+	var/found1 = 0
+	var/found2 = 0
+	for (var/obj/item/T in ourCooker.contents)
 
-			if (T.type == item1 && !found1)
-				found1 = true
-				continue
+		if (T.type == item1 && !found1)
+			found1 = true
+			continue
 
-			if (T.type == item2 && !found2)
-				found2 = true
-				continue
+		if (T.type == item2 && !found2)
+			found2 = true
+			continue
 
-			anItem = T
-			anItem.set_loc(custom_pie)
-			if (count == contentAmount && contentAmount > 1)
-				pieDesc += "and a "
+		anItem = T
+		anItem.set_loc(custom_pie)
+		if (count == contentAmount && contentAmount > 1)
+			pieDesc += "and a "
+		else
+			pieDesc += "a "
+
+		if (custom_pie.real_name)
+			pieDesc += lowertext(anItem.real_name)
+			pieName += lowertext(anItem.real_name)
+		else
+			pieDesc += lowertext(anItem.name)
+			pieName += lowertext(anItem.name)
+
+		if (count < contentAmount)
+			if (count == (contentAmount - 1))
+				pieDesc += " "
 			else
-				pieDesc += "a "
+				pieDesc += ", "
+			pieName += " "
 
-			if (custom_pie.real_name)
-				pieDesc += lowertext(anItem.real_name)
-				pieName += lowertext(anItem.real_name)
-			else
-				pieDesc += lowertext(anItem.name)
-				pieName += lowertext(anItem.name)
+		custom_pie.w_class = max(custom_pie.w_class, T.w_class) //Well, that huge thing you put into it isn't going to shrink, you know
+		custom_pie.throw_range = min(custom_pie.throw_range, T.throw_range)
+		custom_pie.throw_speed = min(custom_pie.throw_speed, T.throw_speed)
+		custom_pie.contraband = max(custom_pie.contraband, T.contraband - 1)
 
-			if (count < contentAmount)
-				if (count == (contentAmount - 1))
-					pieDesc += " "
-				else
-					pieDesc += ", "
-				pieName += " "
-
-			custom_pie.w_class = max(custom_pie.w_class, T.w_class) //Well, that huge thing you put into it isn't going to shrink, you know
-			custom_pie.throw_range = min(custom_pie.throw_range, T.throw_range)
-			custom_pie.throw_speed = min(custom_pie.throw_speed, T.throw_speed)
-			custom_pie.contraband = max(custom_pie.contraband, T.contraband - 1)
-
-			count++
+		count++
 
 //		if (!anItem)
 //			return null
 
-		custom_pie.name = pieName + " pie"
-		custom_pie.desc = "A pie containing [pieDesc]. Well alright then."
+	custom_pie.name = pieName + " pie"
+	custom_pie.desc = "A pie containing [pieDesc]. Well alright then."
 
-		var/icon/I = new /icon('icons/obj/foodNdrink/food_dessert.dmi',"pie")
-		var/random_color = rgb(rand(1,255), rand(1,255), rand(1,255))
-		I.Blend(random_color, ICON_ADD)
-		custom_pie.icon = I
+	var/icon/I = new /icon('icons/obj/foodNdrink/food_dessert.dmi',"pie")
+	var/random_color = rgb(rand(1,255), rand(1,255), rand(1,255))
+	I.Blend(random_color, ICON_ADD)
+	custom_pie.icon = I
 
-		return custom_pie
+	return custom_pie
 
 /datum/cookingrecipe/pie_custard
 	item1 = /obj/item/reagent_containers/food/snacks/ingredient/dough_s
@@ -1479,14 +1479,14 @@ ABSTRACT_TYPE(/datum/cookingrecipe)
 	cookbonus = 14
 	output = null
 
-	specialOutput(var/obj/submachine/ourCooker)
-		if (!ourCooker)
-			return null
+/datum/cookingrecipe/cake_fruit/specialOutput(obj/submachine/ourCooker)
+	if (!ourCooker)
+		return null
 
-		var/fruitcake = new /obj/item/reagent_containers/food/snacks/fruit_cake
-		playsound(ourCooker.loc, 'sound/impact_sounds/Slimy_Splat_1.ogg', 50, 1)
+	var/fruitcake = new /obj/item/reagent_containers/food/snacks/fruit_cake
+	playsound(ourCooker.loc, 'sound/impact_sounds/Slimy_Splat_1.ogg', 50, 1)
 
-		return fruitcake
+	return fruitcake
 
 #endif
 
@@ -1495,39 +1495,39 @@ ABSTRACT_TYPE(/datum/cookingrecipe)
 	cookbonus = 14
 	output = null
 
-	specialOutput(var/obj/submachine/ourCooker)
-		if(!ourCooker)
-			return null
+/datum/cookingrecipe/cake_custom/specialOutput(obj/submachine/ourCooker)
+	if(!ourCooker)
+		return null
 
-		var/obj/item/reagent_containers/food/snacks/cake_batter/docakeitem = locate() in ourCooker.contents
+	var/obj/item/reagent_containers/food/snacks/cake_batter/docakeitem = locate() in ourCooker.contents
 
-		var/obj/item/reagent_containers/food/snacks/S
-		if(docakeitem.custom_item)
-			S = docakeitem.custom_item
-		var/obj/item/reagent_containers/food/snacks/cake/B = new /obj/item/reagent_containers/food/snacks/cake(ourCooker)
-		var/image/overlay = new /image('icons/obj/foodNdrink/food_dessert.dmi',"cake1-base_custom")
-		B.food_color = S ? S.food_color : "#CC8555"
-		overlay.color = B.food_color
-		overlay.alpha = 255
-		B.UpdateOverlays(overlay,"first")
-		B.cake_bases = list("base_custom")
-		if(S)
-			B.cake_types += S.type
-			S.reagents.trans_to(B, 50)
-			B.food_effects += S.food_effects
-			if(S.real_name)
-				B.name = "[S.real_name] cake"
-				for(var/food_effect in S.food_effects)
-					if(food_effect in B.food_effects)
-						continue
-					B.food_effects += food_effect
-			else
-				B.name = "[S.name] cake"
+	var/obj/item/reagent_containers/food/snacks/S
+	if(docakeitem.custom_item)
+		S = docakeitem.custom_item
+	var/obj/item/reagent_containers/food/snacks/cake/B = new /obj/item/reagent_containers/food/snacks/cake(ourCooker)
+	var/image/overlay = new /image('icons/obj/foodNdrink/food_dessert.dmi',"cake1-base_custom")
+	B.food_color = S ? S.food_color : "#CC8555"
+	overlay.color = B.food_color
+	overlay.alpha = 255
+	B.UpdateOverlays(overlay,"first")
+	B.cake_bases = list("base_custom")
+	if(S)
+		B.cake_types += S.type
+		S.reagents.trans_to(B, 50)
+		B.food_effects += S.food_effects
+		if(S.real_name)
+			B.name = "[S.real_name] cake"
+			for(var/food_effect in S.food_effects)
+				if(food_effect in B.food_effects)
+					continue
+				B.food_effects += food_effect
 		else
-			B.name = "plain cake"
+			B.name = "[S.name] cake"
+	else
+		B.name = "plain cake"
 
-		B.desc = "Mmm! A delicious-looking [B.name]!"
-		return B
+	B.desc = "Mmm! A delicious-looking [B.name]!"
+	return B
 
 
 /datum/cookingrecipe/cake_custom_item
@@ -1535,43 +1535,43 @@ ABSTRACT_TYPE(/datum/cookingrecipe)
 	cookbonus = 14
 	output = null
 
-	specialOutput(var/obj/submachine/ourCooker)
-		if (!ourCooker)
-			return null
+/datum/cookingrecipe/cake_custom_item/specialOutput(obj/submachine/ourCooker)
+	if (!ourCooker)
+		return null
 
-		var/obj/item/cake_item/B = new /obj/item/cake_item(ourCooker)
-		for (var/obj/item/I in ourCooker.contents)
-			if (istype(I,/obj/item/cake_item))
-				continue
-			I.set_loc(B)
-			break
+	var/obj/item/cake_item/B = new /obj/item/cake_item(ourCooker)
+	for (var/obj/item/I in ourCooker.contents)
+		if (istype(I,/obj/item/cake_item))
+			continue
+		I.set_loc(B)
+		break
 
-		return B
+	return B
 
 /datum/cookingrecipe/mix_cake_custom
 	item1 = /obj/item/reagent_containers/food/snacks/cake_batter
 	amt1 = 1
 	output = null
 
-	specialOutput(var/obj/submachine/ourCooker)
-		if (!ourCooker)
-			return null
-
-		for (var/obj/item/I in ourCooker.contents)
-			if (istype(I, item1))
-				continue
-			else if (istype(I,/obj/item/reagent_containers/food/snacks/))
-				var/obj/item/reagent_containers/food/snacks/cake_batter/batter = new
-
-				batter.custom_item = I
-				I.set_loc(batter)
-				batter.name = "[I:real_name ? I:real_name : I.name] cake batter"
-				for (var/obj/M in ourCooker.contents)
-					qdel(M)
-
-				return batter
-
+/datum/cookingrecipe/mix_cake_custom/specialOutput(obj/submachine/ourCooker)
+	if (!ourCooker)
 		return null
+
+	for (var/obj/item/I in ourCooker.contents)
+		if (istype(I, item1))
+			continue
+		else if (istype(I,/obj/item/reagent_containers/food/snacks/))
+			var/obj/item/reagent_containers/food/snacks/cake_batter/batter = new
+
+			batter.custom_item = I
+			I.set_loc(batter)
+			batter.name = "[I:real_name ? I:real_name : I.name] cake batter"
+			for (var/obj/M in ourCooker.contents)
+				qdel(M)
+
+			return batter
+
+	return null
 
 
 /datum/cookingrecipe/omelette
@@ -1862,19 +1862,19 @@ ABSTRACT_TYPE(/datum/cookingrecipe)
 	cookbonus = 22
 	output = /obj/item/reagent_containers/food/snacks/b_cupcake
 
-	specialOutput(var/obj/submachine/ourCooker)
-		if (!ourCooker)
-			return null
+/datum/cookingrecipe/b_cupcake/specialOutput(obj/submachine/ourCooker)
+	if (!ourCooker)
+		return null
 
-		var/obj/item/reagent_containers/food/snacks/b_cupcake = new /obj/item/reagent_containers/food/snacks/b_cupcake
+	var/obj/item/reagent_containers/food/snacks/b_cupcake = new /obj/item/reagent_containers/food/snacks/b_cupcake
 
-		b_cupcake.desc = "A little birthday cupcake for a bee. May not taste good to non-bees."
-		var/icon/I = new /icon('icons/obj/foodNdrink/food_dessert.dmi',"b_cupcake")
-		var/random_color = rgb(rand(1,255), rand(1,255), rand(1,255))
-		I.Blend(random_color, ICON_ADD)
-		b_cupcake.icon = I
+	b_cupcake.desc = "A little birthday cupcake for a bee. May not taste good to non-bees."
+	var/icon/I = new /icon('icons/obj/foodNdrink/food_dessert.dmi',"b_cupcake")
+	var/random_color = rgb(rand(1,255), rand(1,255), rand(1,255))
+	I.Blend(random_color, ICON_ADD)
+	b_cupcake.icon = I
 
-		return b_cupcake
+	return b_cupcake
 
 /datum/cookingrecipe/butters
 	item1 = /obj/item/clothing/head/butt
@@ -1888,14 +1888,13 @@ ABSTRACT_TYPE(/datum/cookingrecipe)
 	cookbonus = 10
 	output = /obj/item/pen/crayon/lipstick
 
-	specialOutput(obj/submachine/ourCooker)
-		if (!ourCooker)
-			return null
-		var/obj/item/pen/crayon/lipstick/lipstick = new /obj/item/pen/crayon/lipstick
-		for (var/obj/item/pen/crayon/C in ourCooker.contents)
-			lipstick.font_color = C.font_color
-			lipstick.color_name = hex2color_name(lipstick.font_color)
-			lipstick.name = "[lipstick.color_name] lipstick"
-			lipstick.UpdateIcon()
-		return lipstick
-
+/datum/cookingrecipe/lipstick/specialOutput(obj/submachine/ourCooker)
+	if (!ourCooker)
+		return null
+	var/obj/item/pen/crayon/lipstick/lipstick = new /obj/item/pen/crayon/lipstick
+	for (var/obj/item/pen/crayon/C in ourCooker.contents)
+		lipstick.font_color = C.font_color
+		lipstick.color_name = hex2color_name(lipstick.font_color)
+		lipstick.name = "[lipstick.color_name] lipstick"
+		lipstick.UpdateIcon()
+	return lipstick

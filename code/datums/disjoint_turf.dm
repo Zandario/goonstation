@@ -20,7 +20,7 @@
  * Use [/obj/disjoint_connector/id] to connect thing by name.  All turfs sharing the same name will be linked according to that id
  * Use [/obj/disjoint_connector/location] to connect to a x,y,z.  This allows can be used for a one way connection.
  */
-/obj/disjoint_connector/
+/obj/disjoint_connector
 	icon = 'icons/mob/screen1.dmi'
 	icon_state = "connection"
 	name = "Disjoint Connector"
