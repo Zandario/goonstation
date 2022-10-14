@@ -1,11 +1,11 @@
 /datum/arena
 	var/allow_processing = 0
 
-	proc/process()
+/datum/arena/proc/process()
 
-	proc/tick()
-		if (allow_processing)
-			process()
+/datum/arena/proc/tick()
+	if (allow_processing)
+		process()
 
 /obj/literal_firewall
 	name = "Firewall"
@@ -17,9 +17,9 @@
 	opacity = 1
 	anchored = 1
 
-	attackby(var/obj/item/W, var/mob/user)
-		if (disposed)
-			return
-		if (istype(W, /obj/item/device/key/iridium))
-			boutput(user, "<span class='notice'>iridium -c 'ufw allow 2323/stcp from ::1'</span>")
-			qdel(src)
+/obj/literal_firewall/attackby(obj/item/W, mob/user)
+	if (disposed)
+		return
+	if (istype(W, /obj/item/device/key/iridium))
+		boutput(user, "<span class='notice'>iridium -c 'ufw allow 2323/stcp from ::1'</span>")
+		qdel(src)
