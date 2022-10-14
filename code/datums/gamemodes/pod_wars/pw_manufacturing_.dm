@@ -39,27 +39,27 @@
 		/datum/manufacture/pod/weapon/shotgun
 	)
 
-	New()
-		START_TRACKING
-		..()
+/obj/machinery/manufacturer/pod_wars/New()
+	START_TRACKING
+	..()
 
-	disposing()
-		STOP_TRACKING
-		..()
+/obj/machinery/manufacturer/pod_wars/disposing()
+	STOP_TRACKING
+	..()
 
-	claim_free_resources(datum/game_mode/pod_wars/PW)
-		if (team_num == TEAM_NANOTRASEN)
-			src.resource_amounts = PW.team_NT.resources
-		else if (team_num == TEAM_SYNDICATE)
-			src.resource_amounts = PW.team_SY.resources
-		..()
+/obj/machinery/manufacturer/pod_wars/claim_free_resources(datum/game_mode/pod_wars/PW)
+	if (team_num == TEAM_NANOTRASEN)
+		src.resource_amounts = PW.team_NT.resources
+	else if (team_num == TEAM_SYNDICATE)
+		src.resource_amounts = PW.team_SY.resources
+	..()
 
-	attack_hand(var/mob/user)
-		if (get_pod_wars_team_num(user) != src.team_num)
-			boutput(user, "<span class='alert'>This machine's design makes no sense to you, you can't figure out how to use it!</span>")
-			return
+/obj/machinery/manufacturer/pod_wars/attack_hand(var/mob/user)
+	if (get_pod_wars_team_num(user) != src.team_num)
+		boutput(user, "<span class='alert'>This machine's design makes no sense to you, you can't figure out how to use it!</span>")
+		return
 
-		..()
+	..()
 
 /obj/machinery/manufacturer/pod_wars/nanotrasen
 	name = "\improper NanoTrasen ship component fabricator"
@@ -303,52 +303,51 @@ ABSTRACT_TYPE(/datum/manufacture/pod_wars/pod)
 	time = 60 SECONDS
 	category = "Ammo"
 
-/obj/machinery/manufacturer/mining/pod_wars/
+/obj/machinery/manufacturer/mining/pod_wars
 	var/team_num = 0
 
-	New()
-		START_TRACKING
-		available -= /datum/manufacture/ore_accumulator
-		available -= /datum/manufacture/jetpack
+/obj/machinery/manufacturer/mining/pod_wars/New()
+	START_TRACKING
+	available -= /datum/manufacture/ore_accumulator
+	available -= /datum/manufacture/jetpack
 
-		available -= /datum/manufacture/industrialboots
-		available += /datum/manufacture/pod_wars/industrialboots
+	available -= /datum/manufacture/industrialboots
+	available += /datum/manufacture/pod_wars/industrialboots
 
-		hidden = list()
-		..()
+	hidden = list()
+	..()
 
-	disposing()
-		STOP_TRACKING
-		..()
+/obj/machinery/manufacturer/mining/pod_wars/disposing()
+	STOP_TRACKING
+	..()
 
-	claim_free_resources(datum/game_mode/pod_wars/PW)
-		if (team_num == TEAM_NANOTRASEN)
-			src.resource_amounts = PW.team_NT.resources
-		else if (team_num == TEAM_SYNDICATE)
-			src.resource_amounts = PW.team_SY.resources
-		..()
+/obj/machinery/manufacturer/mining/pod_wars/claim_free_resources(datum/game_mode/pod_wars/PW)
+	if (team_num == TEAM_NANOTRASEN)
+		src.resource_amounts = PW.team_NT.resources
+	else if (team_num == TEAM_SYNDICATE)
+		src.resource_amounts = PW.team_SY.resources
+	..()
 
 /obj/machinery/manufacturer/mining/pod_wars/syndicate
 	team_num = TEAM_SYNDICATE
 
-	New()
-		available += /datum/manufacture/pod_wars/accumulator/syndicate
-		available += /datum/manufacture/pod_wars/jetpack/syndicate
-		..()
+/obj/machinery/manufacturer/mining/pod_wars/syndicate/New()
+	available += /datum/manufacture/pod_wars/accumulator/syndicate
+	available += /datum/manufacture/pod_wars/jetpack/syndicate
+	..()
 
 /obj/machinery/manufacturer/mining/pod_wars/nanotrasen
 	team_num = TEAM_NANOTRASEN
 
-	New()
-		available += /datum/manufacture/pod_wars/accumulator/nanotrasen
-		available += /datum/manufacture/pod_wars/jetpack
-		..()
+/obj/machinery/manufacturer/mining/pod_wars/nanotrasen/New()
+	available += /datum/manufacture/pod_wars/accumulator/nanotrasen
+	available += /datum/manufacture/pod_wars/jetpack
+	..()
 
-/obj/machinery/manufacturer/medical/pod_wars
-	New()
-		available += /datum/manufacture/medical_backpack
-		available += /datum/manufacture/pod_wars/medical_refill
-		..()
+/obj/machinery/manufacturer/medical/pod_wars/New()
+	available += /datum/manufacture/medical_backpack
+	available += /datum/manufacture/pod_wars/medical_refill
+	..()
 
 
 /datum/manufacture/pod_wars/cell_high
@@ -471,19 +470,18 @@ ABSTRACT_TYPE(/datum/manufacture/pod_wars/pod)
 	"salicylic_acid", "blood", \
 	"menthol", "antihistamine", "smelling_salt")
 
-/obj/machinery/manufacturer/general/pod_wars
-	New()
-		#ifdef RP_MODE
-		available += /datum/manufacture/pod_wars/handcuffs
-		#endif
-		available += /datum/manufacture/pod_wars/barricade
-		available += /datum/manufacture/pod_wars/energy_frag_grenade
-		available += /datum/manufacture/pod_wars/energy_concussion_grenade
-		available += /datum/manufacture/pod_wars/cell_pod_wars_basic
-		available += /datum/manufacture/pod_wars/cell_pod_wars_standard
-		available += /datum/manufacture/pod_wars/cell_pod_wars_high
-		available += /datum/manufacture/pod_wars/cell_high
-		available += /datum/manufacture/pod_wars/cell_higher
+/obj/machinery/manufacturer/general/pod_wars/New()
+	#ifdef RP_MODE
+	available += /datum/manufacture/pod_wars/handcuffs
+	#endif
+	available += /datum/manufacture/pod_wars/barricade
+	available += /datum/manufacture/pod_wars/energy_frag_grenade
+	available += /datum/manufacture/pod_wars/energy_concussion_grenade
+	available += /datum/manufacture/pod_wars/cell_pod_wars_basic
+	available += /datum/manufacture/pod_wars/cell_pod_wars_standard
+	available += /datum/manufacture/pod_wars/cell_pod_wars_high
+	available += /datum/manufacture/pod_wars/cell_high
+	available += /datum/manufacture/pod_wars/cell_higher
 
-		hidden = list()
-		..()
+	hidden = list()
+	..()

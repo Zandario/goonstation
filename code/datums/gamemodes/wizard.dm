@@ -153,7 +153,7 @@
 		return null
 	return pick(names)
 
-datum/game_mode/wizard/check_finished()
+/datum/game_mode/wizard/check_finished()
 
 	if(emergency_shuttle.location == SHUTTLE_LOC_RETURNED)
 		return 1

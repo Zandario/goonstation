@@ -527,30 +527,30 @@
 	stamina_crit_chance = 10
 	hitsound = 'sound/impact_sounds/Wood_Hit_1.ogg'
 
-	New()
-		..()
-		src.setItemSpecial(/datum/item_special/swipe)
-		BLOCK_SETUP(BLOCK_LARGE)
-		processing_items.Add(src)
+/obj/item/revolutionary_sign/New()
+	..()
+	src.setItemSpecial(/datum/item_special/swipe)
+	BLOCK_SETUP(BLOCK_LARGE)
+	processing_items.Add(src)
 
-	disposing()
-		..()
-		processing_items.Remove(src)
+/obj/item/revolutionary_sign/disposing()
+	..()
+	processing_items.Remove(src)
 
-	process()
-		..()
-		if (ismob(src.loc))
-			var/mob/owner = src.loc
-			if (owner.mind && ticker.mode && ticker.mode.type == /datum/game_mode/revolution)
-				var/datum/game_mode/revolution/R = ticker.mode
+/obj/item/revolutionary_sign/process()
+	..()
+	if (ismob(src.loc))
+		var/mob/owner = src.loc
+		if (owner.mind && ticker.mode && ticker.mode.type == /datum/game_mode/revolution)
+			var/datum/game_mode/revolution/R = ticker.mode
 
-				if ((owner.mind in R.revolutionaries) || (owner.mind in R.head_revolutionaries))
-					var/found = 0
-					for (var/datum/mind/M in R.head_revolutionaries)
-						if (M.current && ishuman(M.current))
-							if (GET_DIST(owner,M.current) <= 5)
-								for (var/obj/item/revolutionary_sign/RS in M.current.equipped_list(check_for_magtractor = 0))
-									found = 1
-									break
-					if (found)
-						owner.changeStatus("revspirit", 20 SECONDS)
+			if ((owner.mind in R.revolutionaries) || (owner.mind in R.head_revolutionaries))
+				var/found = 0
+				for (var/datum/mind/M in R.head_revolutionaries)
+					if (M.current && ishuman(M.current))
+						if (GET_DIST(owner,M.current) <= 5)
+							for (var/obj/item/revolutionary_sign/RS in M.current.equipped_list(check_for_magtractor = 0))
+								found = 1
+								break
+				if (found)
+					owner.changeStatus("revspirit", 20 SECONDS)

@@ -319,7 +319,7 @@ var/global/area/current_battle_spawn = null
 		SPAWN(0) dropper.event_effect("Gamemode", drop_locations[pick(drop_locations)])
 
 
-proc/hide_weapons_everywhere(var/total_battlers = 1)
+/proc/hide_weapons_everywhere(total_battlers = 1)
 	// Replaces lockers with generic syndicate to clear out junk items, fill them with loot
 
 	var/list/obj/murder_supplies = list()
@@ -450,7 +450,7 @@ proc/hide_weapons_everywhere(var/total_battlers = 1)
 					if (prob(33))
 						new /obj/item/reagent_containers/patch/mini/synthflesh(chest)
 
-proc/equip_battler(mob/living/carbon/human/battler)
+/proc/equip_battler(mob/living/carbon/human/battler)
 	if (!ishuman(battler))
 		return
 
@@ -563,7 +563,7 @@ proc/equip_battler(mob/living/carbon/human/battler)
 
 //returns a list of all areas on a station
 // Maybe nuclear could use this in the future???
-proc/get_accessible_station_areas()
+/proc/get_accessible_station_areas()
 	if(global.station_areas && global.area_list_is_up_to_date) // In case someone makes a new area
 		return global.station_areas
 	// All areas

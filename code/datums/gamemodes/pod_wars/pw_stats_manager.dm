@@ -1,136 +1,136 @@
 ////////////////////////////player stats tracking datum//////////////////
 /datum/pw_stats_manager
-	var/list/player_stats = list()			//assoc list of ckey -> /datum/pw_player_stats
+	var/list/player_stats = list() //assoc list of ckey -> /datum/pw_player_stats
 
-	var/list/item_rewards = list()		//assoc list of item name -> amount
-	var/list/crate_list = list()			//assoc list of crate tier -> amount
+	var/list/item_rewards = list() //assoc list of item name -> amount
+	var/list/crate_list = list() //assoc list of crate tier -> amount
 	var/html_string
 
-	proc/add_item_reward(var/string, var/team_num, var/amt = 1)
-		switch(team_num)
-			if (TEAM_NANOTRASEN)
-				string = "NT,[string]"
-			if (TEAM_SYNDICATE)
-				string = "SY,[string]"
+/datum/pw_stats_manager/proc/add_item_reward(string, team_num, amt = 1)
+	switch(team_num)
+		if (TEAM_NANOTRASEN)
+			string = "NT,[string]"
+		if (TEAM_SYNDICATE)
+			string = "SY,[string]"
 
-		item_rewards[string] += amt
+	item_rewards[string] += amt
 
-	proc/add_crate(var/string, var/team_num)
-		switch(team_num)
-			if (TEAM_NANOTRASEN)
-				string = "NT,[string]"
-			if (TEAM_SYNDICATE)
-				string = "SY,[string]"
+/datum/pw_stats_manager/proc/add_crate(string, team_num)
+	switch(team_num)
+		if (TEAM_NANOTRASEN)
+			string = "NT,[string]"
+		if (TEAM_SYNDICATE)
+			string = "SY,[string]"
 
-		crate_list[string] ++
+	crate_list[string] ++
 
-	proc/add_player(var/datum/mind/mind, var/initial_name, var/team_num, var/rank)
-		//only add new stat tracker datum if one doesn't exist
-		if (mind.ckey && player_stats[mind.ckey] == null)
-			player_stats[mind.ckey] = new/datum/pw_player_stats(mind = mind, initial_name = initial_name, team_num = team_num, rank = rank )
+/datum/pw_stats_manager/proc/add_player(datum/mind/mind, initial_name, team_num, rank)
+	//only add new stat tracker datum if one doesn't exist
+	if (mind.ckey && player_stats[mind.ckey] == null)
+		player_stats[mind.ckey] = new/datum/pw_player_stats(mind = mind, initial_name = initial_name, team_num = team_num, rank = rank )
 
-	//team_num = team that just captured this point
-	//computer = computer object for the point that has been captured. used for distance check currently.
-	proc/inc_control_point_caps(var/team_num, var/obj/computer)
-		for (var/ckey in player_stats)
-			var/datum/pw_player_stats/stat = player_stats[ckey]
-			if (stat.team_num != team_num)
-				continue
-			//if they are within 30 tiles of the capture point computer, it counts as helping!
-			//I do the get_turf on the current mob in case they are in a pod. This is called Pod Wars after all...
-			if (GET_DIST(get_turf(stat.mind?.current), computer) <= 30)
-				stat.control_point_capture_count ++
-
-	proc/inc_friendly_fire(var/mob/M)
-		if (!ismob(M) || !M.ckey)
-			return
-		var/datum/pw_player_stats/stat = player_stats[M.ckey]
-		if (istype(stat))
-			stat.friendly_fire_count ++
-
-	proc/inc_death(var/mob/M)
-		if (!ismob(M) || !M.ckey)
-			return
-		var/datum/pw_player_stats/stat = player_stats[M.ckey]
-		if (istype(stat))
-			stat.death_count ++
-
-		src.inc_longest_life(M.ckey)
-
-	//uses shift time
-	//only called from inc_death and the loop through the player_stats list of pw_player_stats datum
-	proc/inc_longest_life(var/ckey)
-		// if (!ismob(M))
-		// 	return
+/// team_num = team that just captured this point
+/// computer = computer object for the point that has been captured. used for distance check currently.
+/datum/pw_stats_manager/proc/inc_control_point_caps(team_num, obj/computer)
+	for (var/ckey in player_stats)
 		var/datum/pw_player_stats/stat = player_stats[ckey]
-		if (istype(stat))
-			var/shift_time = round(ticker.round_elapsed_ticks / (1 MINUTES), 0.01)		//this converts shift time to "minutes". uses this cause it starts counting when the round starts, not when the lobby starts.
+		if (stat.team_num != team_num)
+			continue
+		//if they are within 30 tiles of the capture point computer, it counts as helping!
+		//I do the get_turf on the current mob in case they are in a pod. This is called Pod Wars after all...
+		if (GET_DIST(get_turf(stat.mind?.current), computer) <= 30)
+			stat.control_point_capture_count ++
+
+/datum/pw_stats_manager/proc/inc_friendly_fire(mob/M)
+	if (!ismob(M) || !M.ckey)
+		return
+	var/datum/pw_player_stats/stat = player_stats[M.ckey]
+	if (istype(stat))
+		stat.friendly_fire_count ++
+
+/datum/pw_stats_manager/proc/inc_death(mob/M)
+	if (!ismob(M) || !M.ckey)
+		return
+	var/datum/pw_player_stats/stat = player_stats[M.ckey]
+	if (istype(stat))
+		stat.death_count ++
+
+	src.inc_longest_life(M.ckey)
+
+/// uses shift time
+/// only called from inc_death and the loop through the player_stats list of pw_player_stats datum
+/datum/pw_stats_manager/proc/inc_longest_life(ckey)
+	// if (!ismob(M))
+	// 	return
+	var/datum/pw_player_stats/stat = player_stats[ckey]
+	if (istype(stat))
+		var/shift_time = round(ticker.round_elapsed_ticks / (1 MINUTES), 0.01)		//this converts shift time to "minutes". uses this cause it starts counting when the round starts, not when the lobby starts.
 
 
-			//I feel like I should explain this, but I'm not gonna cause it's not confusing enough to need it. Just the long names make it look weird.
-			if (!stat.longest_life)
+		//I feel like I should explain this, but I'm not gonna cause it's not confusing enough to need it. Just the long names make it look weird.
+		if (!stat.longest_life)
+			stat.time_of_last_death = shift_time
+			stat.longest_life = shift_time
+		else
+			if (stat.time_of_last_death < shift_time - stat.time_of_last_death)
 				stat.time_of_last_death = shift_time
-				stat.longest_life = shift_time
+				stat.longest_life = shift_time - stat.time_of_last_death
+
+/datum/pw_stats_manager/proc/inc_farts(mob/M)
+	if (!ismob(M) || !M.ckey)
+		return
+	var/datum/pw_player_stats/stat = player_stats[M.ckey]
+	if (istype(stat))
+		stat.farts ++
+
+/// Has a variable increment amount cause not every tic of ethanol metabolize metabolizes the same amount of alcohol.
+/datum/pw_stats_manager/proc/inc_alcohol_metabolized(mob/M, inc_amt = 1)
+	if (!ismob(M) || !M.ckey)
+		return
+	var/datum/pw_player_stats/stat = player_stats[M.ckey]
+	if (istype(stat))
+		stat.alcohol_metabolized += inc_amt
+
+/// Called on round end to output the stats. returns the HTML as a string.
+/datum/pw_stats_manager/proc/build_HTML()
+
+	//calculate pet survival first.
+	var/pet_dat = "<h4>Pet Stats:</h4>"
+	for(var/pet in by_cat[TR_CAT_PW_PETS])
+		if(istype(pet, /obj/critter/turtle/sylvester/Commander))
+			var/obj/critter/P = pet
+			if(P.alive)
+				if (istype(get_area(P), /area/pod_wars/team1))
+					pet_dat += "<span class='notice'>Sylvester is safe and sound on the Pytheas! Good job NanoTrasen!</span><br>"
+				else if (istype(get_area(P), /area/pod_wars/team2))
+					pet_dat += "<span class='alert'>Sylvester was captured by the Syndicate! Oh no!</span><br>"
+				else
+					pet_dat += "<span class='notice'>Sylvester survived! Yay!</span><br>"
+
 			else
-				if (stat.time_of_last_death < shift_time - stat.time_of_last_death)
-					stat.time_of_last_death = shift_time
-					stat.longest_life = shift_time - stat.time_of_last_death
+				pet_dat += "<span class='alert'>Sylvester was killed! Oh no!</span><br>"
 
-	proc/inc_farts(var/mob/M)
-		if (!ismob(M) || !M.ckey)
-			return
-		var/datum/pw_player_stats/stat = player_stats[M.ckey]
-		if (istype(stat))
-			stat.farts ++
-
-	//has a variable increment amount cause not every tic of ethanol metabolize metabolizes the same amount of alcohol.
-	proc/inc_alcohol_metabolized(var/mob/M, var/inc_amt = 1)
-		if (!ismob(M) || !M.ckey)
-			return
-		var/datum/pw_player_stats/stat = player_stats[M.ckey]
-		if (istype(stat))
-			stat.alcohol_metabolized += inc_amt
-
-	//called on round end to output the stats. returns the HTML as a string.
-	proc/build_HTML()
-
-		//calculate pet survival first.
-		var/pet_dat = "<h4>Pet Stats:</h4>"
-		for(var/pet in by_cat[TR_CAT_PW_PETS])
-			if(istype(pet, /obj/critter/turtle/sylvester/Commander))
-				var/obj/critter/P = pet
-				if(P.alive)
-					if (istype(get_area(P), /area/pod_wars/team1))
-						pet_dat += "<span class='notice'>Sylvester is safe and sound on the Pytheas! Good job NanoTrasen!</span><br>"
-					else if (istype(get_area(P), /area/pod_wars/team2))
-						pet_dat += "<span class='alert'>Sylvester was captured by the Syndicate! Oh no!</span><br>"
-					else
-						pet_dat += "<span class='notice'>Sylvester survived! Yay!</span><br>"
-
+		else if(istype(pet, /mob/living/carbon/human/npc/monkey/oppenheimer/pod_wars))
+			var/mob/living/carbon/human/opp = pet
+			if (isalive(opp))
+				if (istype(get_area(opp), /area/pod_wars/team2))
+					pet_dat += "<span class='notice'>Oppenheimer is safe and sound on the Lodbrok! Good job Syndicates!</span><br>"
+				else if (istype(get_area(opp), /area/pod_wars/team1))
+					pet_dat += "<span class='alert'>Oppenheimer was captured by NanoTrasen! Oh no!</span><br>"
 				else
-					pet_dat += "<span class='alert'>Sylvester was killed! Oh no!</span><br>"
+					pet_dat += "<span class='notice'>Oppenheimer survived! Yay!</span><br>"
 
-			else if(istype(pet, /mob/living/carbon/human/npc/monkey/oppenheimer/pod_wars))
-				var/mob/living/carbon/human/opp = pet
-				if (isalive(opp))
-					if (istype(get_area(opp), /area/pod_wars/team2))
-						pet_dat += "<span class='notice'>Oppenheimer is safe and sound on the Lodbrok! Good job Syndicates!</span><br>"
-					else if (istype(get_area(opp), /area/pod_wars/team1))
-						pet_dat += "<span class='alert'>Oppenheimer was captured by NanoTrasen! Oh no!</span><br>"
-					else
-						pet_dat += "<span class='notice'>Oppenheimer survived! Yay!</span><br>"
+			else
+				pet_dat += "<span class='alert'>Oppenheimer was killed! Oh no!</span><br>"
 
-				else
-					pet_dat += "<span class='alert'>Oppenheimer was killed! Oh no!</span><br>"
-
-		//write the player stats as a simple table
-		var/p_stat_text = ""
-		for (var/ckey in player_stats)
-			var/datum/pw_player_stats/stat = player_stats[ckey]
-			//first update longest life
-			inc_longest_life(stat.ckey)
-			// p_stat_text += stat.build_text()
-			p_stat_text += {"
+	//write the player stats as a simple table
+	var/p_stat_text = ""
+	for (var/ckey in player_stats)
+		var/datum/pw_player_stats/stat = player_stats[ckey]
+		//first update longest life
+		inc_longest_life(stat.ckey)
+		// p_stat_text += stat.build_text()
+		p_stat_text += {"
 <tr>
  <td>[stat.team_num == 1? "NT" : stat.team_num == 2 ? "SY" : ""]</td>
  <td>[stat.initial_name] ([stat.ckey])</td>
@@ -192,26 +192,26 @@ Player Stats
 
 </style>"}
 
-	//Assumes Lists are an assoc list in the format where the key starts with either "NT," or "SY," followed by the item/crate_tier name
-	//and the value stored is just an int for the amount.
-	//returns html text
-	proc/build_rewards_text(var/list/L)
-		if (!islist(L) || !length(L))
-			logTheThing(LOG_DEBUG, null, "Something trying to write one of the lists for stats...")
-			return
+/// Assumes Lists are an assoc list in the format where the key starts with either "NT," or "SY," followed by the item/crate_tier name
+/// and the value stored is just an int for the amount.
+/// returns html text
+/datum/pw_stats_manager/proc/build_rewards_text(list/L)
+	if (!islist(L) || !length(L))
+		logTheThing(LOG_DEBUG, null, "Something trying to write one of the lists for stats...")
+		return
 
-		var/cr_stats_NT = ""
-		var/cr_stats_SY = ""
-		for (var/stat in L)
-			// message_admins("[stat]:[copytext(1,3)];[copytext(stat, 4)]")
-			if (!istext(stat) || length(stat) <= 4) continue
+	var/cr_stats_NT = ""
+	var/cr_stats_SY = ""
+	for (var/stat in L)
+		// message_admins("[stat]:[copytext(1,3)];[copytext(stat, 4)]")
+		if (!istext(stat) || length(stat) <= 4) continue
 
-			if (copytext(stat, 1,3) == "NT")
-				cr_stats_NT += "<tr><b>[copytext(stat, 4)]</b> = [L[stat]]</tr><br>"
-			else if (copytext(stat, 1,3) == "SY")
-				cr_stats_SY += "<tr><b>[copytext(stat, 4)]</b> = [L[stat]]</tr><br>"
+		if (copytext(stat, 1,3) == "NT")
+			cr_stats_NT += "<tr><b>[copytext(stat, 4)]</b> = [L[stat]]</tr><br>"
+		else if (copytext(stat, 1,3) == "SY")
+			cr_stats_SY += "<tr><b>[copytext(stat, 4)]</b> = [L[stat]]</tr><br>"
 
-		return {"
+	return {"
 
 <div class=\"column\">
   <h3>NanoTrasen</h3>
@@ -223,12 +223,12 @@ Player Stats
 </div>
 "}
 
-	proc/display_HTML_to_clients()
-		html_string = build_HTML()
-		for (var/client/C in clients)
-			C.Browse(html_string, "window=scores;size=700x500;title=Scores" )
-			boutput(C, "<strong style='color: #393;'>Use the command Display-Stats to view the stats screen if you missed it.</strong>")
-			C.mob.verbs += /client/proc/display_stats
+/datum/pw_stats_manager/proc/display_HTML_to_clients()
+	html_string = build_HTML()
+	for (var/client/C in clients)
+		C.Browse(html_string, "window=scores;size=700x500;title=Scores" )
+		boutput(C, "<strong style='color: #393;'>Use the command Display-Stats to view the stats screen if you missed it.</strong>")
+		C.mob.verbs += /client/proc/display_stats
 
 /client/proc/display_stats()
 	set name = "Display Stats"
@@ -240,7 +240,7 @@ Player Stats
 		else
 			src.Browse(mode.stats_manager?.html_string, "window=scores;size=700x500;title=Scores" )
 
-//for displaying info about players on round end to everyone.
+/// For displaying info about players on round end to everyone.
 /datum/pw_player_stats
 	var/datum/mind/mind
 	var/initial_name
@@ -257,12 +257,11 @@ Player Stats
 	var/alcohol_metabolized = 0
 	var/farts = 0
 
-	New(var/datum/mind/mind, var/initial_name, var/team_num, var/rank)
-		..()
-		src.mind = mind
-		src.initial_name = initial_name
-		src.team_num = team_num
-		src.rank = rank
+/datum/pw_player_stats/New(datum/mind/mind, initial_name, team_num, rank)
+	..()
+	src.mind = mind
+	src.initial_name = initial_name
+	src.team_num = team_num
+	src.rank = rank
 
-		src.ckey = mind?.ckey
-
+	src.ckey = mind?.ckey

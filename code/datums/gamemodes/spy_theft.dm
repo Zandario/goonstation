@@ -29,11 +29,16 @@
 	var/const/pop_divisor = 6
 #endif
 
-	var/list/station_bounties = list()			// On-station items that can have bounties placed on them, pair list
-	var/list/big_station_bounties = list()	// On-station machines/other big objects that can have bounties placed on them, pair list
-	var/list/personal_bounties = list() 		// Things that belong to people like trinkets, pair list
-	var/list/organ_bounties = list()				// Things that belong to people that are on the inside
-	var/list/photo_bounties = list()				// Photos of people (Operates by text, because that's the only info that photos store)
+	/// On-station items that can have bounties placed on them, pair list
+	var/list/station_bounties = list()
+	/// On-station machines/other big objects that can have bounties placed on them, pair list
+	var/list/big_station_bounties = list()
+	/// Things that belong to people like trinkets, pair list
+	var/list/personal_bounties = list()
+	/// Things that belong to people that are on the inside
+	var/list/organ_bounties = list()
+	/// Photos of people (Operates by text, because that's the only info that photos store)
+	var/list/photo_bounties = list()
 
 	var/const/organ_bounty_amt = 4
 	var/const/person_bounty_amt = 4
@@ -47,17 +52,28 @@
 	var/list/uplinks = list()
 
 /datum/bounty_item
-	var/name = "bounty name (this is a BUG)" 	//When a bounty object is deleted, we will still need a ref to its name
-	var/obj/item = 0										//Ref to exact item
-	var/path = 0												//Req path of item
-	var/claimed = 0											//Claimed already?
-	var/area/delivery_area = 0					//You need to stand here to deliver this
-	var/photo_containing = 0 						//Name required in a photograph. alright look photographs work on the basis of matching strings. Photos don't store refs to the mob or whatever so this will have to do
-	var/reveal_area = 0									//Show area of target in pda
-	var/job = "job name"								//Job of bounty item owner (if item has an owner). Used for target difficulty on personal/organ bounties
-	var/bounty_type = 0 								//Type of objective, used to determine difficulty and organs 'Anywhere' delivery location
-	var/difficulty = 0									//Stored difficulty for items and big items
-	var/hot_bounty = 0									//This bounty randomly rolled a high tier reward
+	///When a bounty object is deleted, we will still need a ref to its name
+	var/name = "bounty name (this is a BUG)"
+	///Ref to exact item
+	var/obj/item = 0
+	///Req path of item
+	var/path = 0
+	///Claimed already?
+	var/claimed = 0
+	///You need to stand here to deliver this
+	var/area/delivery_area = 0
+	///Name required in a photograph. alright look photographs work on the basis of matching strings. Photos don't store refs to the mob or whatever so this will have to do
+	var/photo_containing = 0
+	///Show area of target in pda
+	var/reveal_area = 0
+	///Job of bounty item owner (if item has an owner). Used for target difficulty on personal/organ bounties
+	var/job = "job name"
+	///Type of objective, used to determine difficulty and organs 'Anywhere' delivery location
+	var/bounty_type = 0
+	///Stored difficulty for items and big items
+	var/difficulty = 0
+	///This bounty randomly rolled a high tier reward
+	var/hot_bounty = 0
 
 	var/datum/syndicate_buylist/reward = 0
 	var/value_low = 0
@@ -67,77 +83,78 @@
 
 	var/reward_was_spawned = 0
 
-	New(var/datum/game_mode/spy_theft/ST)
-		game_mode = ST
-		..()
+/datum/bounty_item/New(datum/game_mode/spy_theft/ST)
+	game_mode = ST
+	..()
 
-	proc/estimate_target_difficulty(var/job)
-	// Adjust reward based off target job to estimate risk level
-		if (job == "Head of Security" || job == "Captain")
-			return 3
-		else if (job == "Medical Director" || job == "Head of Personnel" || job == "Chief Engineer" || job == "Research Director" || job == "Nanotrasen Security Consultant" || job == "Security Officer" || job == "Detective")
-			return 2
-		else
-			return 1
-
-	//Choose a reward from the four tiers
-	proc/pick_reward_tier(var/val)
-		switch(val)
-			if (1)
-				value_high = 4
-				value_low = 0
-			if (2)
-				value_high = 6
-				value_low = 3
-			if (3)
-				value_high = 8
-				value_low = 5
-			if (4)
-				value_high = 99
-				value_low = 7
-		pick_a_reward()
-
-	proc/pick_a_reward()
-		//Find a suitable reward
-		var/list/possible_items = list()
-		for (var/datum/syndicate_buylist/S in syndi_buylist_cache)
-			if(!(S.can_buy & UPLINK_SPY_THIEF))
-				continue
-
-			if (S.cost <= value_high && S.cost >= value_low)
-				possible_items += S
-
-		reward = pick(possible_items)
-
-	proc/spawn_reward(var/mob/user,var/obj/item/device/pda2/hostpda)
-		if (reward_was_spawned) return
-
-		var/turf/pda_turf = get_turf(hostpda)
-		playsound(pda_turf, "warp", 15, 1, 0.2, 1.2)
-		animate_portal_tele(hostpda)
-
-		if (user.mind)
-			user.mind.purchased_traitor_items += reward
-
-		if (reward.item)
-			var/obj/item = new reward.item(pda_turf)
-			logTheThing(LOG_DEBUG, user, "spy thief reward spawned: [item] at [log_loc(user)]")
-			user.show_text("Your PDA accepts the bounty and spits out [reward] in exchange.", "red")
-			reward.run_on_spawn(item, user, FALSE, hostpda.uplink)
-			user.put_in_hand_or_drop(item)
-			//if (src.is_VR_uplink == 0)
-			//	statlog_traitor_item(user, reward.name, reward.cost)
-		if (reward.item2)
-			new reward.item2(pda_turf)
-		if (reward.item3)
-			new reward.item3(pda_turf)
-
-		for(var/obj/item/uplink/integrated/pda/spy/spy_uplink in game_mode.uplinks)
-			LAGCHECK(LAG_LOW)
-			spy_uplink.ui_update()
-
-		reward_was_spawned = 1
+/datum/bounty_item/proc/estimate_target_difficulty(job)
+// Adjust reward based off target job to estimate risk level
+	if (job == "Head of Security" || job == "Captain")
+		return 3
+	else if (job == "Medical Director" || job == "Head of Personnel" || job == "Chief Engineer" || job == "Research Director" || job == "Nanotrasen Security Consultant" || job == "Security Officer" || job == "Detective")
+		return 2
+	else
 		return 1
+
+/// Choose a reward from the four tiers
+/datum/bounty_item/proc/pick_reward_tier(val)
+	switch(val)
+		if (1)
+			value_high = 4
+			value_low = 0
+		if (2)
+			value_high = 6
+			value_low = 3
+		if (3)
+			value_high = 8
+			value_low = 5
+		if (4)
+			value_high = 99
+			value_low = 7
+	pick_a_reward()
+
+/datum/bounty_item/proc/pick_a_reward()
+	//Find a suitable reward
+	var/list/possible_items = list()
+	for (var/datum/syndicate_buylist/S in syndi_buylist_cache)
+		if(!(S.can_buy & UPLINK_SPY_THIEF))
+			continue
+
+		if (S.cost <= value_high && S.cost >= value_low)
+			possible_items += S
+
+	reward = pick(possible_items)
+
+/datum/bounty_item/proc/spawn_reward(mob/user, obj/item/device/pda2/hostpda)
+	if (reward_was_spawned)
+		return
+
+	var/turf/pda_turf = get_turf(hostpda)
+	playsound(pda_turf, "warp", 15, 1, 0.2, 1.2)
+	animate_portal_tele(hostpda)
+
+	if (user.mind)
+		user.mind.purchased_traitor_items += reward
+
+	if (reward.item)
+		var/obj/item = new reward.item(pda_turf)
+		logTheThing(LOG_DEBUG, user, "spy thief reward spawned: [item] at [log_loc(user)]")
+		user.show_text("Your PDA accepts the bounty and spits out [reward] in exchange.", "red")
+		reward.run_on_spawn(item, user, FALSE, hostpda.uplink)
+		user.put_in_hand_or_drop(item)
+		//if (src.is_VR_uplink == 0)
+		//	statlog_traitor_item(user, reward.name, reward.cost)
+	if (reward.item2)
+		new reward.item2(pda_turf)
+	if (reward.item3)
+		new reward.item3(pda_turf)
+
+	for(var/obj/item/uplink/integrated/pda/spy/spy_uplink in game_mode.uplinks)
+		LAGCHECK(LAG_LOW)
+		spy_uplink.ui_update()
+
+	reward_was_spawned = 1
+	return 1
 
 
 

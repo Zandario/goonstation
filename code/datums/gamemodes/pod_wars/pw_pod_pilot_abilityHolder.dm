@@ -8,19 +8,20 @@
 	points = 0
 	pointName = "points"
 
-	New()
-		..()
-		add_all_abilities()
+/datum/abilityHolder/pod_pilot/New()
+	..()
+	add_all_abilities()
 
 
-	disposing()
-		..()
+/datum/abilityHolder/pod_pilot/disposing()
+	..()
 
-	onLife(var/mult = 1)
-		if(..()) return
+/datum/abilityHolder/pod_pilot/onLife(mult = 1)
+	if(..())
+		return
 
-	proc/add_all_abilities()
-		src.addAbility(/datum/targetable/pod_pilot/scoreboard)
+/datum/abilityHolder/pod_pilot/proc/add_all_abilities()
+	src.addAbility(/datum/targetable/pod_pilot/scoreboard)
 
 //can't remember why I did this as an ability. Probably better to add directly like I did in kudzumen, but later... -kyle
 //Wait, maybe I never used this. I can't remember, it's too late now to think and I'll just keep it in case I secretly had a good reason to do this.
@@ -36,67 +37,67 @@
 	var/unlock_message = null
 	var/can_cast_anytime = 0		//while alive
 
-	New()
-		var/atom/movable/screen/ability/topBar/pod_pilot/B = new /atom/movable/screen/ability/topBar/pod_pilot(null)
-		B.icon = src.icon
-		B.icon_state = src.icon_state
-		B.owner = src
-		B.name = src.name
-		B.desc = src.desc
-		src.object = B
-		return
+/datum/targetable/pod_pilot/New()
+	var/atom/movable/screen/ability/topBar/pod_pilot/B = new /atom/movable/screen/ability/topBar/pod_pilot(null)
+	B.icon = src.icon
+	B.icon_state = src.icon_state
+	B.owner = src
+	B.name = src.name
+	B.desc = src.desc
+	src.object = B
+	return
 
-	onAttach(var/datum/abilityHolder/H)
-		..()
-		if (src.unlock_message && src.holder && src.holder.owner)
-			boutput(src.holder.owner, "<span class='notice'><h3>[src.unlock_message]</h3></span>")
-		return
+/datum/targetable/pod_pilot/onAttach(datum/abilityHolder/H)
+	..()
+	if (src.unlock_message && src.holder && src.holder.owner)
+		boutput(src.holder.owner, "<span class='notice'><h3>[src.unlock_message]</h3></span>")
+	return
 
-	updateObject()
-		..()
-		if (!src.object)
-			src.object = new /atom/movable/screen/ability/topBar/pod_pilot()
-			object.icon = src.icon
-			object.owner = src
-		if (src.last_cast > world.time)
-			var/pttxt = ""
-			if (pointCost)
-				pttxt = " \[[pointCost]\]"
-			object.name = "[src.name][pttxt] ([round((src.last_cast-world.time)/10)])"
-			object.icon_state = src.icon_state + "_cd"
-		else
-			var/pttxt = ""
-			if (pointCost)
-				pttxt = " \[[pointCost]\]"
-			object.name = "[src.name][pttxt]"
-			object.icon_state = src.icon_state
-		return
+/datum/targetable/pod_pilot/updateObject()
+	..()
+	if (!src.object)
+		src.object = new /atom/movable/screen/ability/topBar/pod_pilot()
+		object.icon = src.icon
+		object.owner = src
+	if (src.last_cast > world.time)
+		var/pttxt = ""
+		if (pointCost)
+			pttxt = " \[[pointCost]\]"
+		object.name = "[src.name][pttxt] ([round((src.last_cast-world.time)/10)])"
+		object.icon_state = src.icon_state + "_cd"
+	else
+		var/pttxt = ""
+		if (pointCost)
+			pttxt = " \[[pointCost]\]"
+		object.name = "[src.name][pttxt]"
+		object.icon_state = src.icon_state
+	return
 
-	castcheck()
-		if (!holder)
-			return 0
-		var/mob/living/M = holder.owner
-		if (!M)
-			return 0
-		if (!(iscarbon(M) || ismobcritter(M)))
-			boutput(M, "<span class='alert'>You cannot use any powers in your current form.</span>")
-			return 0
-		if (can_cast_anytime && !isdead(M))
-			return 1
-		if (!can_act(M, 0))
-			boutput(M, "<span class='alert'>You can't use this ability while incapacitated!</span>")
-			return 0
-
-		if (src.not_when_handcuffed && M.restrained())
-			boutput(M, "<span class='alert'>You can't use this ability when restrained!</span>")
-			return 0
-
+/datum/targetable/pod_pilot/castcheck()
+	if (!holder)
+		return 0
+	var/mob/living/M = holder.owner
+	if (!M)
+		return 0
+	if (!(iscarbon(M) || ismobcritter(M)))
+		boutput(M, "<span class='alert'>You cannot use any powers in your current form.</span>")
+		return 0
+	if (can_cast_anytime && !isdead(M))
 		return 1
+	if (!can_act(M, 0))
+		boutput(M, "<span class='alert'>You can't use this ability while incapacitated!</span>")
+		return 0
 
-	cast(atom/target)
-		. = ..()
-		actions.interrupt(holder.owner, INTERRUPT_ACT)
-		return
+	if (src.not_when_handcuffed && M.restrained())
+		boutput(M, "<span class='alert'>You can't use this ability when restrained!</span>")
+		return 0
+
+	return 1
+
+/datum/targetable/pod_pilot/cast(atom/target)
+	. = ..()
+	actions.interrupt(holder.owner, INTERRUPT_ACT)
+	return
 
 /datum/targetable/pod_pilot/scoreboard
 	name = "scoreboard"
@@ -107,12 +108,10 @@
 	cooldown = 0
 	special_screen_loc = "NORTH,CENTER-2"
 
-	onAttach(var/datum/abilityHolder/H)
-		object.mouse_opacity = 0
-		// object.maptext_y = -32
-		if (istype(ticker.mode, /datum/game_mode/pod_wars))
-			var/datum/game_mode/pod_wars/mode = ticker.mode
-			object.vis_contents += mode.board
-		return
-
-
+/datum/targetable/pod_pilot/scoreboard/onAttach(datum/abilityHolder/H)
+	object.mouse_opacity = 0
+	// object.maptext_y = -32
+	if (istype(ticker.mode, /datum/game_mode/pod_wars))
+		var/datum/game_mode/pod_wars/mode = ticker.mode
+		object.vis_contents += mode.board
+	return

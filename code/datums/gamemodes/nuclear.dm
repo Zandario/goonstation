@@ -464,7 +464,7 @@ var/syndicate_name = null
 	syndicate_name = name
 	return name
 
-/obj/cairngorm_stats/
+/obj/cairngorm_stats
 	name = "Mission Memorial"
 	icon = 'icons/obj/large/32x64.dmi'
 	icon_state = "memorial_mid"
@@ -474,36 +474,36 @@ var/syndicate_name = null
 
 
 
-	New()
-		..()
-		var/wins = world.load_intra_round_value("nukie_win")
-		var/losses = world.load_intra_round_value("nukie_loss")
-		if(isnull(wins))
-			wins = 0
-		if(isnull(losses))
-			losses = 0
-		var/last_reset_date = world.load_intra_round_value("nukie_last_reset")
-		var/last_reset_text = null
-		if(!isnull(last_reset_date))
-			var/days_passed = round((world.realtime - last_reset_date) / (1 DAY))
-			last_reset_text = "<h4>(memorial reset [days_passed] days ago)</h4>"
-		src.desc = "<center><h2><b>Battlecruiser Cairngorm Mission Memorial</b></h2><br> <h3>Successful missions: [wins]<br>\nUnsuccessful missions: [losses]</h3><br>[last_reset_text]</center>"
+/obj/cairngorm_stats/New()
+	..()
+	var/wins = world.load_intra_round_value("nukie_win")
+	var/losses = world.load_intra_round_value("nukie_loss")
+	if(isnull(wins))
+		wins = 0
+	if(isnull(losses))
+		losses = 0
+	var/last_reset_date = world.load_intra_round_value("nukie_last_reset")
+	var/last_reset_text = null
+	if(!isnull(last_reset_date))
+		var/days_passed = round((world.realtime - last_reset_date) / (1 DAY))
+		last_reset_text = "<h4>(memorial reset [days_passed] days ago)</h4>"
+	src.desc = "<center><h2><b>Battlecruiser Cairngorm Mission Memorial</b></h2><br> <h3>Successful missions: [wins]<br>\nUnsuccessful missions: [losses]</h3><br>[last_reset_text]</center>"
 
-	attack_hand(var/mob/user)
-		if (..(user))
-			return
-
-		var/wins = world.load_intra_round_value("nukie_win")
-		var/losses = world.load_intra_round_value("nukie_loss")
-		if(isnull(wins))
-			wins = 0
-		if(isnull(losses))
-			losses = 0
-
-		src.add_dialog(user)
-		user.Browse(src.desc, "title=Mission Memorial;window=cairngorm_stats_[src];size=300x300")
-		onclose(user, "cairngorm_stats_[src]")
+/obj/cairngorm_stats/attack_hand(mob/user)
+	if (..(user))
 		return
+
+	var/wins = world.load_intra_round_value("nukie_win")
+	var/losses = world.load_intra_round_value("nukie_loss")
+	if(isnull(wins))
+		wins = 0
+	if(isnull(losses))
+		losses = 0
+
+	src.add_dialog(user)
+	user.Browse(src.desc, "title=Mission Memorial;window=cairngorm_stats_[src];size=300x300")
+	onclose(user, "cairngorm_stats_[src]")
+	return
 
 /obj/cairngorm_stats/left
 	icon_state = "memorial_left"

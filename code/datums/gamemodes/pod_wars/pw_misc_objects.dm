@@ -13,143 +13,143 @@
 	var/suppress_damage_message = 0
 	var/shielded = 1
 
-	nanotrasen
-		team_num = TEAM_NANOTRASEN
+/obj/pod_base_critical_system/nanotrasen
+	team_num = TEAM_NANOTRASEN
 
-	syndicate
-		team_num = TEAM_SYNDICATE
+/obj/pod_base_critical_system/syndicate
+	team_num = TEAM_SYNDICATE
 
-	disposing()
+/obj/pod_base_critical_system/disposing()
+	if (istype(ticker.mode, /datum/game_mode/pod_wars))
+		//get the team datum from its team number right when we allocate points.
+		var/datum/game_mode/pod_wars/mode = ticker.mode
+
+		switch(team_num)
+			if (TEAM_NANOTRASEN)
+				mode.team_NT.mcguffins -= src
+			if (TEAM_SYNDICATE)
+				mode.team_SY.mcguffins -= src
+
+		mode.announce_critical_system_destruction(team_num, src)
+	..()
+
+
+/obj/pod_base_critical_system/ex_act(severity)
+	var/damage = 0
+	var/damage_mult = 1
+	switch(severity)
+		if(1)
+			damage = rand(30,50)
+			damage_mult = 4
+		if(2)
+			damage = rand(25,40)
+			damage_mult = 2
+		if(3)
+			damage = rand(10,20)
+			damage_mult = 1
+
+	src.take_damage(damage*damage_mult)
+	return
+
+/obj/pod_base_critical_system/bullet_act(obj/projectile/P)
+	//bullets from friendly turrets don't damage this thingy.
+	if (istype(P.proj_data, /datum/projectile/laser/blaster/pod_pilot))
+		var/datum/projectile/laser/blaster/pod_pilot/blaster_bolt = P.proj_data
+		if (blaster_bolt.turret && blaster_bolt.team_num == src.team_num)
+			return
+
+	var/damage = round((P.power*P.proj_data.ks_ratio), 1.0)
+	var/damage_mult = 1
+	if (damage < 1)
+		return
+
+	switch(P.proj_data.damage_type)
+		if(D_KINETIC)
+			damage_mult = 1
+		if(D_PIERCING)
+			damage_mult = 1.5
+		if(D_ENERGY)
+			damage_mult = 1
+		if(D_BURNING)
+			damage_mult = 0.25
+		if(D_SLASHING)
+			damage_mult = 0.75
+
+	//for detecting friendly fire. This bit stolen from logging.dm
+	var/shooter_data = null
+	if (P.mob_shooter)
+		shooter_data = P.mob_shooter
+	else if (ismob(P.shooter))
+		var/mob/M = P.shooter
+		shooter_data = M
+	var/obj/machinery/vehicle/V
+	if (istype(P.shooter,/obj/machinery/vehicle/))
+		V = P.shooter
+		if (!shooter_data)
+			shooter_data = V.pilot
+
+	take_damage(damage*damage_mult, shooter_data)
+	return
+
+/obj/pod_base_critical_system/attackby(obj/item/W, mob/user)
+	user.lastattacked = src
+
+	//Healing with welding tool
+	if (health <= health_max && isweldingtool(W))
+		if(!W:try_weld(user, 1))
+			return
+		take_damage(-30)
+		src.visible_message("<span class='alert'>[user] has fixed some of the damage on [src]!</span>")
+		if(health >= health_max)
+			health = health_max
+			src.visible_message("<span class='alert'>[src] is fully repaired!</span>")
+		return
+
+	//normal damage stuff
+	take_damage(W.force, user)
+	src.add_fingerprint(user)
+
+	..()
+
+/obj/pod_base_critical_system/get_desc()
+	. = "<br><span class='notice'>It looks like it has [health] HP left out of [health_max] HP. You can just tell. What is \"HP\" though? </span>"
+
+/obj/pod_base_critical_system/proc/take_damage(damage, mob/user)
+	// if (damage > 0)
+	if (shielded)
+		return
+
+	src.health -= damage
+
+	//accounting for heals so we don't log the combat as friendly fire.
+	if (damage < 0)
+
+		return
+
+	if (!suppress_damage_message && istype(ticker.mode, /datum/game_mode/pod_wars))
+		//get the team datum from its team number right when we allocate points.
+		var/datum/game_mode/pod_wars/mode = ticker.mode
+
+		mode.announce_critical_system_damage(team_num, src)
+		suppress_damage_message = 1
+		SPAWN(2 MINUTES)
+			suppress_damage_message = 0
+
+
+	if (health <= 0)
+		qdel(src)
+
+	if (!user)
+		return	//don't log if damage isn't done by a user (like it's critters are turrets)
+
+	//Friendly fire check
+	if (get_pod_wars_team_num(user) == team_num)
+		message_admins("[user] just committed friendly fire against their team's [src]!")
+		logTheThing(LOG_COMBAT, user, "\[POD WARS\][user] attacks their own team's critical system [src].")
+
 		if (istype(ticker.mode, /datum/game_mode/pod_wars))
-			//get the team datum from its team number right when we allocate points.
 			var/datum/game_mode/pod_wars/mode = ticker.mode
-
-			switch(team_num)
-				if (TEAM_NANOTRASEN)
-					mode.team_NT.mcguffins -= src
-				if (TEAM_SYNDICATE)
-					mode.team_SY.mcguffins -= src
-
-			mode.announce_critical_system_destruction(team_num, src)
-		..()
-
-
-	ex_act(severity)
-		var/damage = 0
-		var/damage_mult = 1
-		switch(severity)
-			if(1)
-				damage = rand(30,50)
-				damage_mult = 4
-			if(2)
-				damage = rand(25,40)
-				damage_mult = 2
-			if(3)
-				damage = rand(10,20)
-				damage_mult = 1
-
-		src.take_damage(damage*damage_mult)
-		return
-
-	bullet_act(var/obj/projectile/P)
-		//bullets from friendly turrets don't damage this thingy.
-		if (istype(P.proj_data, /datum/projectile/laser/blaster/pod_pilot))
-			var/datum/projectile/laser/blaster/pod_pilot/blaster_bolt = P.proj_data
-			if (blaster_bolt.turret && blaster_bolt.team_num == src.team_num)
-				return
-
-		var/damage = round((P.power*P.proj_data.ks_ratio), 1.0)
-		var/damage_mult = 1
-		if (damage < 1)
-			return
-
-		switch(P.proj_data.damage_type)
-			if(D_KINETIC)
-				damage_mult = 1
-			if(D_PIERCING)
-				damage_mult = 1.5
-			if(D_ENERGY)
-				damage_mult = 1
-			if(D_BURNING)
-				damage_mult = 0.25
-			if(D_SLASHING)
-				damage_mult = 0.75
-
-		//for detecting friendly fire. This bit stolen from logging.dm
-		var/shooter_data = null
-		if (P.mob_shooter)
-			shooter_data = P.mob_shooter
-		else if (ismob(P.shooter))
-			var/mob/M = P.shooter
-			shooter_data = M
-		var/obj/machinery/vehicle/V
-		if (istype(P.shooter,/obj/machinery/vehicle/))
-			V = P.shooter
-			if (!shooter_data)
-				shooter_data = V.pilot
-
-		take_damage(damage*damage_mult, shooter_data)
-		return
-
-	attackby(var/obj/item/W, var/mob/user)
-		user.lastattacked = src
-
-		//Healing with welding tool
-		if (health <= health_max && isweldingtool(W))
-			if(!W:try_weld(user, 1))
-				return
-			take_damage(-30)
-			src.visible_message("<span class='alert'>[user] has fixed some of the damage on [src]!</span>")
-			if(health >= health_max)
-				health = health_max
-				src.visible_message("<span class='alert'>[src] is fully repaired!</span>")
-			return
-
-		//normal damage stuff
-		take_damage(W.force, user)
-		src.add_fingerprint(user)
-
-		..()
-
-	get_desc()
-		. = "<br><span class='notice'>It looks like it has [health] HP left out of [health_max] HP. You can just tell. What is \"HP\" though? </span>"
-
-	proc/take_damage(var/damage, var/mob/user)
-		// if (damage > 0)
-		if (shielded)
-			return
-
-		src.health -= damage
-
-		//accounting for heals so we don't log the combat as friendly fire.
-		if (damage < 0)
-
-			return
-
-		if (!suppress_damage_message && istype(ticker.mode, /datum/game_mode/pod_wars))
-			//get the team datum from its team number right when we allocate points.
-			var/datum/game_mode/pod_wars/mode = ticker.mode
-
-			mode.announce_critical_system_damage(team_num, src)
-			suppress_damage_message = 1
-			SPAWN(2 MINUTES)
-				suppress_damage_message = 0
-
-
-		if (health <= 0)
-			qdel(src)
-
-		if (!user)
-			return	//don't log if damage isn't done by a user (like it's critters are turrets)
-
-		//Friendly fire check
-		if (get_pod_wars_team_num(user) == team_num)
-			message_admins("[user] just committed friendly fire against their team's [src]!")
-			logTheThing(LOG_COMBAT, user, "\[POD WARS\][user] attacks their own team's critical system [src].")
-
-			if (istype(ticker.mode, /datum/game_mode/pod_wars))
-				var/datum/game_mode/pod_wars/mode = ticker.mode
-				mode.stats_manager?.inc_friendly_fire(user)
+			mode.stats_manager?.inc_friendly_fire(user)
 
 //////////////special clone pod///////////////
 
@@ -163,57 +163,57 @@
 	// is_speedy = 1	//setting this var does nothing atm, its effect is done and it is set by being hit with the object
 	perfect_clone = 1
 
-	process()
-		meat_level = initial(meat_level)	//infinite meat...
+/obj/machinery/clonepod/pod_wars/process()
+	meat_level = initial(meat_level)	//infinite meat...
 
-		if(!src.attempting)
-			if (world.time - last_check >= check_delay)
-				if (!team && istype(ticker.mode, /datum/game_mode/pod_wars))
-					var/datum/game_mode/pod_wars/mode = ticker.mode
-					if (team_num == TEAM_NANOTRASEN)
-						team = mode.team_NT
-					else if (team_num == TEAM_SYNDICATE)
-						team = mode.team_SY
-				last_check = world.time
-				INVOKE_ASYNC(src, /obj/machinery/clonepod/pod_wars.proc/growclone_a_ghost)
-		return..()
+	if(!src.attempting)
+		if (world.time - last_check >= check_delay)
+			if (!team && istype(ticker.mode, /datum/game_mode/pod_wars))
+				var/datum/game_mode/pod_wars/mode = ticker.mode
+				if (team_num == TEAM_NANOTRASEN)
+					team = mode.team_NT
+				else if (team_num == TEAM_SYNDICATE)
+					team = mode.team_SY
+			last_check = world.time
+			INVOKE_ASYNC(src, /obj/machinery/clonepod/pod_wars.proc/growclone_a_ghost)
+	return..()
 
-	New()
-		..()
-		animate_rainbow_glow(src) // rgb shit cause it looks cool
-		SubscribeToProcess()
-		last_check = world.time
+/obj/machinery/clonepod/pod_wars/New()
+	..()
+	animate_rainbow_glow(src) // rgb shit cause it looks cool
+	SubscribeToProcess()
+	last_check = world.time
 
-	ex_act(severity)
+/obj/machinery/clonepod/pod_wars/ex_act(severity)
+	return
+
+/obj/machinery/clonepod/pod_wars/powered()
+	return TRUE
+
+/obj/machinery/clonepod/pod_wars/disposing()
+	..()
+	UnsubscribeProcess()
+
+/// Make cloning faster, by a lot. lol, I gues speed modules don't do anything when I override this...
+/obj/machinery/clonepod/pod_wars/healing_multiplier()
+	return 15
+
+/obj/machinery/clonepod/pod_wars/proc/growclone_a_ghost()
+	var/list/to_search
+	if (istype(team))
+		to_search = team.members
+	else
 		return
 
-	powered()
-		return TRUE
-
-	disposing()
-		..()
-		UnsubscribeProcess()
-
-	//make cloning faster, by a lot. lol, I gues speed modules don't do anything when I override this...
-	healing_multiplier()
-		return 15
-
-	proc/growclone_a_ghost()
-		var/list/to_search
-		if (istype(team))
-			to_search = team.members
-		else
-			return
-
-		for(var/datum/mind/mind in to_search)
-			if((istype(mind.current, /mob/dead/observer) || isdead(mind.current)) && mind.current.client && !mind.dnr)
-				//prune puritan trait
-				mind.current?.traitHolder.removeTrait("puritan")
-				var/success = growclone(mind.current, mind.current.real_name, mind, mind.current?.bioHolder, traits=mind.current?.traitHolder.copy())
-				if (success && team)
-					SPAWN(1)
-						team.equip_player(src.occupant, FALSE)
-				break
+	for(var/datum/mind/mind in to_search)
+		if((istype(mind.current, /mob/dead/observer) || isdead(mind.current)) && mind.current.client && !mind.dnr)
+			//prune puritan trait
+			mind.current?.traitHolder.removeTrait("puritan")
+			var/success = growclone(mind.current, mind.current.real_name, mind, mind.current?.bioHolder, traits=mind.current?.traitHolder.copy())
+			if (success && team)
+				SPAWN(1)
+					team.equip_player(src.occupant, FALSE)
+			break
 
 ////////////////////////////////////////////////
 
@@ -223,12 +223,12 @@
 	var/team_num = 0		//1 = NT, 2 = SY
 	gas_impermeable = TRUE
 
-	Cross(atom/A)
-		if (ismob(A))
-			var/mob/M = A
-			if (team_num == get_pod_wars_team_num(M))
-				return 1
-		return 0
+/obj/forcefield/energyshield/perma/pod_wars/Cross(atom/A)
+	if (ismob(A))
+		var/mob/M = A
+		if (team_num == get_pod_wars_team_num(M))
+			return 1
+	return 0
 
 /obj/forcefield/energyshield/perma/pod_wars/nanotrasen
 	team_num = 1
@@ -247,10 +247,10 @@ ABSTRACT_TYPE(/obj/item/turret_deployer/pod_wars)
 	quick_deploy_fuel = 2
 	associated_turret = /obj/deployable_turret/pod_wars
 
-	spawn_turret(var/direct)
-		var/obj/deployable_turret/pod_wars/turret = ..()
-		turret.reconstruction_time = 0		//can't reconstruct itself
-		return turret
+/obj/item/turret_deployer/pod_wars/spawn_turret(direct)
+	var/obj/deployable_turret/pod_wars/turret = ..()
+	turret.reconstruction_time = 0		//can't reconstruct itself
+	return turret
 
 ABSTRACT_TYPE(/obj/deployable_turret/pod_wars)
 /obj/deployable_turret/pod_wars
@@ -268,35 +268,37 @@ ABSTRACT_TYPE(/obj/deployable_turret/pod_wars)
 	var/destroyed = 0
 	var/reconstruction_time = 5 MINUTES
 
-	//Might be nice to allow players to "repair"  Dead turrets to speed up their timer, but not now. too lazy - kyle
-	//just "deactivates"
-	die()
-		if (!destroyed)
-			playsound(get_turf(src), 'sound/impact_sounds/Machinery_Break_1.ogg', 50, 1)
-			destroyed = 1
-			new /obj/decal/cleanable/robot_debris(src.loc)
-			src.alpha = 30
-			src.set_opacity(0)
-			if (reconstruction_time)
-				sleep(reconstruction_time)
-				src.set_opacity(1)
-				src.alpha = 255
-				health = initial(health)
-				destroyed = 0
-				active = 1
-			else
-				..()
+/// Might be nice to allow players to "repair"  Dead turrets to speed up their timer, but not now. too lazy - kyle
+/// just "deactivates"
+/obj/deployable_turret/pod_wars/die()
+	if (!destroyed)
+		playsound(get_turf(src), 'sound/impact_sounds/Machinery_Break_1.ogg', 50, 1)
+		destroyed = 1
+		new /obj/decal/cleanable/robot_debris(src.loc)
+		src.alpha = 30
+		src.set_opacity(0)
+		if (reconstruction_time)
+			sleep(reconstruction_time)
+			src.set_opacity(1)
+			src.alpha = 255
+			health = initial(health)
+			destroyed = 0
+			active = 1
+		else
+			..()
 
-	//VERY POSSIBLY UNNEEDED, -KYLE
-	// proc/pod_target_valid(var/obj/machinery/vehicle/V )
-	// 	var/distance = GET_DIST(V.loc,src.loc)
-	// 	if(distance > src.range)
-	// 		return 0
+//VERY POSSIBLY UNNEEDED, -KYLE
+/*
+/obj/deployable_turret/pod_wars/proc/pod_target_valid(var/obj/machinery/vehicle/V )
+	var/distance = GET_DIST(V.loc,src.loc)
+	if(distance > src.range)
+		return 0
 
-	// 	if (ismob(V.pilot))
-	// 		return is_friend(V.pilot)
-	// 	else
-	// 		return 0
+	if (ismob(V.pilot))
+		return is_friend(V.pilot)
+	else
+		return 0
+*/
 
 /obj/item/turret_deployer/pod_wars/nt
 	icon_tag = "nt"
@@ -307,27 +309,27 @@ ABSTRACT_TYPE(/obj/deployable_turret/pod_wars)
 	projectile_type = /datum/projectile/laser/blaster/pod_pilot/blue_NT/turret
 	icon_tag = "nt"
 
-	is_friend(var/mob/living/C)
-		if (!C.ckey || !C.mind)
-			return 1
-		if (C.mind?.special_role != "Syndicate")
-			return 1
-		else
-			return 0
+/obj/deployable_turret/pod_wars/nt/is_friend(mob/living/C)
+	if (!C.ckey || !C.mind)
+		return 1
+	if (C.mind?.special_role != "Syndicate")
+		return 1
+	else
+		return 0
 
 /obj/deployable_turret/pod_wars/nt/activated
 	anchored=1
 	active=1
 	deconstructable = FALSE
 
-	north
-		dir=NORTH
-	south
-		dir=SOUTH
-	east
-		dir=EAST
-	west
-		dir=WEST
+/obj/deployable_turret/pod_wars/nt/activated/north
+	dir=NORTH
+/obj/deployable_turret/pod_wars/nt/activated/south
+	dir=SOUTH
+/obj/deployable_turret/pod_wars/nt/activated/east
+	dir=EAST
+/obj/deployable_turret/pod_wars/nt/activated/west
+	dir=WEST
 
 
 /obj/item/turret_deployer/pod_wars/sy
@@ -339,26 +341,26 @@ ABSTRACT_TYPE(/obj/deployable_turret/pod_wars)
 	projectile_type = /datum/projectile/laser/blaster/pod_pilot/red_SY/turret
 	icon_tag = "st"
 
-	is_friend(var/mob/living/C)
-		if (!C.ckey || !C.mind)
-			return 1
-		if (C.mind.special_role != "NanoTrasen")
-			return 1
-		else
-			return 0
+/obj/deployable_turret/pod_wars/sy/is_friend(var/mob/living/C)
+	if (!C.ckey || !C.mind)
+		return 1
+	if (C.mind.special_role != "NanoTrasen")
+		return 1
+	else
+		return 0
 
 /obj/deployable_turret/pod_wars/sy/activated
 	anchored=1
 	active=1
 	deconstructable = FALSE
-	north
-		dir=NORTH
-	south
-		dir=SOUTH
-	east
-		dir=EAST
-	west
-		dir=WEST
+/obj/deployable_turret/pod_wars/sy/activated/north
+	dir=NORTH
+/obj/deployable_turret/pod_wars/sy/activated/south
+	dir=SOUTH
+/obj/deployable_turret/pod_wars/sy/activated/east
+	dir=EAST
+/obj/deployable_turret/pod_wars/sy/activated/west
+	dir=WEST
 
 /obj/item/shipcomponent/secondary_system/lock/pw_id
 	name = "ID Card Hatch Locking Unit"
@@ -376,37 +378,37 @@ ABSTRACT_TYPE(/obj/deployable_turret/pod_wars)
 
 
 
-	show_lock_panel(mob/living/user)
-		if (isliving(user))
-			var/obj/item/card/id/I = user.get_id()
+/obj/item/shipcomponent/secondary_system/lock/pw_id/show_lock_panel(mob/living/user)
+	if (isliving(user))
+		var/obj/item/card/id/I = user.get_id()
 
-			if (isnull(assigned_id))
-				if (istype(I))
-					boutput(user, "<span class='notice'>[ship]'s locking mechinism recognizes [I] as its key!</span>")
-					playsound(src.loc, 'sound/machines/ping.ogg', 50, 0)
-					assigned_id = I
-					team_num = get_team(I)
-					ship.locked = 0
-					return
-
+		if (isnull(assigned_id))
 			if (istype(I))
-				if (I == assigned_id || get_team(I) == team_num)
-					ship.locked = !ship.locked
-					boutput(user, "<span class='alert'>[ship] is now [ship.locked ? "locked" : "unlocked"]!</span>")
+				boutput(user, "<span class='notice'>[ship]'s locking mechinism recognizes [I] as its key!</span>")
+				playsound(src.loc, 'sound/machines/ping.ogg', 50, 0)
+				assigned_id = I
+				team_num = get_team(I)
+				ship.locked = 0
+				return
+
+		if (istype(I))
+			if (I == assigned_id || get_team(I) == team_num)
+				ship.locked = !ship.locked
+				boutput(user, "<span class='alert'>[ship] is now [ship.locked ? "locked" : "unlocked"]!</span>")
 
 
 
-	proc/get_team(var/obj/item/card/id/I)
-		switch(I.assignment)
-			if("NanoTrasen Commander")
-				return TEAM_NANOTRASEN
-			if("NanoTrasen Pilot")
-				return TEAM_NANOTRASEN
-			if("Syndicate Commander")
-				return TEAM_SYNDICATE
-			if("Syndicate Pilot")
-				return TEAM_SYNDICATE
-		return -1
+/obj/item/shipcomponent/secondary_system/lock/pw_id/proc/get_team(obj/item/card/id/I)
+	switch(I.assignment)
+		if("NanoTrasen Commander")
+			return TEAM_NANOTRASEN
+		if("NanoTrasen Pilot")
+			return TEAM_NANOTRASEN
+		if("Syndicate Commander")
+			return TEAM_SYNDICATE
+		if("Syndicate Pilot")
+			return TEAM_SYNDICATE
+	return -1
 
 ////////////////////PDAs and PDA Accessories/////////////////////
 /obj/item/device/pda2/pod_wars
@@ -416,29 +418,29 @@ ABSTRACT_TYPE(/obj/deployable_turret/pod_wars)
 	var/team_num 			// 1 TEAM_NANOTRASEN, 2 TEAM_SYNDICATE
 
 #if defined(MAP_OVERRIDE_POD_WARS)
-	//You can only pick this up if you're on the correct team, otherwise it explodes.
-	attack_hand(mob/user)
-		if (get_pod_wars_team_num(user) == src.team_num)
-			..()
-		else
-			var/flavor = pick("doesn't like you", "can tell you don't deserve it", "saw into your very soul and found you wanting", "hates you", "thinks you stink", "thinks you two should start seeing other people", "doesn't trust you", "finds your lack of faith disturbing", "is just not that into you", "gently weeps")
-			//stolen from Captain's Explosive Spare ID down below...
-			boutput(user, "<span class='alert'>The ID card [flavor] and <b>explodes!</b></span>")
-			make_fake_explosion(src)
-			user.u_equip(src)
-			src.dropped(user)
-			qdel(src)
+/// You can only pick this up if you're on the correct team, otherwise it explodes.
+/obj/item/device/pda2/pod_wars/attack_hand(mob/user)
+	if (get_pod_wars_team_num(user) == src.team_num)
+		..()
+	else
+		var/flavor = pick("doesn't like you", "can tell you don't deserve it", "saw into your very soul and found you wanting", "hates you", "thinks you stink", "thinks you two should start seeing other people", "doesn't trust you", "finds your lack of faith disturbing", "is just not that into you", "gently weeps")
+		//stolen from Captain's Explosive Spare ID down below...
+		boutput(user, "<span class='alert'>The ID card [flavor] and <b>explodes!</b></span>")
+		make_fake_explosion(src)
+		user.u_equip(src)
+		src.dropped(user)
+		qdel(src)
 #endif
 
-	nanotrasen
-		icon_state = "pda-nt"
-		setup_default_module = /obj/item/device/pda_module/flashlight/nt_blue
-		team_num = TEAM_NANOTRASEN
+/obj/item/device/pda2/pod_wars/nanotrasen
+	icon_state = "pda-nt"
+	setup_default_module = /obj/item/device/pda_module/flashlight/nt_blue
+	team_num = TEAM_NANOTRASEN
 
-	syndicate
-		icon_state = "pda-syn"
-		setup_default_module = /obj/item/device/pda_module/flashlight/sy_red
-		team_num = TEAM_SYNDICATE
+/obj/item/device/pda2/pod_wars/syndicate
+	icon_state = "pda-syn"
+	setup_default_module = /obj/item/device/pda_module/flashlight/sy_red
+	team_num = TEAM_SYNDICATE
 
 /obj/item/device/pda_module/flashlight/nt_blue
 	name = "NanoTrasen Blue Flashlight Module"
@@ -463,12 +465,12 @@ ABSTRACT_TYPE(/obj/deployable_turret/pod_wars)
 	desc = "A must for any one who braves the vast emptiness of space."
 	icon_state = "cart-network"
 
-	New()
-		..()
-		src.root.add_file( new /datum/computer/file/pda_program/fileshare(src))
-		src.root.add_file( new /datum/computer/file/pda_program/scan/forensic_scan(src))
-		src.root.add_file( new /datum/computer/file/pda_program/scan/health_scan(src))
-		src.root.add_file( new /datum/computer/file/pda_program/scan/reagent_scan(src))
+/obj/item/disk/data/cartridge/pod_pilot/New()
+	..()
+	src.root.add_file( new /datum/computer/file/pda_program/fileshare(src))
+	src.root.add_file( new /datum/computer/file/pda_program/scan/forensic_scan(src))
+	src.root.add_file( new /datum/computer/file/pda_program/scan/health_scan(src))
+	src.root.add_file( new /datum/computer/file/pda_program/scan/reagent_scan(src))
 
 
 ////////////////Champagne/////////////////////////////
@@ -478,19 +480,19 @@ ABSTRACT_TYPE(/obj/deployable_turret/pod_wars)
 	var/to_spawn = /obj/item/reagent_containers/food/drinks/bottle/champagne/breakaway_glass
 	var/turf/T 		//the turf this obj spawns at.
 
-	New()
-		..()
-		T = get_turf(src)
-		while (T)
-			if (!locate(to_spawn) in T.contents)
-				var/obj/item/champers = new /obj/item/reagent_containers/food/drinks/bottle/champagne/breakaway_glass(T)
-				champers.pixel_y = 10
-				champers.pixel_x = 1
-			sleep(8 SECONDS)
+/obj/table/wood/round/champagne/New()
+	..()
+	T = get_turf(src)
+	while (T)
+		if (!locate(to_spawn) in T.contents)
+			var/obj/item/champers = new /obj/item/reagent_containers/food/drinks/bottle/champagne/breakaway_glass(T)
+			champers.pixel_y = 10
+			champers.pixel_x = 1
+		sleep(8 SECONDS)
 
-	disposing()
-		T = null
-		..()
+/obj/table/wood/round/champagne/disposing()
+	T = null
+	..()
 
 ///////////Headsets////////////////
 //OK look, I made these objects, but I probably didn't need to. Setting the frequencies is done in the job equip.
@@ -499,17 +501,17 @@ ABSTRACT_TYPE(/obj/deployable_turret/pod_wars)
 	protected_radio = 1
 	var/team = 0
 
-	//You can only pick this up if you're on the correct team, otherwise it explodes.
-	//exactly the same as /obj/item/card/id/pod_wars. Copy paste bad, but these two things I don't want people stealing, would be real lame... Might get rid of in the future if this structure isn't required.
-	attack_hand(mob/user)
-		if (get_pod_wars_team_num(user) == team)
-			..()
-		else
-			boutput(user, "<span class='alert'>The headset <b>explodes</b> as you reach out to grab it!</span>")
-			make_fake_explosion(src)
-			user.u_equip(src)
-			src.dropped(user)
-			qdel(src)
+/// You can only pick this up if you're on the correct team, otherwise it explodes.
+/// exactly the same as /obj/item/card/id/pod_wars. Copy paste bad, but these two things I don't want people stealing, would be real lame... Might get rid of in the future if this structure isn't required.
+/obj/item/device/radio/headset/pod_wars/attack_hand(mob/user)
+	if (get_pod_wars_team_num(user) == team)
+		..()
+	else
+		boutput(user, "<span class='alert'>The headset <b>explodes</b> as you reach out to grab it!</span>")
+		make_fake_explosion(src)
+		user.u_equip(src)
+		src.dropped(user)
+		qdel(src)
 
 /obj/item/device/radio/headset/pod_wars/nanotrasen
 	name = "Radio Headset"
@@ -522,9 +524,9 @@ ABSTRACT_TYPE(/obj/deployable_turret/pod_wars)
 	icon_tooltip = "NanoTrasen"
 	team = TEAM_NANOTRASEN
 
-	commander
-		icon_override = "cap"	//get better thingy
-		icon_tooltip = "NanoTrasen Commander"
+/obj/item/device/radio/headset/pod_wars/nanotrasen/commander
+	icon_override = "cap"	//get better thingy
+	icon_tooltip = "NanoTrasen Commander"
 
 /obj/item/device/radio/headset/pod_wars/syndicate
 	name = "Radio Headset"
@@ -538,9 +540,9 @@ ABSTRACT_TYPE(/obj/deployable_turret/pod_wars)
 	icon_tooltip = "Syndicate"
 	team = TEAM_SYNDICATE
 
-	commander
-		icon_override = "syndieboss"
-		icon_tooltip = "Syndicate Commander"
+/obj/item/device/radio/headset/pod_wars/syndicate/commander
+	icon_override = "syndieboss"
+	icon_tooltip = "Syndicate Commander"
 
 
 /////////shit//////////////
@@ -561,114 +563,118 @@ ABSTRACT_TYPE(/obj/deployable_turret/pod_wars)
 	var/datum/control_point/ctrl_pt
 	var/can_be_captured = 0		//can't capture this point until it's set to TRUE. Will be done by control points at 15 MIN atm.
 
-	New()
-		..()
-		light = new/datum/light/point
-		light.set_brightness(0.8)
-		light.set_color(light_r, light_g, light_b)
-		light.attach(src)
+/obj/control_point_computer/New()
+	..()
+	light = new/datum/light/point
+	light.set_brightness(0.8)
+	light.set_color(light_r, light_g, light_b)
+	light.attach(src)
 
-		//name it based on area.
+	//name it based on area.
 
-	ex_act()
-		return
+/obj/control_point_computer/ex_act()
+	return
 
-	meteorhit(var/obj/O as obj)
-		return
+/obj/control_point_computer/meteorhit(obj/O as obj)
+	return
 
-	//called from the action bar completion in src.Attackhand()
-	proc/capture(var/mob/user)
-		var/team_num = get_pod_wars_team_num(user)
-		owner_team = team_num
-		update_light_color()
+/// Called from the action bar completion in src.Attackhand()
+/obj/control_point_computer/proc/capture(mob/user)
+	var/team_num = get_pod_wars_team_num(user)
+	owner_team = team_num
+	update_light_color()
 
-		ctrl_pt.capture(user, team_num)
+	ctrl_pt.capture(user, team_num)
 
-	attack_hand(mob/user)
-		if (!can_be_captured)
-			var/cur_time
-			var/datum/game_mode/pod_wars/mode = ticker.mode
-			if (istype(mode))
-				cur_time = round((mode.activate_control_points_time-ticker.round_elapsed_ticks) / (1 MINUTES), 1)	//converts to minutes
-			else
-				cur_time = round( 15 MINUTES / 1 MINUTES, 1)
-
-
-			boutput(user, "<span class='notice'>This computer seems to be frozen on a space-weather tracking screen. It looks like a large ion storm will be passing this system in about <b class='alert'>[(cur_time)] minutes mission time</b>.<br>You can't input any commands to run the control protocols for this satelite...</span>")
-			playsound(src, 'sound/machines/buzz-sigh.ogg', 30, 1, flags = SOUND_IGNORE_SPACE)
-			return 0
-		if (owner_team != get_pod_wars_team_num(user))
-			var/duration = is_commander(user) ? 10 SECONDS : 20 SECONDS
-			playsound(get_turf(src), 'sound/machines/warning-buzzer.ogg', 150, 1, flags = SOUND_IGNORE_SPACE)	//loud
-
-			SETUP_GENERIC_ACTIONBAR(user, src, duration, /obj/control_point_computer/proc/capture, list(user),\
-			 null, null, "[user] successfully enters [his_or_her(user)] command code into \the [src]!", null)
+/obj/control_point_computer/attack_hand(mob/user)
+	if (!can_be_captured)
+		var/cur_time
+		var/datum/game_mode/pod_wars/mode = ticker.mode
+		if (istype(mode))
+			cur_time = round((mode.activate_control_points_time-ticker.round_elapsed_ticks) / (1 MINUTES), 1)	//converts to minutes
 		else
-			boutput(user, "You can't think of anything else to do on this console...")
+			cur_time = round( 15 MINUTES / 1 MINUTES, 1)
 
-	proc/is_commander(var/mob/user)
-		if (istype(ticker.mode, /datum/game_mode/pod_wars))
-			var/datum/game_mode/pod_wars/mode = ticker.mode
-			if (user.mind == mode.team_NT.commander)
-				return 1
-			else if (user.mind == mode.team_SY.commander)
-				return 1
+
+		boutput(user, "<span class='notice'>This computer seems to be frozen on a space-weather tracking screen. It looks like a large ion storm will be passing this system in about <b class='alert'>[(cur_time)] minutes mission time</b>.<br>You can't input any commands to run the control protocols for this satelite...</span>")
+		playsound(src, 'sound/machines/buzz-sigh.ogg', 30, 1, flags = SOUND_IGNORE_SPACE)
 		return 0
+	if (owner_team != get_pod_wars_team_num(user))
+		var/duration = is_commander(user) ? 10 SECONDS : 20 SECONDS
+		playsound(get_turf(src), 'sound/machines/warning-buzzer.ogg', 150, 1, flags = SOUND_IGNORE_SPACE)	//loud
+
+		SETUP_GENERIC_ACTIONBAR(user, src, duration, /obj/control_point_computer/proc/capture, list(user),\
+			null, null, "[user] successfully enters [his_or_her(user)] command code into \the [src]!", null)
+	else
+		boutput(user, "You can't think of anything else to do on this console...")
+
+/obj/control_point_computer/proc/is_commander(mob/user)
+	if (istype(ticker.mode, /datum/game_mode/pod_wars))
+		var/datum/game_mode/pod_wars/mode = ticker.mode
+		if (user.mind == mode.team_NT.commander)
+			return 1
+		else if (user.mind == mode.team_SY.commander)
+			return 1
+	return 0
 
 
-	// //changes vars to sync up with the manager datum
-	// proc/update_from_manager(var/owner_team, var/capturing_team)
-	// 	src.owner_team = owner_team
-	// 	src.capturing_team = capturing_team
+//changes vars to sync up with the manager datum
+/*
+/obj/control_point_computer/proc/update_from_manager(var/owner_team, var/capturing_team)
+	src.owner_team = owner_team
+	src.capturing_team = capturing_team
 
-	// proc/prevent_capture(var/mob/user, var/user_team)
-	// 	if (owner_team != user_team && capturing_team != user_team)
-	// 		capture_start(user, user_team)
-	// 	return
+/obj/control_point_computer/proc/prevent_capture(var/mob/user, var/user_team)
+	if (owner_team != user_team && capturing_team != user_team)
+		capture_start(user, user_team)
+	return
 
-	// proc/start_capture(var/mob/user, var/user_team)
+/obj/control_point_computer/proc/start_capture(var/mob/user, var/user_team)
 
-	// 	capture_start(user, user_team)
+	capture_start(user, user_team)
+*/
 
-	//change colour and owner team when captured.
-	//this doesn't work right now. idc -kyle
-	proc/update_light_color()
-		//blue for NT|1, red for SY|2, white for neutral|0.
-		if (owner_team == TEAM_NANOTRASEN)
-			light_r = 0
-			light_g = 0
-			light_b = 1
-			icon_state = "computer_blue"
-		else if (owner_team == TEAM_SYNDICATE)
-			light_r = 1
-			light_g = 0
-			light_b = 0
-			icon_state = "computer_red"
-		else
-			light_r = 1
-			light_g = 1
-			light_b = 1
-			icon_state = "computer_generic"
+/// change colour and owner team when captured.
+/// this doesn't work right now. idc -kyle
+/obj/control_point_computer/proc/update_light_color()
+	//blue for NT|1, red for SY|2, white for neutral|0.
+	if (owner_team == TEAM_NANOTRASEN)
+		light_r = 0
+		light_g = 0
+		light_b = 1
+		icon_state = "computer_blue"
+	else if (owner_team == TEAM_SYNDICATE)
+		light_r = 1
+		light_g = 0
+		light_b = 0
+		icon_state = "computer_red"
+	else
+		light_r = 1
+		light_g = 1
+		light_b = 1
+		icon_state = "computer_generic"
 
-		light.set_color(light_r, light_g, light_b)
+	light.set_color(light_r, light_g, light_b)
 
 /obj/warp_beacon/pod_wars
-	var/control_point 		//currently only use values FORTUNA, RELIANT, UVB67 		//set in map file
-	var/current_owner		//which team is the owner right now. Acceptable values: null, TEAM_NANOTRASEN = 1, TEAM_SYNDICATE = 1
+	var/control_point //currently only use values FORTUNA, RELIANT, UVB67 		//set in map file
+	var/current_owner //which team is the owner right now. Acceptable values: null, TEAM_NANOTRASEN = 1, TEAM_SYNDICATE = 1
 
-	ex_act()
-		return
-	meteorhit(var/obj/O as obj)
-		return
-	attackby(obj/item/W, mob/user)
-		return
+/obj/warp_beacon/pod_wars/ex_act()
+	return
 
-	//These are basically the same as "normal" pod_wars beacons, but they won't have a capture point so they should never get an owner team
-	//so nobody will be able to warp to them, they can only navigate towards them with pod sensors.
-	spacejunk
-		name = "spacejunk warp_beacon"
-		invisibility = INVIS_ALWAYS
-		alpha = 100			//just to be clear
+/obj/warp_beacon/pod_wars/meteorhit(obj/O as obj)
+	return
+
+/obj/warp_beacon/pod_wars/attackby(obj/item/W, mob/user)
+	return
+
+/// These are basically the same as "normal" pod_wars beacons, but they won't have a capture point so they should never get an owner team
+/// so nobody will be able to warp to them, they can only navigate towards them with pod sensors.
+/obj/warp_beacon/pod_wars/spacejunk
+	name = "spacejunk warp_beacon"
+	invisibility = INVIS_ALWAYS
+	alpha = 100			//just to be clear
 
 
 /////////////Barricades////////////
@@ -688,70 +694,70 @@ ABSTRACT_TYPE(/obj/deployable_turret/pod_wars)
 	var/health = 100
 	var/health_max = 100
 
-	get_desc()
-		var/string = "pristine"
-		if (health >= (health_max/2))
-			string = "a bit scuffed"
-		else
-			string = "almost destroyed"
+/obj/barricade/get_desc()
+	var/string = "pristine"
+	if (health >= (health_max/2))
+		string = "a bit scuffed"
+	else
+		string = "almost destroyed"
 
-		. = "<br><span class='notice'>It looks [string].</span>"
+	. = "<br><span class='notice'>It looks [string].</span>"
 
-	ex_act(severity)
+/obj/barricade/ex_act(severity)
+	return
 
-		return
+/obj/barricade/Cross(atom/movable/mover)
+	if (!src.density || (mover.flags & TABLEPASS || istype(mover, /obj/newmeteor)) )
+		return 1
+	else
+		return 0
 
-	Cross(atom/movable/mover)
-		if (!src.density || (mover.flags & TABLEPASS || istype(mover, /obj/newmeteor)) )
-			return 1
-		else
-			return 0
-	Bumped(atom/AM)
-		if (istype(AM, /obj/machinery/vehicle))
-			var/obj/machinery/vehicle/V = AM
-			V.health -= round(src.health/4)
-			V.checkhealth()
-			playsound(get_turf(src), 'sound/impact_sounds/Generic_Hit_Heavy_1.ogg', 50, 1)
-			qdel(src)
-		..()
+/obj/barricade/Bumped(atom/AM)
+	if (istype(AM, /obj/machinery/vehicle))
+		var/obj/machinery/vehicle/V = AM
+		V.health -= round(src.health/4)
+		V.checkhealth()
+		playsound(get_turf(src), 'sound/impact_sounds/Generic_Hit_Heavy_1.ogg', 50, 1)
+		qdel(src)
+	..()
 
-	attackby(var/obj/item/W, var/mob/user)
-		attack_particle(user,src)
-		take_damage(W.force)
-		playsound(get_turf(src), 'sound/impact_sounds/Generic_Hit_Heavy_1.ogg', 20, 1)
-		user.lastattacked = src
-		..()
+/obj/barricade/attackby(obj/item/W, mob/user)
+	attack_particle(user,src)
+	take_damage(W.force)
+	playsound(get_turf(src), 'sound/impact_sounds/Generic_Hit_Heavy_1.ogg', 20, 1)
+	user.lastattacked = src
+	..()
 
-	attack_hand(mob/user)
-		switch (user.a_intent)
-			if (INTENT_HELP)
-				visible_message(src, "<span class='notice'>[user] pats [src] [pick("earnestly", "merrily", "happily","enthusiastically")] on top.</span>")
-			if (INTENT_DISARM)
-				visible_message(src, "<span class='alert'>[user] tries to shove [src], but it was ineffective!</span>")
-			if (INTENT_GRAB)
-				visible_message(src, "<span class='alert'>[user]] tries to wrassle with [src], but it gives no ground!</span>")
-			if (INTENT_HARM)
-				if (ishuman(user))
-					if (user.is_hulk())
-						take_damage(20)
-					else
-						take_damage(5)
-					playsound(get_turf(src), 'sound/impact_sounds/Generic_Hit_Heavy_1.ogg', 25, 1)
-					attack_particle(user,src)
+/obj/barricade/attack_hand(mob/user)
+	switch (user.a_intent)
+		if (INTENT_HELP)
+			visible_message(src, "<span class='notice'>[user] pats [src] [pick("earnestly", "merrily", "happily","enthusiastically")] on top.</span>")
+		if (INTENT_DISARM)
+			visible_message(src, "<span class='alert'>[user] tries to shove [src], but it was ineffective!</span>")
+		if (INTENT_GRAB)
+			visible_message(src, "<span class='alert'>[user]] tries to wrassle with [src], but it gives no ground!</span>")
+		if (INTENT_HARM)
+			if (ishuman(user))
+				if (user.is_hulk())
+					take_damage(20)
+				else
+					take_damage(5)
+				playsound(get_turf(src), 'sound/impact_sounds/Generic_Hit_Heavy_1.ogg', 25, 1)
+				attack_particle(user,src)
 
 
-		user.lastattacked = src
-		..()
+	user.lastattacked = src
+	..()
 
-	proc/take_damage(var/damage)
-		src.health -= damage
+/obj/barricade/proc/take_damage(damage)
+	src.health -= damage
 
-		//This works correctly because at the time of writing, these barricades cannot be repaired.
-		if (health < health_max/2)
-			icon_state = "barricade-damaged"
+	//This works correctly because at the time of writing, these barricades cannot be repaired.
+	if (health < health_max/2)
+		icon_state = "barricade-damaged"
 
-		if (health <= 0)
-			qdel(src)
+	if (health <= 0)
+		qdel(src)
 
 //barricade deployer
 
@@ -763,43 +769,43 @@ ABSTRACT_TYPE(/obj/deployable_turret/pod_wars)
 	var/object_type = /obj/barricade 		//object to deploy
 	var/build_duration = 2 SECONDS
 
-	New(loc)
-		..()
-		BLOCK_SETUP(BLOCK_LARGE)
+/obj/item/deployer/barricade/New(loc)
+	..()
+	BLOCK_SETUP(BLOCK_LARGE)
 
-	attack_self(mob/user as mob)
-		SETUP_GENERIC_ACTIONBAR(user, src, build_duration, /obj/item/deployer/barricade/proc/deploy, list(user, get_turf(user)),\
-		 src.icon, src.icon_state, "[user] deploys \the [src]", null)
+/obj/item/deployer/barricade/attack_self(mob/user as mob)
+	SETUP_GENERIC_ACTIONBAR(user, src, build_duration, /obj/item/deployer/barricade/proc/deploy, list(user, get_turf(user)),\
+		src.icon, src.icon_state, "[user] deploys \the [src]", null)
 
-	//mostly stolen from furniture_parts/proc/construct
-	proc/deploy(mob/user as mob, turf/T as turf)
-		var/obj/newThing = null
-		if (!T)
-			T = user ? get_turf(user) : get_turf(src)
-			if (!T) // buh??
-				return
-		if (istype(T, /turf/space))
-			boutput(user, "<span class='alert'>Can't build a barricade in space!</span>")
+/// Mostly stolen from furniture_parts/proc/construct
+/obj/item/deployer/barricade/proc/deploy(mob/user as mob, turf/T as turf)
+	var/obj/newThing = null
+	if (!T)
+		T = user ? get_turf(user) : get_turf(src)
+		if (!T) // buh??
 			return
-		if (ispath(src.object_type))
-			if (locate(src.object_type) in T.contents)
-				boutput(user, "<span class='alert'>There is already a barricade here! You can't think of a way that another one could possibly fit!</span>")
-				return
-			newThing = new src.object_type(T)
-		else
-			logTheThing(LOG_DIARY, user, "tries to deploy an object of type ([src.type]) from [src] but its object_type is null and it is being deleted.", "station")
-			user.u_equip(src)
-			qdel(src)
+	if (istype(T, /turf/space))
+		boutput(user, "<span class='alert'>Can't build a barricade in space!</span>")
+		return
+	if (ispath(src.object_type))
+		if (locate(src.object_type) in T.contents)
+			boutput(user, "<span class='alert'>There is already a barricade here! You can't think of a way that another one could possibly fit!</span>")
 			return
-		if (newThing)
-			if (src.material)
-				newThing.setMaterial(src.material)
-			if (user)
-				newThing.add_fingerprint(user)
-				logTheThing(LOG_STATION, user, "builds \a [newThing] (<b>Material:</b> [newThing.material && newThing.material.mat_id ? "[newThing.material.mat_id]" : "*UNKNOWN*"]) at [log_loc(T)].")
-				user.u_equip(src)
+		newThing = new src.object_type(T)
+	else
+		logTheThing(LOG_DIARY, user, "tries to deploy an object of type ([src.type]) from [src] but its object_type is null and it is being deleted.", "station")
+		user.u_equip(src)
 		qdel(src)
-		return newThing
+		return
+	if (newThing)
+		if (src.material)
+			newThing.setMaterial(src.material)
+		if (user)
+			newThing.add_fingerprint(user)
+			logTheThing(LOG_STATION, user, "builds \a [newThing] (<b>Material:</b> [newThing.material && newThing.material.mat_id ? "[newThing.material.mat_id]" : "*UNKNOWN*"]) at [log_loc(T)].")
+			user.u_equip(src)
+	qdel(src)
+	return newThing
 
 /obj/item_dispenser/barricade
 	name = "barricade dispenser"
@@ -834,109 +840,109 @@ ABSTRACT_TYPE(/obj/deployable_turret/pod_wars)
 	desc = "It looks like a crate of some kind, probably locked. Who can say?"
 	grab_stuff_on_spawn = TRUE
 	req_access = list()
-	var/team_num = 0						//should be 1 or 2
-	var/tier = 1							//acceptable values, 1-3.
+	var/team_num = 0 //should be 1 or 2
+	var/tier = 1 //acceptable values, 1-3.
 
-	New(turf/loc, var/team_num, var/tier)
-		..()
-		src.team_num = team_num
-		src.tier = tier
+/obj/storage/secure/crate/pod_wars_rewards/New(turf/loc, team_num, tier)
+	..()
+	src.team_num = team_num
+	src.tier = tier
 
-		showswirl(src, 0)
-		playsound(loc, 'sound/effects/mag_warp.ogg', 100, 1, flags = SOUND_IGNORE_SPACE)
-		//handle name, color, and access for types...
-		var/team_name_str
-		switch(team_num)
-			if (TEAM_NANOTRASEN)
-				req_access = list(access_heads)
-				color = "#004EFF"
-				team_name_str = "NanoTrasen"
-			if (TEAM_SYNDICATE)
-				req_access = list(access_syndicate_shuttle)
-				color = "#FF004E"
-				team_name_str = "Syndicate"
+	showswirl(src, 0)
+	playsound(loc, 'sound/effects/mag_warp.ogg', 100, 1, flags = SOUND_IGNORE_SPACE)
+	//handle name, color, and access for types...
+	var/team_name_str
+	switch(team_num)
+		if (TEAM_NANOTRASEN)
+			req_access = list(access_heads)
+			color = "#004EFF"
+			team_name_str = "NanoTrasen"
+		if (TEAM_SYNDICATE)
+			req_access = list(access_syndicate_shuttle)
+			color = "#FF004E"
+			team_name_str = "Syndicate"
 
-		//Silly, wasn't planning to do this many, but had it keep counting up for fun. idk of an arabic to roman numeral function offhand.
-		var/tier_flavor
-		switch (tier)
-			if (1)
-				tier_flavor = "I"
-			if (2)
-				tier_flavor = "II"
-			if (3)
-				tier_flavor = "III"
-			if (4)
-				tier_flavor = "IV"
-			if (5)
-				tier_flavor = "V"
-			if (6)
-				tier_flavor = "VI"
-			if (7)
-				tier_flavor = "VII"
-			if (8)
-				tier_flavor = "VIII"
-			if (9)
-				tier_flavor = "IX"
-
-
-		name = "[team_name_str] secure crate tier [tier_flavor]"
-		SPAWN(1 SECONDS)
-			spawn_items()
-
-	//Selects the items that this crate spawns with based on its possible contents.
-	proc/spawn_items()
-		var/tier1_max_points = 25
-		var/tier2_max_points = 20
-		var/tier3_max_points = 15
-
-		//This feels really stupid, but idk how better to do it. -kly
-		switch (tier)
-			if (1)
-				make_items_in_tier(pw_rewards_tier1, tier1_max_points)
-			if (2)
-				make_items_in_tier(pw_rewards_tier1, tier1_max_points/2)
-				make_items_in_tier(pw_rewards_tier2, tier2_max_points)
-
-			if (3)
-				make_items_in_tier(pw_rewards_tier1, tier1_max_points/3)
-				make_items_in_tier(pw_rewards_tier2, tier2_max_points/2)
-				make_items_in_tier(pw_rewards_tier3, tier3_max_points)
-			else
-				//All "higher" tiers. I guess they'll be about the same, give em a little something to incentivize holding onto em for longer...
-				make_items_in_tier(pw_rewards_tier1, tier1_max_points/2)
-				make_items_in_tier(pw_rewards_tier2, tier2_max_points)
-				make_items_in_tier(pw_rewards_tier3, tier3_max_points)
+	//Silly, wasn't planning to do this many, but had it keep counting up for fun. idk of an arabic to roman numeral function offhand.
+	var/tier_flavor
+	switch (tier)
+		if (1)
+			tier_flavor = "I"
+		if (2)
+			tier_flavor = "II"
+		if (3)
+			tier_flavor = "III"
+		if (4)
+			tier_flavor = "IV"
+		if (5)
+			tier_flavor = "V"
+		if (6)
+			tier_flavor = "VI"
+		if (7)
+			tier_flavor = "VII"
+		if (8)
+			tier_flavor = "VIII"
+		if (9)
+			tier_flavor = "IX"
 
 
-	//makes the items in the crate randomly picking from a rewards list,
-	proc/make_items_in_tier(var/list/possible_rewards, var/max_points)
-		if (!islist(possible_rewards) || length(possible_rewards) == 0)
-			return 0
+	name = "[team_name_str] secure crate tier [tier_flavor]"
+	SPAWN(1 SECONDS)
+		spawn_items()
+
+/// Selects the items that this crate spawns with based on its possible contents.
+/obj/storage/secure/crate/pod_wars_rewards/proc/spawn_items()
+	var/tier1_max_points = 25
+	var/tier2_max_points = 20
+	var/tier3_max_points = 15
+
+	//This feels really stupid, but idk how better to do it. -kly
+	switch (tier)
+		if (1)
+			make_items_in_tier(pw_rewards_tier1, tier1_max_points)
+		if (2)
+			make_items_in_tier(pw_rewards_tier1, tier1_max_points/2)
+			make_items_in_tier(pw_rewards_tier2, tier2_max_points)
+
+		if (3)
+			make_items_in_tier(pw_rewards_tier1, tier1_max_points/3)
+			make_items_in_tier(pw_rewards_tier2, tier2_max_points/2)
+			make_items_in_tier(pw_rewards_tier3, tier3_max_points)
+		else
+			//All "higher" tiers. I guess they'll be about the same, give em a little something to incentivize holding onto em for longer...
+			make_items_in_tier(pw_rewards_tier1, tier1_max_points/2)
+			make_items_in_tier(pw_rewards_tier2, tier2_max_points)
+			make_items_in_tier(pw_rewards_tier3, tier3_max_points)
+
+
+/// Makes the items in the crate randomly picking from a rewards list,
+/obj/storage/secure/crate/pod_wars_rewards/proc/make_items_in_tier(list/possible_rewards, max_points)
+	if (!islist(possible_rewards) || length(possible_rewards) == 0)
+		return 0
 
 //Kinda cheesey here with the map defs, but I'm too lazy to care. makes a temp var for the mode, if it's not the right type (which idk why it wouldn't be)
 //then it is null so that the ?. will fail. So it still works regardless of mode, not that it would have the populated rewards lists if the mdoe was wrong...
-		var/datum/game_mode/pod_wars/mode = ticker.mode
-		ENSURE_TYPE(mode)
-		var/failsafe_counter = 0		//I'm paranoid okay... what if some admin accidentally fucks with the list, could hang the server.
-		var/points = 0
-		while (points < max_points)
-			var/selected = pick(possible_rewards)
-			var/point_val = possible_rewards[selected]
-			if(points + point_val > max_points + 5) continue
-			var/obj/item/I = new selected(src)
+	var/datum/game_mode/pod_wars/mode = ticker.mode
+	ENSURE_TYPE(mode)
+	var/failsafe_counter = 0		//I'm paranoid okay... what if some admin accidentally fucks with the list, could hang the server.
+	var/points = 0
+	while (points < max_points)
+		var/selected = pick(possible_rewards)
+		var/point_val = possible_rewards[selected]
+		if(points + point_val > max_points + 5) continue
+		var/obj/item/I = new selected(src)
 
-			// message_admins("[I.name] = [possible_rewards[selected]]pts")
-			//if possible_rewards[selected] is null or 0, we increment by 1 null or 1 we spawn 1, if some other number, we add that many points
-			points += point_val ? point_val : 1
-			// points += total_spawned
+		// message_admins("[I.name] = [possible_rewards[selected]]pts")
+		//if possible_rewards[selected] is null or 0, we increment by 1 null or 1 we spawn 1, if some other number, we add that many points
+		points += point_val ? point_val : 1
+		// points += total_spawned
 
-			failsafe_counter++
-			if (failsafe_counter > 100)
-				break
+		failsafe_counter++
+		if (failsafe_counter > 100)
+			break
 
-			mode?.stats_manager.add_item_reward(I.name, team_num)
-		mode?.stats_manager.add_crate(src.name, team_num)
-		return 1
+		mode?.stats_manager.add_item_reward(I.name, team_num)
+	mode?.stats_manager.add_crate(src.name, team_num)
+	return 1
 
 //This is dumb. I should really have these all be one object, but I figure we might wanna specifically admin spawn thse from time to time. -kyle
 
@@ -945,19 +951,19 @@ ABSTRACT_TYPE(/obj/deployable_turret/pod_wars)
 	team_num = 1		//should be 1 or 2
 	tier = 1			//acceptable values, 1-3.
 
-	medium
-		tier = 2
-	high
-		tier = 3
+/obj/storage/secure/crate/pod_wars_rewards/nanotrasen/medium
+	tier = 2
+/obj/storage/secure/crate/pod_wars_rewards/nanotrasen/high
+	tier = 3
 /obj/storage/secure/crate/pod_wars_rewards/syndicate
 	req_access = list(access_syndicate_shuttle)
 	team_num = 2		//should be 1 or 2
 	tier = 1			//acceptable values, 1-3.
 
-	medium
-		tier = 2
-	high
-		tier = 3
+/obj/storage/secure/crate/pod_wars_rewards/syndicate/medium
+	tier = 2
+/obj/storage/secure/crate/pod_wars_rewards/syndicate/high
+	tier = 3
 
 ////////////// special pod wars cargo pads + mineral accumulators ///////////////
 

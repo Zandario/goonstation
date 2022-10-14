@@ -32,7 +32,7 @@ var/list/pw_rewards_tier3 = null
 	crew_shortage_enabled = 0
 
 	shuttle_available = 0 // 0: Won't dock. | 1: Normal. | 2: Won't dock if called too early.
-	list/latejoin_antag_roles = list() // Unrecognized roles default to traitor in mob/new_player/proc/makebad().
+	latejoin_antag_roles = list() // Unrecognized roles default to traitor in mob/new_player/proc/makebad().
 	do_antag_random_spawns = 0
 	do_random_events = 0
 	escape_possible = 0
@@ -244,34 +244,35 @@ var/list/pw_rewards_tier3 = null
 
 	// varied layers
 
-	New()
-		..()
+/turf/simulated/wall/auto/asteroid/pod_wars/New()
+	..()
 
-	//Don't think this can go in new.
-	proc/randomize_ore(var/datum/ore_cluster/OC)
-		if(!prob(OC.density)) return
+/// Don't think this can go in new.
+/turf/simulated/wall/auto/asteroid/pod_wars/proc/randomize_ore(datum/ore_cluster/OC)
+	if(!prob(OC.density))
+		return
 
-		var/ore_name
-		ore_name = weighted_pick(OC.ore_types + (((length(OC.hiddenores) && !(locate(/turf/space) in range(1, src)))) ? OC.hiddenores : list()))
+	var/ore_name
+	ore_name = weighted_pick(OC.ore_types + (((length(OC.hiddenores) && !(locate(/turf/space) in range(1, src)))) ? OC.hiddenores : list()))
 
-		//stolen from Turfspawn_Asteroid_SeedSpecificOre
-		var/datum/ore/O = mining_controls?.get_ore_from_string(ore_name)
-		src.ore = O
-		src.hardness += O.hardness_mod
-		src.amount = rand(O.amount_per_tile_min,O.amount_per_tile_max)
-		var/image/ore_overlay = image('icons/turf/walls_asteroid.dmi',"[O.name][src.orenumber]")
-		ore_overlay.filters += filter(type="alpha", icon=icon('icons/turf/walls_asteroid.dmi',"mask-side_[src.icon_state]"))
-		ore_overlay.layer = ASTEROID_ORE_OVERLAY_LAYER  // so meson goggle nerds can still nerd away
+	//stolen from Turfspawn_Asteroid_SeedSpecificOre
+	var/datum/ore/O = mining_controls?.get_ore_from_string(ore_name)
+	src.ore = O
+	src.hardness += O.hardness_mod
+	src.amount = rand(O.amount_per_tile_min,O.amount_per_tile_max)
+	var/image/ore_overlay = image('icons/turf/walls_asteroid.dmi',"[O.name][src.orenumber]")
+	ore_overlay.filters += filter(type="alpha", icon=icon('icons/turf/walls_asteroid.dmi',"mask-side_[src.icon_state]"))
+	ore_overlay.layer = ASTEROID_ORE_OVERLAY_LAYER  // so meson goggle nerds can still nerd away
 
-		src.UpdateOverlays(ore_overlay, "ast_ore")
+	src.UpdateOverlays(ore_overlay, "ast_ore")
 
-		if(prob(OC.gem_prob))
-			add_event(/datum/ore/event/gem, O)
+	if(prob(OC.gem_prob))
+		add_event(/datum/ore/event/gem, O)
 
-	proc/add_event(var/list/datum/ore/event/new_event, var/datum/ore/O)
-		var/datum/ore/event/E = new new_event
-		E.set_up(O)
-		src.set_event(E)
+/turf/simulated/wall/auto/asteroid/pod_wars/proc/add_event(list/datum/ore/event/new_event, datum/ore/O)
+	var/datum/ore/event/E = new new_event
+	E.set_up(O)
+	src.set_event(E)
 
 ABSTRACT_TYPE(/datum/ore_cluster)
 /datum/ore_cluster
@@ -283,48 +284,48 @@ ABSTRACT_TYPE(/datum/ore_cluster)
 	var/fillerprob = 0
 	var/gem_prob = 0
 
-	minor
-		ore_types = list("mauxite" = 100, "pharosium" = 100, "molitz" = 100, "char" = 125, "ice" = 55, "cobryl" = 55, "bohrum" = 25, "claretine" = 25, "viscerite" = 55, "koshmarite" = 40, "syreline" = 20, "gold" = 20, "plasmastone" = 15, "cerenkite" = 20, "miraclium" = 10, "nanite cluster" = 1, "erebite" = 5, "starstone" = 2)
-		quantity = 15
-		gem_prob = 10
+/datum/ore_cluster/minor
+	ore_types = list("mauxite" = 100, "pharosium" = 100, "molitz" = 100, "char" = 125, "ice" = 55, "cobryl" = 55, "bohrum" = 25, "claretine" = 25, "viscerite" = 55, "koshmarite" = 40, "syreline" = 20, "gold" = 20, "plasmastone" = 15, "cerenkite" = 20, "miraclium" = 10, "nanite cluster" = 1, "erebite" = 5, "starstone" = 2)
+	quantity = 15
+	gem_prob = 10
 
-	pharosium
-		ore_types = list("pharosium" = 100, "gold" = 5)
-		quantity = 2
-		fillerprob = 10
+/datum/ore_cluster/pharosium
+	ore_types = list("pharosium" = 100, "gold" = 5)
+	quantity = 2
+	fillerprob = 10
 
-	starstone
-		ore_types = list( "char" = 95)
-		hiddenores = list("starstone" = 5)
-		density = 40
-		hardness_mod = 3
+/datum/ore_cluster/starstone
+	ore_types = list( "char" = 95)
+	hiddenores = list("starstone" = 5)
+	density = 40
+	hardness_mod = 3
 
-	metal
-		ore_types = list("mauxite" = 100, "cobryl" = 30, "bohrum" = 50, "syreline" = 10, "gold" = 5, "pharosium" = 20)
-		hiddenores = list("nanite cluster" = 2)
-		quantity = 10
-		fillerprob = 5
+/datum/ore_cluster/metal
+	ore_types = list("mauxite" = 100, "cobryl" = 30, "bohrum" = 50, "syreline" = 10, "gold" = 5, "pharosium" = 20)
+	hiddenores = list("nanite cluster" = 2)
+	quantity = 10
+	fillerprob = 5
 
-	rads
-		ore_types = list("cerenkite" = 50, "plasmastone" = 40)
-		hiddenores = list("erebite" = 10)
-		density = 40
-		quantity = 2
+/datum/ore_cluster/rads
+	ore_types = list("cerenkite" = 50, "plasmastone" = 40)
+	hiddenores = list("erebite" = 10)
+	density = 40
+	quantity = 2
 
-	shitty_comet
-		ore_types = list("ice" = 100)
-		hiddenores = list("miraclium" = 100)
-		density = 50
-		quantity = 2
+/datum/ore_cluster/shitty_comet
+	ore_types = list("ice" = 100)
+	hiddenores = list("miraclium" = 100)
+	density = 50
+	quantity = 2
 
-	crystal
-		ore_types = list("molitz" = 100, "plasmastone" = 10)
-		hiddenores = list("erebite" = 1)
-		gem_prob = 5
-		quantity = 3
+/datum/ore_cluster/crystal
+	ore_types = list("molitz" = 100, "plasmastone" = 10)
+	hiddenores = list("erebite" = 1)
+	gem_prob = 5
+	quantity = 3
 
-//for testing, can remove when sure this works - Kyle
-/datum/game_mode/pod_wars/proc/test_point_change(var/team as num, var/amt as num)
+/// For testing, can remove when sure this works - Kyle
+/datum/game_mode/pod_wars/proc/test_point_change(team as num, amt as num)
 
 	if (team == TEAM_NANOTRASEN)
 		team_NT.points = amt
@@ -386,7 +387,7 @@ ABSTRACT_TYPE(/datum/ore_cluster)
 
 	..()
 
-datum/game_mode/pod_wars/proc/do_team_member_death(var/mob/M, var/datum/pod_wars_team/our_team, var/datum/pod_wars_team/enemy_team)
+/datum/game_mode/pod_wars/proc/do_team_member_death(mob/M, datum/pod_wars_team/our_team, datum/pod_wars_team/enemy_team)
 	our_team.change_points(-1)
 	var/nt_death = world.load_intra_round_value("nt_death")
 	var/sy_death = world.load_intra_round_value("sy_death")
@@ -572,8 +573,8 @@ datum/game_mode/pod_wars/proc/do_team_member_death(var/mob/M, var/datum/pod_wars
 
 	return 1
 
-//get the amount of alt lines we have for each type of voice line based on the define added...
-datum/game_mode/pod_wars/proc/get_voice_line_alts_for_team_sound(var/datum/pod_wars_team/team, var/sound_type)
+/// get the amount of alt lines we have for each type of voice line based on the define added...
+/datum/game_mode/pod_wars/proc/get_voice_line_alts_for_team_sound(var/datum/pod_wars_team/team, var/sound_type)
 	switch(sound_type)
 		if (PW_COMMANDER_DIES)
 			return team.sl_amt_commander_dies
@@ -631,59 +632,59 @@ datum/game_mode/pod_wars/proc/get_voice_line_alts_for_team_sound(var/datum/pod_w
 	var/theme = null
 	alpha = 150
 
-	//builds all the pieces and adds em to the score_board whose sprite is the backboard
-	New()
-		..()
-		border = new(src)
-		border.name = "border"
-		border.icon = icon
-		border.icon_state = "pw_border"
-		border.vis_flags = VIS_INHERIT_ID
+/// builds all the pieces and adds em to the score_board whose sprite is the backboard
+/atom/movable/screen/hud/score_board/New()
+	..()
+	border = new(src)
+	border.name = "border"
+	border.icon = icon
+	border.icon_state = "pw_border"
+	border.vis_flags = VIS_INHERIT_ID
 
-		create_and_add_hud_objects()
+	create_and_add_hud_objects()
 
-	proc/create_and_add_hud_objects()
-		//Score Points bars
-		bar_NT = new /atom/movable/screen/pw_score_bar/nt(src)
-		bar_SY = new /atom/movable/screen/pw_score_bar/sy(src)
+/atom/movable/screen/hud/score_board/proc/create_and_add_hud_objects()
+	//Score Points bars
+	bar_NT = new /atom/movable/screen/pw_score_bar/nt(src)
+	bar_SY = new /atom/movable/screen/pw_score_bar/sy(src)
 
-		//Control Points creation and adding to list
-		control_points = list()
-		control_points.Add(new/atom/movable/screen/control_point/uvb67())
-		control_points.Add(new/atom/movable/screen/control_point/reliant())
-		control_points.Add(new/atom/movable/screen/control_point/fortuna())
+	//Control Points creation and adding to list
+	control_points = list()
+	control_points.Add(new/atom/movable/screen/control_point/uvb67())
+	control_points.Add(new/atom/movable/screen/control_point/reliant())
+	control_points.Add(new/atom/movable/screen/control_point/fortuna())
 
-		//add em all to vis_contents
-		src.vis_contents += bar_NT
-		src.vis_contents += bar_SY
-		src.vis_contents += border
+	//add em all to vis_contents
+	src.vis_contents += bar_NT
+	src.vis_contents += bar_SY
+	src.vis_contents += border
 
-		for (var/atom/movable/screen/S in control_points)
-			src.vis_contents += S
+	for (var/atom/movable/screen/S in control_points)
+		src.vis_contents += S
 
-	///takes the control point screen object's true_name var and the team_num of the new owner: NT=1, SY=2
-	proc/change_control_point_owner(var/true_name, var/team_num)
+///takes the control point screen object's true_name var and the team_num of the new owner: NT=1, SY=2
+/atom/movable/screen/hud/score_board/proc/change_control_point_owner(var/true_name, var/team_num)
 
-		for (var/atom/movable/screen/control_point/C in control_points)
-			if (true_name == C.true_name)
-				C.change_color(team_num)
-				break;	//Only ever gonna be one of em.
+	for (var/atom/movable/screen/control_point/C in control_points)
+		if (true_name == C.true_name)
+			C.change_color(team_num)
+			break;	//Only ever gonna be one of em.
 
 
-	MouseEntered(location, control, params)
-		if (usr.client.tooltipHolder && control == "mapwindow.map")
-			var/theme = src.theme
+/atom/movable/screen/hud/score_board/MouseEntered(location, control, params)
+	if (usr.client.tooltipHolder && control == "mapwindow.map")
+		var/theme = src.theme
 
-			usr.client.tooltipHolder.showHover(src, list(
-				"params" = params,
-				"title" = src.name,
-				"content" = "NT Points: [bar_NT.points]\n SY Points: [bar_SY.points]",
-				"theme" = theme
-			))
+		usr.client.tooltipHolder.showHover(src, list(
+			"params" = params,
+			"title" = src.name,
+			"content" = "NT Points: [bar_NT.points]\n SY Points: [bar_SY.points]",
+			"theme" = theme
+		))
 
-	MouseExited()
-		if (usr.client.tooltipHolder)
-			usr.client.tooltipHolder.hideHover()
+/atom/movable/screen/hud/score_board/MouseExited()
+	if (usr.client.tooltipHolder)
+		usr.client.tooltipHolder.hideHover()
 
 /atom/movable/screen/pw_score_bar
 	icon = 'icons/misc/128x32.dmi'
@@ -710,42 +711,42 @@ datum/game_mode/pod_wars/proc/get_voice_line_alts_for_team_sound(var/datum/pod_w
 	pixel_y = 8
 	var/true_name = null 		//backend name, var/name is the human readable name
 
-	///team, neutral = 0, NT = 1, SY = 2
-	proc/change_color(var/team)
-		//Colours kinda off, but I wanted em to stand out against the background.
-		switch(team)
-			if (TEAM_NANOTRASEN)
-				color = "#004EFF"
-			if (TEAM_SYNDICATE)
-				color = "#FF004E"
-			else
-				color = null
+///team, neutral = 0, NT = 1, SY = 2
+/atom/movable/screen/control_point/proc/change_color(var/team)
+	//Colours kinda off, but I wanted em to stand out against the background.
+	switch(team)
+		if (TEAM_NANOTRASEN)
+			color = "#004EFF"
+		if (TEAM_SYNDICATE)
+			color = "#FF004E"
+		else
+			color = null
 
-	//You might be asking yourself "What are all these random pixel_x values?" They are the pixel coords ~ 1/4, 1/2, and 3/4
-	//accross the bar. Then you might ask, "Why didn't you just divide by the length of the bar?" Of course I tried that, but I couldn't
-	//fucking FIND that value. Why does that not exist? it seems like it should, after all, the mouse knows the bounds? Well, I don't know.
+//You might be asking yourself "What are all these random pixel_x values?" They are the pixel coords ~ 1/4, 1/2, and 3/4
+//accross the bar. Then you might ask, "Why didn't you just divide by the length of the bar?" Of course I tried that, but I couldn't
+//fucking FIND that value. Why does that not exist? it seems like it should, after all, the mouse knows the bounds? Well, I don't know.
 
-	//left
-	uvb67
-		name = "UVB-67"
-		true_name = UVB67
-		pixel_x = 25
+//left
+/atom/movable/screen/control_point/uvb67
+	name = "UVB-67"
+	true_name = UVB67
+	pixel_x = 25
 
-		screen_loc = "NORTH, CENTER-1:-16"
+	screen_loc = "NORTH, CENTER-1:-16"
 
-	//center
-	reliant
-		name = "NSV Reliant"
-		true_name = RELIANT
-		pixel_x = 57
-		screen_loc = "NORTH, CENTER"
+//center
+/atom/movable/screen/control_point/reliant
+	name = "NSV Reliant"
+	true_name = RELIANT
+	pixel_x = 57
+	screen_loc = "NORTH, CENTER"
 
-	//right
-	fortuna
-		name = "Fortuna Station"
-		true_name = FORTUNA
-		screen_loc = "NORTH, CENTER-1:16"
-		pixel_x = 91
+//right
+/atom/movable/screen/control_point/fortuna
+	name = "Fortuna Station"
+	true_name = FORTUNA
+	screen_loc = "NORTH, CENTER-1:16"
+	pixel_x = 91
 
 /////////////END of SCOREBOARD STUFF//////////////////////////////
 //////////////////////////////////////////////////
@@ -762,29 +763,28 @@ ABSTRACT_TYPE(/obj/machinery/macrofab/pod_wars)
 	var/team_num = 0
 
 
-	attack_hand(var/mob/user)
-		if (get_pod_wars_team_num(user) != team_num)
-			boutput(user, "<span class='alert'>This machine's design makes no sense to you, you can't figure out how to use it!</span>")
-			return
+/obj/machinery/macrofab/pod_wars/attack_hand(mob/user)
+	if (get_pod_wars_team_num(user) != team_num)
+		boutput(user, "<span class='alert'>This machine's design makes no sense to you, you can't figure out how to use it!</span>")
+		return
 
-		..()
+	..()
 
-	nanotrasen
-		createdObject = /obj/machinery/vehicle/pod_wars_dingy/nanotrasen
-		team_num = 1
+/obj/machinery/macrofab/pod_wars/nanotrasen
+	createdObject = /obj/machinery/vehicle/pod_wars_dingy/nanotrasen
+	team_num = 1
 
-		mining
-			name = "Emergency Mining Pod Fabricator"
-			createdObject = /obj/machinery/vehicle/pod_wars_dingy/nanotrasen/mining
+/obj/machinery/macrofab/pod_wars/nanotrasen/mining
+	name = "Emergency Mining Pod Fabricator"
+	createdObject = /obj/machinery/vehicle/pod_wars_dingy/nanotrasen/mining
 
+/obj/machinery/macrofab/pod_wars/syndicate
+	createdObject = /obj/machinery/vehicle/pod_wars_dingy/syndicate
+	team_num = 2
 
-	syndicate
-		createdObject = /obj/machinery/vehicle/pod_wars_dingy/syndicate
-		team_num = 2
-
-		mining
-			name = "Emergency Mining Pod Fabricator"
-			createdObject = /obj/machinery/vehicle/pod_wars_dingy/syndicate/mining
+/obj/machinery/macrofab/pod_wars/syndicate/mining
+	name = "Emergency Mining Pod Fabricator"
+	createdObject = /obj/machinery/vehicle/pod_wars_dingy/syndicate/mining
 
 ABSTRACT_TYPE(/obj/machinery/vehicle/pod_wars_dingy)
 /obj/machinery/vehicle/pod_wars_dingy
@@ -798,59 +798,59 @@ ABSTRACT_TYPE(/obj/machinery/vehicle/pod_wars_dingy)
 	var/weapon_type = /obj/item/shipcomponent/mainweapon/phaser/short
 	speed = 1.7
 
-	New()
-		..()
-		/obj/item/shipcomponent/mainweapon/phaser/short
+/obj/machinery/vehicle/pod_wars_dingy/New()
+	..()
+	/obj/item/shipcomponent/mainweapon/phaser/short
 
-		src.m_w_system = new weapon_type( src )
-		src.m_w_system.ship = src
-		src.components += src.m_w_system
+	src.m_w_system = new weapon_type( src )
+	src.m_w_system.ship = src
+	src.components += src.m_w_system
 
-		src.lock = new /obj/item/shipcomponent/secondary_system/lock/pw_id( src )
-		src.lock.ship = src
-		src.components += src.lock
+	src.lock = new /obj/item/shipcomponent/secondary_system/lock/pw_id( src )
+	src.lock.ship = src
+	src.components += src.lock
 
-		myhud.update_systems()
-		myhud.update_states()
-		return
-
-
-
-	proc/equip_mining()
-		// src.sensors = new /obj/item/shipcomponent/sensor/mining( src )
-		// src.sensors.ship = src
-		// src.components += src.sensors
-
-		src.sec_system = new /obj/item/shipcomponent/secondary_system/orescoop( src )
-		src.sec_system.ship = src
-		src.components += src.sec_system
+	myhud.update_systems()
+	myhud.update_states()
+	return
 
 
-	nanotrasen
-		name = "NT Combat Dingy"
-		icon_state = "putt_pre"
-		init_comms_type = /obj/item/shipcomponent/communications/security
 
-		mining
-			name = "NT Mining Dingy"
-			weapon_type = /obj/item/shipcomponent/mainweapon/bad_mining
+/obj/machinery/vehicle/pod_wars_dingy/proc/equip_mining()
+	// src.sensors = new /obj/item/shipcomponent/sensor/mining( src )
+	// src.sensors.ship = src
+	// src.components += src.sensors
 
-			New()
-				..()
-				equip_mining()
+	src.sec_system = new /obj/item/shipcomponent/secondary_system/orescoop( src )
+	src.sec_system.ship = src
+	src.components += src.sec_system
 
-	syndicate
-		name = "Syndicate Combat Dingy"
-		icon_state = "syndiputt"
-		init_comms_type = /obj/item/shipcomponent/communications/syndicate
 
-		mining
-			name = "Syndicate Mining Dingy"
-			weapon_type = /obj/item/shipcomponent/mainweapon/bad_mining
+/obj/machinery/vehicle/pod_wars_dingy/nanotrasen
+	name = "NT Combat Dingy"
+	icon_state = "putt_pre"
+	init_comms_type = /obj/item/shipcomponent/communications/security
 
-			New()
-				equip_mining()
-				..()
+/obj/machinery/vehicle/pod_wars_dingy/nanotrasen/mining
+	name = "NT Mining Dingy"
+	weapon_type = /obj/item/shipcomponent/mainweapon/bad_mining
+
+/obj/machinery/vehicle/pod_wars_dingy/nanotrasen/mining/New()
+	..()
+	equip_mining()
+
+/obj/machinery/vehicle/pod_wars_dingy/syndicate
+	name = "Syndicate Combat Dingy"
+	icon_state = "syndiputt"
+	init_comms_type = /obj/item/shipcomponent/communications/syndicate
+
+/obj/machinery/vehicle/pod_wars_dingy/syndicate/mining
+	name = "Syndicate Mining Dingy"
+	weapon_type = /obj/item/shipcomponent/mainweapon/bad_mining
+
+/obj/machinery/vehicle/pod_wars_dingy/syndicate/mining/New()
+	equip_mining()
+	..()
 
 
 
@@ -859,42 +859,41 @@ ABSTRACT_TYPE(/obj/machinery/vehicle/pod_wars_dingy)
 /////////////////////////////////////////////////
 
 //stole this from vampire. prevents runtimes. IDK why this isn't in the parent.
-/atom/movable/screen/ability/topBar/pod_pilot
-	clicked(params)
-		var/datum/targetable/pod_pilot/spell = owner
-		var/datum/abilityHolder/holder = owner.holder
+/atom/movable/screen/ability/topBar/pod_pilot/clicked(params)
+	var/datum/targetable/pod_pilot/spell = owner
+	var/datum/abilityHolder/holder = owner.holder
 
-		if (!istype(spell))
-			return
-		if (!spell.holder)
-			return
-
-		if(params["shift"] && params["ctrl"])
-			if(owner.waiting_for_hotkey)
-				holder.cancel_action_binding()
-				return
-			else
-				owner.waiting_for_hotkey = 1
-				src.UpdateIcon()
-				boutput(usr, "<span class='notice'>Please press a number to bind this ability to...</span>")
-				return
-
-		if (!isturf(owner.holder.owner.loc))
-			boutput(owner.holder.owner, "<span class='alert'>You can't use this spell here.</span>")
-			return
-		if (spell.targeted && usr.targeting_ability == owner)
-			usr.targeting_ability = null
-			usr.update_cursor()
-			return
-		if (spell.targeted)
-			if (world.time < spell.last_cast)
-				return
-			owner.holder.owner.targeting_ability = owner
-			owner.holder.owner.update_cursor()
-		else
-			SPAWN(0)
-				spell.handleCast()
+	if (!istype(spell))
 		return
+	if (!spell.holder)
+		return
+
+	if(params["shift"] && params["ctrl"])
+		if(owner.waiting_for_hotkey)
+			holder.cancel_action_binding()
+			return
+		else
+			owner.waiting_for_hotkey = 1
+			src.UpdateIcon()
+			boutput(usr, "<span class='notice'>Please press a number to bind this ability to...</span>")
+			return
+
+	if (!isturf(owner.holder.owner.loc))
+		boutput(owner.holder.owner, "<span class='alert'>You can't use this spell here.</span>")
+		return
+	if (spell.targeted && usr.targeting_ability == owner)
+		usr.targeting_ability = null
+		usr.update_cursor()
+		return
+	if (spell.targeted)
+		if (world.time < spell.last_cast)
+			return
+		owner.holder.owner.targeting_ability = owner
+		owner.holder.owner.update_cursor()
+	else
+		SPAWN(0)
+			spell.handleCast()
+	return
 
 
 
@@ -910,9 +909,9 @@ ABSTRACT_TYPE(/obj/machinery/vehicle/pod_wars_dingy)
 			return 0
 
 
-//this is global so admins can run this proc to spawn the crates if they like, idk why they'd really want to but might as well be safe.
-//The list here is set up where the object path is the key, and the value is its point amount
-proc/setup_pw_crate_lists()
+/// this is global so admins can run this proc to spawn the crates if they like, idk why they'd really want to but might as well be safe.
+/// The list here is set up where the object path is the key, and the value is its point amount
+/proc/setup_pw_crate_lists()
 	pw_rewards_tier1 = list(/obj/item/storage/firstaid/regular = 1, /obj/item/reagent_containers/mender/both = 1, 	///obj/item/tank/plasma = 2
 		/obj/item/tank/oxygen = 1, /obj/item/storage/box/energy_frag = 4, /obj/item/storage/box/energy_concussion = 4, /obj/item/device/flash = 2, /obj/item/deployer/barricade = 4,
 		/obj/item/shipcomponent/mainweapon/taser = 3, /obj/item/shipcomponent/mainweapon/laser/short = 3,/obj/item/ammo/power_cell/high_power = 5,
@@ -941,7 +940,7 @@ proc/setup_pw_crate_lists()
 	SPAWN(3.5 SECONDS)
 		qdel(O)
 
-/obj/decoration/memorial/
+/obj/decoration/memorial
 	name = "Generic Memorial"
 	icon = 'icons/obj/large/32x64.dmi'
 	icon_state = "memorial_mid"
@@ -949,7 +948,7 @@ proc/setup_pw_crate_lists()
 	opacity = 0
 	density = 1
 
-/obj/decoration/memorial/pod_war_stats_nt/
+/obj/decoration/memorial/pod_war_stats_nt
 	name = "Nanotrasen Mission Log"
 	icon = 'icons/obj/large/32x64.dmi'
 	icon_state = "memorial_mid"
@@ -959,70 +958,70 @@ proc/setup_pw_crate_lists()
 
 
 
-	New()
-		..()
-		var/nt_wins = world.load_intra_round_value("nt_win")
-		var/nt_deaths = world.load_intra_round_value("nt_death")
-		if(isnull(nt_wins))
-			nt_wins = 0
-		if(isnull(nt_deaths))
-			nt_deaths = 0
-		var/last_reset_date = world.load_intra_round_value("pod_wars_last_reset")
-		var/last_reset_text = null
-		if(!isnull(last_reset_date))
-			var/days_passed = round((world.realtime - last_reset_date) / (1 DAY))
-			last_reset_text = "<h4>(mission log reset [days_passed] days ago)</h4>"
-		src.desc = "<center><h2><b>Pod Wars Mission Log</b></h2><br> <h3>Nanotrasen Victories: [nt_wins]<br>\nNanotrasen Deaths: [nt_deaths]</h3><br>[last_reset_text]</center>"
+/obj/decoration/memorial/pod_war_stats_nt/New()
+	..()
+	var/nt_wins = world.load_intra_round_value("nt_win")
+	var/nt_deaths = world.load_intra_round_value("nt_death")
+	if(isnull(nt_wins))
+		nt_wins = 0
+	if(isnull(nt_deaths))
+		nt_deaths = 0
+	var/last_reset_date = world.load_intra_round_value("pod_wars_last_reset")
+	var/last_reset_text = null
+	if(!isnull(last_reset_date))
+		var/days_passed = round((world.realtime - last_reset_date) / (1 DAY))
+		last_reset_text = "<h4>(mission log reset [days_passed] days ago)</h4>"
+	src.desc = "<center><h2><b>Pod Wars Mission Log</b></h2><br> <h3>Nanotrasen Victories: [nt_wins]<br>\nNanotrasen Deaths: [nt_deaths]</h3><br>[last_reset_text]</center>"
 
-	attack_hand(var/mob/user)
-		if (..(user))
-			return
+/obj/decoration/memorial/pod_war_stats_nt/attack_hand(mob/user)
+	if (..(user))
+		return
 
-		var/nt_wins = world.load_intra_round_value("nt_win")
-		var/nt_deaths = world.load_intra_round_value("nt_death")
-		if(isnull(nt_wins))
-			nt_wins = 0
-		if(isnull(nt_deaths))
-			nt_deaths = 0
+	var/nt_wins = world.load_intra_round_value("nt_win")
+	var/nt_deaths = world.load_intra_round_value("nt_death")
+	if(isnull(nt_wins))
+		nt_wins = 0
+	if(isnull(nt_deaths))
+		nt_deaths = 0
 
-		src.add_dialog(user)
-		user.Browse(src.desc, "title=Mission Log;window=pod_war_stats_[src];size=300x300")
-		onclose(user, "pod_war_stats_[src]")
+	src.add_dialog(user)
+	user.Browse(src.desc, "title=Mission Log;window=pod_war_stats_[src];size=300x300")
+	onclose(user, "pod_war_stats_[src]")
 
-/obj/decoration/memorial/pod_war_stats_sy/
+/obj/decoration/memorial/pod_war_stats_sy
 	name = "Syndicate Mission Log"
 	icon = 'icons/obj/large/32x64.dmi'
 	icon_state = "memorial_mid"
 
-	New()
-		..()
-		var/sy_wins = world.load_intra_round_value("sy_win")
-		var/sy_deaths = world.load_intra_round_value("sy_death")
-		if(isnull(sy_wins))
-			sy_wins = 0
-		if(isnull(sy_deaths))
-			sy_deaths = 0
-		var/last_reset_date = world.load_intra_round_value("pod_wars_last_reset")
-		var/last_reset_text = null
-		if(!isnull(last_reset_date))
-			var/days_passed = round((world.realtime - last_reset_date) / (1 DAY))
-			last_reset_text = "<h4>(mission log reset [days_passed] days ago)</h4>"
-		src.desc = "<center><h2><b>Pod Wars Mission Log</b></h2><br> <h3>Syndicate Victories: [sy_wins]<br>\nSyndicate Deaths: [sy_deaths]</h3><br>[last_reset_text]</center>"
+/obj/decoration/memorial/pod_war_stats_sy/New()
+	..()
+	var/sy_wins = world.load_intra_round_value("sy_win")
+	var/sy_deaths = world.load_intra_round_value("sy_death")
+	if(isnull(sy_wins))
+		sy_wins = 0
+	if(isnull(sy_deaths))
+		sy_deaths = 0
+	var/last_reset_date = world.load_intra_round_value("pod_wars_last_reset")
+	var/last_reset_text = null
+	if(!isnull(last_reset_date))
+		var/days_passed = round((world.realtime - last_reset_date) / (1 DAY))
+		last_reset_text = "<h4>(mission log reset [days_passed] days ago)</h4>"
+	src.desc = "<center><h2><b>Pod Wars Mission Log</b></h2><br> <h3>Syndicate Victories: [sy_wins]<br>\nSyndicate Deaths: [sy_deaths]</h3><br>[last_reset_text]</center>"
 
-	attack_hand(var/mob/user)
-		if (..(user))
-			return
+/obj/decoration/memorial/pod_war_stats_sy/attack_hand(mob/user)
+	if (..(user))
+		return
 
-		var/sy_wins = world.load_intra_round_value("sy_win")
-		var/sy_deaths = world.load_intra_round_value("sy_death")
-		if(isnull(sy_wins))
-			sy_wins = 0
-		if(isnull(sy_deaths))
-			sy_deaths = 0
+	var/sy_wins = world.load_intra_round_value("sy_win")
+	var/sy_deaths = world.load_intra_round_value("sy_death")
+	if(isnull(sy_wins))
+		sy_wins = 0
+	if(isnull(sy_deaths))
+		sy_deaths = 0
 
-		src.add_dialog(user)
-		user.Browse(src.desc, "title=Mission Log;window=pod_war_stats_[src];size=300x300")
-		onclose(user, "pod_war_stats_[src]")
+	src.add_dialog(user)
+	user.Browse(src.desc, "title=Mission Log;window=pod_war_stats_[src];size=300x300")
+	onclose(user, "pod_war_stats_[src]")
 
 /obj/decoration/memorial/memorial_left
 	name = "Memorial Inscription"
