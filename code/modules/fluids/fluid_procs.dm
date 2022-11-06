@@ -1,6 +1,7 @@
-///////////////////
-//Turf Procs/Vars//
-///////////////////
+/**
+ *! TURF PROCS/VARS
+ */
+
 
 /turf/var/tmp/obj/fluid/active_liquid
 
@@ -276,3 +277,10 @@ turf/simulated/floor/plating/airless/ocean_canpass()
 			C.clean_forensic()
 			src.fluid_react_single(sample, amt)
 	return 1
+
+
+/**
+ *! OBJ PROCS/VARS
+ */
+
+/obj/event_handler_flags = USE_FLUID_ENTER

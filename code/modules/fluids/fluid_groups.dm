@@ -757,7 +757,7 @@
 			if (!FG) return 0
 			FG.members += F
 			F.group = FG
-			F.last_spread_was_blocked = 0
+			F.last_spread_was_blocked = FALSE
 		src.members -= FG.members
 
 		if (FG)

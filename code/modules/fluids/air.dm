@@ -137,10 +137,10 @@ var/list/ban_from_airborne_fluid = list()
 			src.removed()
 			return
 		.= list()
-		last_spread_was_blocked = 1
-		src.touched_channel = 0
+		last_spread_was_blocked = TRUE
+		touched_channel = null
 		blocked_dirs = 0
-		spawned_any = 0
+		spawned_any = FALSE
 		purge_smoke_blacklist(src.group.reagents)
 
 		var/turf/t
@@ -163,7 +163,7 @@ var/list/ban_from_airborne_fluid = list()
 				continue
 
 			if( t.gas_cross(src) )
-				var/suc = 1
+				var/succ = 1
 				var/push_thing = 0
 				for(var/obj/thing in t.contents) //HEY maybe do item pushing here since you're looping thru turf contents anyway??
 					var/found = 0
@@ -179,7 +179,7 @@ var/list/ban_from_airborne_fluid = list()
 					*/
 					if (found)
 						if( thing.density )
-							suc=0
+							succ=0
 							blocked_dirs++
 							if (IS_PERSPECTIVE_BLOCK(thing))
 							//for(var/type_string in perspective_blocks)
@@ -189,11 +189,11 @@ var/list/ban_from_airborne_fluid = list()
 
 						if (istype(thing,/obj/channel))
 							src.touched_channel = thing //Save this for later, we can't make use of it yet
-							suc=0
+							succ=0
 							break
 
-				if(suc && src.group && !src.group.disposed) //group went missing? ok im doin a check here lol
-					spawned_any = 1
+				if(succ && src.group && !src.group.disposed) //group went missing? ok im doin a check here lol
+					spawned_any = TRUE
 					src.icon_state = "airborne"
 					var/obj/fluid/F = new /obj/fluid/airborne
 					F.set_up(t,0)
@@ -220,7 +220,7 @@ var/list/ban_from_airborne_fluid = list()
 					. += F
 
 					F.done_init()
-					last_spread_was_blocked = 0
+					last_spread_was_blocked = FALSE
 
 					if (push_thing && prob(50))
 						if (src.last_depth_level <= 3)
@@ -303,7 +303,7 @@ var/list/ban_from_airborne_fluid = list()
 		animate( src, color = finalcolor, alpha = finalalpha, time = 5 )
 
 		if (neighbor_was_removed)
-			last_spread_was_blocked = 0
+			last_spread_was_blocked = FALSE
 
 		//air specific:
 		var/old_opacity = src.opacity

@@ -306,14 +306,14 @@
 /atom/proc/HasProximity(atom/movable/AM as mob|obj)
 	return
 
-/atom/proc/EnteredFluid(obj/fluid/F as obj, atom/oldloc)
-	.=0
+/atom/proc/EnteredFluid(obj/fluid/target_fluid as obj, atom/oldloc)
+	return FALSE
 
-/atom/proc/ExitedFluid(obj/fluid/F as obj)
-	.=0
+/atom/proc/ExitedFluid(obj/fluid/target_fluid as obj)
+	return FALSE
 
-/atom/proc/EnteredAirborneFluid(obj/fluid/F as obj, atom/old_loc)
-	.=0
+/atom/proc/EnteredAirborneFluid(obj/fluid/target_fluid as obj, atom/old_loc)
+	return FALSE
 
 /atom/proc/set_icon_state(var/new_state)
 	src.icon_state = new_state

@@ -941,6 +941,7 @@ var/datum/preMapLoad/preMapLoad = new
 #include "code\modules\fluids\fluid_commands.dm"
 #include "code\modules\fluids\fluid_core.dm"
 #include "code\modules\fluids\fluid_groups.dm"
+#include "code\modules\fluids\fluid_icons.dm"
 #include "code\modules\fluids\fluid_objects.dm"
 #include "code\modules\fluids\fluid_overlay.dm"
 #include "code\modules\fluids\fluid_pipe_ports.dm"
