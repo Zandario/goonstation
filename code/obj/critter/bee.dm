@@ -1070,7 +1070,7 @@ ADMIN_INTERACT_PROCS(/obj/critter/domestic_bee, proc/dance, proc/puke_honey)
 		//of course, this is tied to the server's local time so G4 will be different
 		if (. >= 1 && . < 9)
 			var/turf/T = pick_landmark(LANDMARK_BUBS_BEE_JOB)
-			if (istype(T))
+			if (isturf(T))
 				src.hat = new /obj/item/clothing/head/flatcap (src)
 				src.hat_that_bee(src.hat)
 				src.UpdateIcon()

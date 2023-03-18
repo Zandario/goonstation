@@ -103,7 +103,7 @@
 					continue
 				var/turf/T = selected_temp_expose.loc //lollllllllllll
 				var/target_temp = T20C
-				if (istype(T))
+				if (isturf(T))
 					target_temp = T.temperature
 
 				var/difference = (target_temp - FG.reagents.total_temperature)
@@ -118,7 +118,7 @@
 					if (!F || F.pooled || !F.reagents) continue
 					var/turf/T = F.loc
 					var/target_temp = T20C
-					if (istype(T))
+					if (isturf(T))
 						target_temp = T.temperature
 
 					var/difference = (target_temp - F.reagents.total_temperature)

@@ -383,7 +383,7 @@ var/global/Z4_ACTIVE = 0 //Used for mob processing purposes
 			R.add_reagent("blood", fluid_amount)
 
 			var/turf/T = get_turf(src)
-			if (istype(T))
+			if (isturf(T))
 				T.fluid_react(R,fluid_amount)
 				R.clear_reagents()
 

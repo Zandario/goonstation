@@ -130,7 +130,7 @@ var/list/forensic_IDs = new/list() //Global list of all guns, based on bioholder
 /obj/item/gun/proc/check_valid_shot(atom/target as mob|obj|turf|area, mob/user as mob)
 	var/turf/T = get_turf(user)
 	var/turf/U = get_turf(target)
-	if(!istype(T) || !istype(U))
+	if(!isturf(T) || !istype(U))
 		return 0
 	if (U == T)
 		//user.bullet_act(current_projectile)

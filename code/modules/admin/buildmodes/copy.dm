@@ -19,7 +19,7 @@ Ctrl + Right Mouse Button on build mode  = Spawn for every living player<br>
 
 	click_left(atom/object, var/ctrl, var/alt, var/shift)
 		var/turf/T = get_turf(object)
-		if(src.copied_object && istype(T))
+		if(src.copied_object && isturf(T))
 			blink(T)
 			semi_deep_copy(src.copied_object, T)
 

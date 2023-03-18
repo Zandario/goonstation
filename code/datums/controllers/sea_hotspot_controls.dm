@@ -590,7 +590,7 @@
 		..()
 
 	afterattack(var/turf/T, var/mob/user)
-		if (istype(T) && !T.density)
+		if (isturf(T) && !T.density)
 			processing_items |= src
 
 			user.drop_item()

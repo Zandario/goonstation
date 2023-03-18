@@ -34,7 +34,7 @@
 
 	Uncrossed(atom/movable/A)
 		var/turf/T = get_turf(A)
-		if (istype(T))
+		if (isturf(T))
 			var/obj/poolwater/P = locate() in T
 			if (!istype(P))
 				if (istype(A, /atom/movable) && !isobserver(A) && !istype(A, /mob/living/critter/small_animal/bee) && !istype(A, /obj/critter/domestic_bee))

@@ -23,7 +23,7 @@
 
 		var/turf/T = get_turf(target)
 		if(src.targeted)
-			if (!istype(T) || !istype(T.cameras) || !length(T.cameras))
+			if (!isturf(T) || !istype(T.cameras) || !length(T.cameras))
 				boutput(holder.owner, "No camera available to target that location.")
 				. = FALSE
 				return 1

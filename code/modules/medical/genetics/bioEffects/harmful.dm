@@ -707,7 +707,7 @@
 				if (pulse) qdel(pulse)
 
 			//maybe have this only emp some things on the tile.
-			if(istype(T))
+			if(isturf(T))
 				for (var/atom/O in T.contents)
 					O.emp_act()
 

@@ -43,7 +43,7 @@
 		var/delay = src.running ? src.move_delay / 2 : src.move_delay
 		src.master.set_dir(src.move_dir)
 		var/turf/T = src.master.loc
-		if(istype(T))
+		if(isturf(T))
 			// this is what pod.dm does, don't look at me!!!
 			src.master.glide_size = (32 / delay) * world.tick_lag
 			user.glide_size = src.master.glide_size

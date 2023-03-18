@@ -28,7 +28,7 @@ ABSTRACT_TYPE(/obj/item/reagent_containers/food/snacks/ingredient)
 		playsound(src.loc, 'sound/impact_sounds/Slimy_Splat_1.ogg', 100, 1)
 		if (src.blood <= 0) return ..()
 
-		if (istype(T))
+		if (isturf(T))
 			make_cleanable( /obj/decal/cleanable/blood,T)
 			blood--
 		..()
@@ -97,7 +97,7 @@ ABSTRACT_TYPE(/obj/item/reagent_containers/food/snacks/ingredient)
 		var/turf/T = get_turf(A)
 		if (src.cybermeat == 1)
 			playsound(src.loc, 'sound/impact_sounds/Slimy_Splat_1.ogg', 100, 1)
-			if (istype(T))
+			if (isturf(T))
 				make_cleanable(/obj/decal/cleanable/oil,T)
 				..()
 			else

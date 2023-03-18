@@ -23,7 +23,7 @@ TYPEINFO(/obj/item/device/gps)
 		. =  "Landmark: Unknown"
 		if (!T)
 			return
-		if (!istype(T))
+		if (!isturf(T))
 			T = get_turf(T)
 		if (!T)
 			return

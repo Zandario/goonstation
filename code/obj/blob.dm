@@ -505,7 +505,7 @@
 		src.alpha = max(src.alpha, 32)
 
 	proc/spread(var/turf/T)
-		if (!istype(T) || !T.can_blob_spread_here(null, null, isadmin(overmind) || overmind.admin_override))
+		if (!isturf(T) || !T.can_blob_spread_here(null, null, isadmin(overmind) || overmind.admin_override))
 			return
 
 		var/blob_type = /obj/blob/
@@ -1148,7 +1148,7 @@
 	return null
 
 /proc/update_surrounding_blob_icons(var/turf/T)
-	if (!istype(T))
+	if (!isturf(T))
 		return
 	for (var/obj/blob/B in orange(1,T))
 		B.UpdateIcon()

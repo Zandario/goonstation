@@ -14,7 +14,7 @@ Ctrl + RMB on buildmode button     = Reset selection<br>
 
 	click_left(atom/object, var/ctrl, var/alt, var/shift)
 		var/turf/T = object
-		if (!istype(T))
+		if (!isturf(T))
 			T = get_turf(T)
 		if (!T)
 			return

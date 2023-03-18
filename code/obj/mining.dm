@@ -2056,7 +2056,7 @@ TYPEINFO(/obj/item/cargotele)
 		mining_scan(get_turf(user), user, 6)
 
 /proc/mining_scan(var/turf/T, var/mob/living/L, var/range)
-	if (!istype(T) || !istype(L))
+	if (!isturf(T) || !istype(L))
 		return
 	if (!isnum(range) || range < 1)
 		range = 6

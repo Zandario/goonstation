@@ -134,13 +134,13 @@ THROWING DARTS
 			var/mob/living/carbon/human/H = src.owner
 			if (locate(src) in H.implant)
 				var/turf/T = get_turf(H)
-				if (istype(T))
+				if (isturf(T))
 					return " at [T.x],[T.y],[T.z]"
 		else if (ismobcritter(src.owner))
 			var/mob/living/critter/C = src.owner
 			if (locate(src) in C.implants)
 				var/turf/T = get_turf(C)
-				if (istype(T))
+				if (isturf(T))
 					return " at [T.x],[T.y],[T.z]"
 
 	proc/send_message(var/message, var/alertgroup, var/sender_name)

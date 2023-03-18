@@ -159,7 +159,7 @@ TYPEINFO(/obj/machinery/drainage/big)
 			R.add_reagent(reagent_id, amount)
 
 			var/turf/T = get_turf(src)
-			if (istype(T))
+			if (isturf(T))
 				T.fluid_react(R,amount)
 				R.clear_reagents()
 

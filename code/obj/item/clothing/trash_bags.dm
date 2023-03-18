@@ -134,7 +134,7 @@
 				T = get_turf(T)
 			if (!(usr in range(1, T)))
 				return
-			if (istype(T))
+			if (isturf(T))
 				for (var/obj/O in T)
 					if (O.density && !istype(O, /obj/table) && !istype(O, /obj/rack))
 						return

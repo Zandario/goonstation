@@ -328,7 +328,7 @@
 					if(master.engine.active)
 						if(master.engine.ready)
 							var/turf/T = master.loc
-							if (istype(T) && T.allows_vehicles)
+							if (isturf(T) && T.allows_vehicles)
 								master.engine.Wormhole()
 							else
 								boutput(user, "[master.ship_message("Cannot create wormhole on this flooring!")]")

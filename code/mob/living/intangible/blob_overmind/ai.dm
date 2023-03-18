@@ -363,7 +363,7 @@
 				refresh_lists++
 				if (blobs.len > 15 && prob(blobs.len / (ribosome_count + 1)) && bio_points_max >= ribosome.bio_point_cost)
 					state = STATE_DO_LIPIDS
-				
+
 				src.do_upgrade()
 
 				if(length(open) + length(open_low) + length(open_medium) == 0 && length(closed) > 0)
@@ -637,7 +637,7 @@
 		for_by_tcl(blob, /obj/blob)
 			for(var/dir in cardinal)
 				var/turf/T = get_step(blob.loc, dir)
-				if(!istype(T))
+				if(!isturf(T))
 					continue
 				if(!T.density && !(locate(/obj/blob) in T) || blob.type == /obj/blob/nucleus && blob.overmind == src)
 					current[blob] = 1

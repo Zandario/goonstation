@@ -1441,7 +1441,7 @@
 		storage.hud?.remove_item(src)
 
 	var/turf/T = loc
-	if (!istype(T))
+	if (!isturf(T))
 		if(src.temp_flags & IS_LIMB_ITEM)
 			if(istype(src.loc, /obj/item/parts/human_parts/arm/right/item)||istype(src.loc, /obj/item/parts/human_parts/arm/left/item))
 				src.loc:remove(0)

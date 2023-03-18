@@ -27,7 +27,7 @@ proc/EndSpacePush(var/atom/movable/A)
 				continue
 
 			var/turf/T = M.loc
-			if (!istype(T) || (!(T.turf_flags & CAN_BE_SPACE_SAMPLE || T.throw_unlimited) || T != M.loc) && !M.no_gravity)
+			if (!isturf(T) || (!(T.turf_flags & CAN_BE_SPACE_SAMPLE || T.throw_unlimited) || T != M.loc) && !M.no_gravity)
 				EndSpacePush(M)
 				continue
 

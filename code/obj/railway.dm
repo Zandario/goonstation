@@ -250,7 +250,7 @@
 				start_path_towards(loc, bump_dir)
 
 	proc/start_path(var/turf/T, var/last_travel_dir = 0)
-		if (!istype(T))
+		if (!isturf(T))
 			return
 		var/obj/railway/R = locate() in T
 		if (R == null)
@@ -261,7 +261,7 @@
 			distance = 5 // human force *shrug*
 
 	proc/start_path_towards(var/turf/T, var/towards_dir = 0)
-		if (!istype(T))
+		if (!isturf(T))
 			return
 		if (towards_dir == 0)
 			return

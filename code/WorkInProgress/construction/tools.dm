@@ -430,7 +430,7 @@ TYPEINFO(/obj/item/material_shaper)
 		if (mode)
 			return 0
 		var/turf/T = target
-		if (!istype(T))
+		if (!isturf(T))
 			T = get_turf(T)
 		if (!T)
 			return 0
@@ -599,7 +599,7 @@ TYPEINFO(/obj/item/room_planner)
 
 	pixelaction(atom/target, params, mob/user)
 		var/turf/T = target
-		if (!istype(T))
+		if (!isturf(T))
 			T = get_turf(T)
 		if (!T || !mode)
 			return 0

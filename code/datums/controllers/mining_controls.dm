@@ -92,7 +92,7 @@ var/list/asteroid_blocked_turfs = list()
 			for (var/i=spawn_amount, i>0, i--)
 				LAGCHECK(LAG_LOW)
 				T = locate(rand(8,(world.maxy - 8)),rand(8,(world.maxy - 8)),the_mining_z)
-				if (istype(T))
+				if (isturf(T))
 					T.GenerateAsteroid(rand(4,15))
 			message_admins("Asteroid generation on z[the_mining_z] complete: ")
 

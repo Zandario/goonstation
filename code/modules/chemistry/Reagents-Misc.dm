@@ -765,7 +765,7 @@ datum
 					if (volume/length(covered) < 2) //reduce effect based on dilution
 						volume_mult = min(volume / 9, 1)
 
-				if(istype(T))
+				if(isturf(T))
 					var/initial_resistance = initial(T.explosion_resistance)
 					T.explosion_resistance = clamp(T.explosion_resistance + (volume_mult*volume), initial_resistance, initial_resistance + 5)
 
@@ -809,7 +809,7 @@ datum
 					if (volume/covered.len < 2) //reduce time based on dilution
 						volume_mult = min(volume / 9, 1)
 
-				if (istype(T))
+				if (isturf(T))
 					if (T.wet >= 2) return
 					var/image/wet = image('icons/effects/water.dmi',"wet_floor")
 					wet.blend_mode = BLEND_ADD
@@ -817,7 +817,7 @@ datum
 					T.UpdateOverlays(wet, "wet_overlay")
 					T.wet = 2
 					SPAWN(800 * volume_mult)
-						if (istype(T))
+						if (isturf(T))
 							T.wet = 0
 							T.UpdateOverlays(null, "wet_overlay")
 				return
@@ -838,7 +838,7 @@ datum
 			reaction_turf(var/turf/target, var/volume)
 				var/visible = src.visible
 				var/turf/simulated/T = target
-				if (istype(T))
+				if (isturf(T))
 					if (T.wet >= 3) return
 					if (visible)
 						var/image/wet = image('icons/effects/water.dmi',"wet_floor")
@@ -847,7 +847,7 @@ datum
 						T.UpdateOverlays(wet, "wet_overlay")
 					T.wet = 3
 					SPAWN(80 SECONDS)
-						if (istype(T))
+						if (isturf(T))
 							T.wet = 0
 							T.UpdateOverlays(null, "wet_overlay")
 				return
@@ -894,7 +894,7 @@ datum
 					if (volume/covered.len < 2) //reduce time based on dilution
 						volume_mult = min(volume / 9, 1)
 
-				if (istype(T))
+				if (isturf(T))
 					if(T.sticky == TRUE) return
 					var/wet = image('icons/effects/water.dmi',"sticky_floor")
 					T.UpdateOverlays(wet, "wet_overlay")
@@ -1347,7 +1347,7 @@ datum
 
 			reaction_turf(var/turf/target, var/volume)
 				var/turf/simulated/T = target
-				if (istype(T)) //Wire: fix for Undefined variable /turf/space/var/wet (&& T.wet)
+				if (isturf(T)) //Wire: fix for Undefined variable /turf/space/var/wet (&& T.wet)
 					if (T.wet >= 2) return
 					var/image/wet = image('icons/effects/water.dmi',"wet_floor")
 					wet.blend_mode = BLEND_ADD
@@ -3559,7 +3559,7 @@ datum
 
 			reaction_turf(var/turf/target, var/volume)
 				var/turf/simulated/T = target
-				if (istype(T))
+				if (isturf(T))
 					if (T.wet >= 2) return
 					var/image/wet = image('icons/effects/water.dmi',"wet_floor")
 					wet.blend_mode = BLEND_ADD
@@ -3567,7 +3567,7 @@ datum
 					T.UpdateOverlays(wet, "wet_overlay")
 					T.wet = 2
 					SPAWN(80 SECONDS)
-						if (istype(T))
+						if (isturf(T))
 							T.wet = 0
 							T.UpdateOverlays(null, "wet_overlay")
 				return
@@ -4017,7 +4017,7 @@ datum
 			reaction_turf(var/turf/target, var/volume)
 				var/turf/simulated/floor/T = target
 
-				if (istype(T))
+				if (isturf(T))
 					if (T.broken || T.burnt)
 						return
 					else if (T.icon_state in list("grass", "grass_eh"))

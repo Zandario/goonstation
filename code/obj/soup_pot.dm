@@ -438,7 +438,7 @@ TYPEINFO(/obj/stove)
 			var/turf/T = over_object
 			if (!(usr in range(1, T)))
 				return
-			if (istype(T)) //pouring it out
+			if (isturf(T)) //pouring it out
 				for (var/obj/O in T)
 					if (O.density && !istype(O, /obj/table) && !istype(O, /obj/rack))
 						return

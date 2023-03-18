@@ -1512,7 +1512,7 @@ var/list/blood_decal_violent_icon_states = list("floor1", "floor2", "floor3", "f
 		var/dirs = 0
 		for (var/dir in cardinal)
 			var/turf/T = get_step(src, dir)
-			if (istype(T))
+			if (isturf(T))
 				var/obj/decal/cleanable/saltpile/S = T.getSaltHere()
 				if (S)
 					dirs |= dir
@@ -1530,7 +1530,7 @@ var/list/blood_decal_violent_icon_states = list("floor1", "floor2", "floor3", "f
 		//icon_state = "[hp_name]-[num2text(dirs)]"				//for health
 
 /proc/updateSurroundingSalt(var/turf/T)
-	if (!istype(T)) return
+	if (!isturf(T)) return
 	for (var/obj/decal/cleanable/saltpile/S in orange(1,T))
 		S.UpdateIcon()
 
@@ -1638,7 +1638,7 @@ var/list/blood_decal_violent_icon_states = list("floor1", "floor2", "floor3", "f
 		return S
 
 /proc/updateSurroundingMagnesium(var/turf/T)
-	if (!istype(T)) return
+	if (!isturf(T)) return
 	for (var/obj/decal/cleanable/magnesiumpile/S in orange(1,T))
 		S.UpdateIcon()
 

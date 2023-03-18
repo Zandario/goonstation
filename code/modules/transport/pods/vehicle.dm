@@ -1602,7 +1602,7 @@
 			if(ship.engine.active)
 				if(ship.engine.ready)
 					var/turf/T = ship.loc
-					if (istype(T) && T.allows_vehicles)
+					if (isturf(T) && T.allows_vehicles)
 						ship.engine.Wormhole()
 					else
 						boutput(usr, "[ship.ship_message("Cannot create wormhole on this flooring!")]")

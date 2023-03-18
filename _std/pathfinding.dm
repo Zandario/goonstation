@@ -187,7 +187,7 @@
 	n_target_goals = length(goals)
 	for(var/goal in goals)
 		var/turf/T = get_turf(goal)
-		if(!istype(T))
+		if(!isturf(T))
 			n_target_goals--
 			continue
 		if(islist(ends[T]))
@@ -637,7 +637,7 @@
 
 	for(var/d in alldirs)
 		var/turf/simulated/T = get_step(src, d)
-		//if(istype(T) && !T.density)
+		// if(isturf(T) && !T.density)
 		if (T?.pathable && !T.density)
 			if(!LinkBlockedWithAccess(src, T, ID))
 				. += T
@@ -756,4 +756,3 @@ var/static/obj/item/card/id/ALL_ACCESS_CARD = new /obj/item/card/id/captains_spa
 
 	Distance(turf/t)
 		return sqrt((src.x - t.x) ** 2 + (src.y - t.y) ** 2)
-

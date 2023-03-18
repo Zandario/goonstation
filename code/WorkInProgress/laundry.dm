@@ -231,7 +231,7 @@
 
 /obj/submachine/laundry_machine/proc/unload(var/turf/T)
 	if (src.contents.len)
-		T = istype(T) ?  T : get_turf(src)
+		T = isturf(T) ?  T : get_turf(src)
 		for (var/atom/movable/AM in src)
 			AM.set_loc(T)
 		src.UpdateIcon()

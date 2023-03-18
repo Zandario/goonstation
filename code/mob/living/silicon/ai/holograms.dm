@@ -59,7 +59,7 @@
 			boutput(src, "Deploy to an AI Eye first to create a hologram.")
 			return
 
-		if (!istype(T) || length(T?.camera_coverage_emitters) == 0)
+		if (!isturf(T) || length(T?.camera_coverage_emitters) == 0)
 			boutput(eyecam, "No camera available to project a hologram from.")
 			return
 

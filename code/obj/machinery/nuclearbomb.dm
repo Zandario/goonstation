@@ -69,7 +69,7 @@ ADMIN_INTERACT_PROCS(/obj/machinery/nuclearbomb, proc/arm)
 			return
 
 		var/turf/T = get_turf(src)
-		if (T && istype(T))
+		if (T && isturf(T))
 			for (var/obj/shrub/S in T.contents)
 				S.visible_message("<span class='alert'>[S] cannot withstand the intense radiation and crumbles to pieces!</span>")
 				qdel(S)
