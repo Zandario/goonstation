@@ -21,100 +21,108 @@ TYPEINFO(/obj/machinery/drainage/big)
 	anchored = 1
 	density = 0
 	icon = 'icons/obj/fluid.dmi'
-	var/base_icon = "drain"
+	deconstruct_flags = DECON_SCREWDRIVER | DECON_WRENCH | DECON_CROWBAR | DECON_WELDER
 	icon_state = "drain"
 	plane = PLANE_FLOOR //They're supposed to be embedded in the floor.
 	flags = FPRINT | FLUID_SUBMERGE | NOSPLASH
+	var/base_icon = "drain"
 	var/clogged = 0 //temporary block
 	var/welded = 0 //permanent block
 	var/drain_min = 2
 	var/drain_max = 7
-	deconstruct_flags = DECON_SCREWDRIVER | DECON_WRENCH | DECON_CROWBAR | DECON_WELDER
 
 
-	big
-		base_icon = "bigdrain"
-		icon_state = "bigdrain"
-		drain_min = 6
-		drain_max = 14
-
-	New()
-		START_TRACKING
-		..()
-
-	disposing()
-		. = ..()
-		STOP_TRACKING
-
-	process()
-		var/turf/T = get_turf(src)
-		if (!T)
-			return
-		if (T.active_liquid)
-			if (clogged)
-				clogged--
-				return
-			if (welded)
-				return
-
-			var/obj/fluid/F = T.active_liquid
-			if (F.group)
-				F.group.queued_drains += rand(drain_min,drain_max)
-				F.group.last_drain = T
-				if (!F.group.draining)
-					F.group.add_drain_process()
-
-				playsound(src.loc, 'sound/misc/drain_glug.ogg', 50, 1)
-
-				//moved to fluid process
-				//F.group.reagents.skip_next_update = 1
-				//F.group.drain(F,rand(drain_min,drain_max)) //420 drain it
+/obj/machinery/drainage/big
+	base_icon = "bigdrain"
+	icon_state = "bigdrain"
+	drain_min = 6
+	drain_max = 14
 
 
+/obj/machinery/drainage/New()
+	START_TRACKING
+	. = ..()
 
-	attackby(obj/item/I, mob/user)
-		if (isweldingtool(I))
-			if(!I:try_weld(user, 2))
-				return
 
-			if (!src.welded)
-				src.welded = 1
-				logTheThing(LOG_STATION, user, "welded [name] shut at [log_loc(user)].")
-				user.show_text("You weld the drain shut.")
-			else
-				logTheThing(LOG_STATION, user, "un-welded [name] at [log_loc(user)].")
-				src.welded = 0
-				user.show_text("You unseal the drain with your welder.")
+/obj/machinery/drainage/disposing()
+	. = ..()
+	STOP_TRACKING
 
-			if (src.clogged)
-				src.clogged = 0
-				user.show_text("The drain clog melts away.")
 
-			src.UpdateIcon()
-			return
-		if (istype(I,/obj/item/material_piece/cloth))
-			var/obj/item/material_piece/cloth/C = I
-			src.clogged += (20 * C.amount) //One piece of cloth clogs for about 1 minute. (cause the machine loop updates ~3 second interval)
-			user.show_text("You stuff [I] into the drain.")
-			logTheThing(LOG_STATION, user, "clogs [name] shut temporarily at [log_loc(user)].")
-			qdel(I)
-			src.UpdateIcon()
-			return
+/obj/machinery/drainage/process()
+	var/turf/T = get_turf(src)
+	if (isnull(T))
+		return
 
-		if (I.is_open_container() && I.reagents)
-			boutput(user, "<span class='alert'>You dump all the reagents into the drain.</span>") // we add NOSPLASH so the default beaker/glass-splash doesn't occur
-			I.reagents.remove_any(I.reagents.total_volume) // just dump it all out
-			return
-
-		return ..()
-
-	update_icon()
+	if (T.active_liquid)
 		if (clogged)
-			icon_state = "[base_icon]_clogged"
-		else if (welded)
-			icon_state = "[base_icon]_welded"
+			clogged--
+			return
+		if (welded)
+			return
+
+		var/obj/fluid/F = T.active_liquid
+		if (F.group)
+			F.group.queued_drains += rand(drain_min,drain_max)
+			F.group.last_drain = T
+			if (!F.group.draining)
+				F.group.add_drain_process()
+
+			playsound(src.loc, 'sound/misc/drain_glug.ogg', 50, TRUE)
+
+			// Moved to fluid process
+			// F.group.reagents.skip_next_update = 1
+			// F.group.drain(F,rand(drain_min,drain_max)) //420 drain it
+
+
+
+/obj/machinery/drainage/attackby(obj/item/I, mob/user)
+	if (isweldingtool(I))
+		var/obj/item/weldingtool/WT = I
+		if(!WT.try_weld(user, 2))
+			return
+
+		if (!welded)
+			welded = TRUE
+			logTheThing(LOG_STATION, user, "welded [name] shut at [log_loc(user)].")
+			user.show_text("You weld the drain shut.")
 		else
-			icon_state = "[base_icon]"
+			logTheThing(LOG_STATION, user, "un-welded [name] at [log_loc(user)].")
+			welded = FALSE
+			user.show_text("You unseal the drain with your welder.")
+
+		if (clogged)
+			clogged = FALSE
+			user.show_text("The drain clog melts away.")
+
+		UpdateIcon()
+		return
+
+	if (istype(I, /obj/item/material_piece/cloth))
+		var/obj/item/material_piece/cloth/C = I
+		clogged += (20 * C.amount) //One piece of cloth clogs for about 1 minute. (cause the machine loop updates ~3 second interval)
+		user.show_text("You stuff [I] into the drain.")
+		logTheThing(LOG_STATION, user, "clogs [name] shut temporarily at [log_loc(user)].")
+		qdel(I)
+		UpdateIcon()
+		return
+
+	if (I.is_open_container() && I.reagents)
+		boutput(user, "<span class='alert'>You dump all the reagents into the drain.</span>") // we add NOSPLASH so the default beaker/glass-splash doesn't occur
+		I.reagents.remove_any(I.reagents.total_volume) // just dump it all out
+		return
+
+	return ..()
+
+
+/obj/machinery/drainage/update_icon()
+	if (clogged)
+		icon_state = "[base_icon]_clogged"
+	else if (welded)
+		icon_state = "[base_icon]_welded"
+	else
+		icon_state = "[base_icon]"
+
 
 ///////////////////
 //////Channel//////
@@ -130,9 +138,11 @@ TYPEINFO(/obj/machinery/drainage/big)
 	flags = ALWAYS_SOLID_FLUID
 	var/required_to_pass = 150 //fluid on the side that my Dir points to will need this amount to be able to cross
 
-	New()
-		..()
-		src.invisibility = INVIS_ALWAYS_ISH
+
+/obj/channel/New()
+	. = ..()
+	invisibility = INVIS_ALWAYS_ISH
+
 
 ///////////////////
 //////spawner//////
@@ -142,78 +152,78 @@ TYPEINFO(/obj/machinery/drainage/big)
 //spawn fluid, then delete self
 
 /obj/fluid_spawner
+	icon = 'icons/effects/mapeditor.dmi'
+	icon_state = "fluid_spawn"
+	event_handler_flags = IMMUNE_MANTA_PUSH
+
 	var/reagent_id = "water"
 	var/amount = 10
 	var/delay = 600
-	icon = 'icons/effects/mapeditor.dmi'
-	icon_state = "fluid_spawn"
 
 	var/datum/reagents/R
 
-	event_handler_flags = IMMUNE_MANTA_PUSH
 
-	New()
-		..()
-		SPAWN(delay)
-			R = new /datum/reagents(amount)
-			R.add_reagent(reagent_id, amount)
+/obj/fluid_spawner/New()
+	. = ..()
+	SPAWN(delay)
+		R = new /datum/reagents(amount)
+		R.add_reagent(reagent_id, amount)
 
-			var/turf/T = get_turf(src)
-			if (istype(T))
-				T.fluid_react(R,amount)
-				R.clear_reagents()
+		var/turf/T = get_turf(src)
+		if (isturf(T))
+			T.fluid_react(R, amount)
+			R.clear_reagents()
 
-				qdel(src)
+			qdel(src)
 
-	shortdelay
+/obj/fluid_spawner/shortdelay
 		amount = 50
 		delay = 10
 
-	shortdelaybig
+/obj/fluid_spawner/shortdelaybig
 		amount = 5000
 		delay = 10
 
-
-	polluted_filth
+/obj/fluid_spawner/polluted_filth
 		delay = 35
 		amount = 1250
 		reagent_id = "sewage"
 
-		madness
-			amount = 166
-			reagent_id = "madness_toxin"
+/obj/fluid_spawner/polluted_filth/madness
+	amount = 166
+	reagent_id = "madness_toxin"
 
-		blood
-			amount = 175
-			reagent_id = "blood"
+/obj/fluid_spawner/polluted_filth/blood
+	amount = 175
+	reagent_id = "blood"
 
-		black_goop
-			amount = 148
-			reagent_id = "black_goop"
+/obj/fluid_spawner/polluted_filth/black_goop
+	amount = 148
+	reagent_id = "black_goop"
 
-		green_goop
-			amount = 143
-			reagent_id = "green_goop"
+/obj/fluid_spawner/polluted_filth/green_goop
+	amount = 143
+	reagent_id = "green_goop"
 
-		yuck
-			amount = 150
-			reagent_id = "yuck"
+/obj/fluid_spawner/polluted_filth/yuck
+	amount = 150
+	reagent_id = "yuck"
 
-		salmonella
-			amount = 135
-			reagent_id = "salmonella"
+/obj/fluid_spawner/polluted_filth/salmonella
+	amount = 135
+	reagent_id = "salmonella"
 
-		bathsalts
-			amount = 130
-			reagent_id = "bathsalts"
+/obj/fluid_spawner/polluted_filth/bathsalts
+	amount = 130
+	reagent_id = "bathsalts"
 
-		ecoli
-			amount = 136
-			reagent_id = "e.coli"
+/obj/fluid_spawner/polluted_filth/ecoli
+	amount = 136
+	reagent_id = "e.coli"
 
-		crank
-			amount = 145
-			reagent_id = "crank"
+/obj/fluid_spawner/polluted_filth/crank
+	amount = 145
+	reagent_id = "crank"
 
 
 ///////////////////
