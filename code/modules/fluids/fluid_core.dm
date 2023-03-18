@@ -1,4 +1,4 @@
-var/list/ban_from_fluid = list(
+var/global/list/ban_from_fluid = list(
 	"blackpowder",
 	"fungus",
 	"luminol",
@@ -7,8 +7,9 @@ var/list/ban_from_fluid = list(
 	"thermite",
 )
 //TODO: make thermite work.
+
 /// Ban these from producing fluid from a 'cleanable'
-var/list/ban_stacking_into_fluid = list(
+var/global/list/ban_stacking_into_fluid = list(
 	"ash",
 	"blackpowder",
 	"carbon",
@@ -18,7 +19,6 @@ var/list/ban_stacking_into_fluid = list(
 	"sodium",
 	"water",
 )
-
 
 var/global/waterflow_enabled = TRUE
 
@@ -133,6 +133,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 
 	var/spawned_any = FALSE
 
+
 /obj/fluid/New(atom/newLoc)
 	. = ..()
 	if (!isnull(newLoc)) // New starts this thing without a loc. if none is defined, don't immediate delete.
@@ -183,6 +184,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 			HasEntered(O, O.loc)
 	*/
 
+
 /obj/fluid/proc/trigger_fluid_enter()
 	for (var/atom/A in loc)
 		if (group && !group.disposed && A.event_handler_flags & USE_FLUID_ENTER)
@@ -190,8 +192,10 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 	if (group && !group.disposed)
 		loc?.EnteredFluid(src, loc)
 
+
 /obj/fluid/proc/turf_remove_cleanup(turf/the_turf)
 	the_turf.active_liquid = null
+
 
 /obj/fluid/disposing()
 	if (group && !group.disposed && group.members)
@@ -238,6 +242,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 
 	return ..()
 
+
 /obj/fluid/get_desc(dist, mob/user)
 	if (dist > 4)
 		return
@@ -245,6 +250,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 		return
 	. = "<br><span class='notice'>[group.reagents.get_description(user,(RC_VISIBLE | RC_SPECTRO))]</span>"
 	return
+
 
 /obj/fluid/attackby(obj/item/attacking_item, mob/user)
 	if (istype(attacking_item, /obj/item/mop))
@@ -259,15 +265,18 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 
 	. = ..()
 
+
 /obj/fluid/attack_hand(mob/user)
 	var/turf/our_turf = loc
 	our_turf.Attackhand(user)
+
 
 /// Should be called right after New() on inital group creation.
 /obj/fluid/proc/add_reagents(datum/reagents/R, volume)
 	if(!group)
 		return
 	R.trans_to(group.reagents,volume)
+
 
 /// Should be called right after New() on inital group creation.
 /obj/fluid/proc/add_reagent(reagent_name, volume)
@@ -278,7 +287,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 
 /obj/fluid/Crossed(atom/movable/A) //TODO: Incorporate touch_modifier?
 	..()
-	if (!group || !group.reagents || disposed || istype(A,/obj/fluid)  || group.disposed || istype(src, /obj/fluid/airborne))
+	if (!group || !group.reagents || disposed || group.disposed || istype(A, /obj/fluid) || istype(src, /obj/fluid/airborne))
 		return
 
 	my_depth_level = last_depth_level
@@ -294,6 +303,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 
 	if (A.event_handler_flags & USE_FLUID_ENTER)
 		A.EnteredFluid(src, A.last_turf)
+
 
 /obj/fluid/Uncrossed(atom/movable/AM)
 	. = ..()
@@ -322,23 +332,29 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 	if ((AM.event_handler_flags & USE_FLUID_ENTER) && !istype(src, /obj/fluid/airborne))
 		AM.ExitedFluid(src)
 
-/obj/fluid/proc/force_mob_to_ingest(mob/M, mult = 1)//called when mob is drowning
-	if (!M)
+
+/obj/fluid/proc/force_mob_to_ingest(mob/victim, mult = 1)//called when mob is drowning
+	if (isnull(victim))
 		return
 	if (!group || !group.reagents || !group.reagents.reagent_list)
 		return
 
 	var/react_volume = amt > 10 ? (amt * 0.5) : (amt)
 	react_volume = min(react_volume, 20) * mult
-	if (M.reagents)
+	if (victim.reagents)
 		// Don't push out other reagents if we are full.
-		react_volume = min(react_volume, abs(M.reagents.maximum_volume - M.reagents.total_volume))
-	group.reagents.reaction(M, INGEST, react_volume, 1, group.members.len)
-	group.reagents.trans_to(M, react_volume)
+		react_volume = min(react_volume, abs(victim.reagents.maximum_volume - victim.reagents.total_volume))
+	group.reagents.reaction(victim, INGEST, react_volume, 1, group.members.len)
+	group.reagents.trans_to(victim, react_volume)
 
 
-/obj/fluid/proc/add_tracked_blood(atom/movable/AM as mob|obj)
-	AM.tracked_blood = list("bDNA" = blood_DNA, "btype" = blood_type, "color" = color, "count" = rand(2,6))
+/obj/fluid/proc/add_tracked_blood(atom/movable/AM)
+	AM.tracked_blood = list(
+		"bDNA"  = blood_DNA,
+		"btype" = blood_type,
+		"color" = color,
+		"count" = rand(2, 6),
+	)
 	if (ismob(AM))
 		var/mob/target_mob = AM
 		target_mob.set_clothing_icon_dirty()
@@ -354,8 +370,10 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 	// Deduce exposed temperature by amt of members in the group.
 	group.reagents.temperature_reagents(exposed_temperature, exposed_volume, 100, 15, TRUE)
 
+
 /obj/fluid/ex_act()
 	removed()
+
 
 /obj/fluid/proc/removed(sfx = FALSE)
 	if (disposed)
@@ -370,7 +388,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 	else
 		qdel(src)
 
-	for(var/atom/A as anything in loc)
+	for(var/atom/A in loc)
 		if (A && A.flags & FLUID_SUBMERGE)
 			var/mob/living/M = A
 			var/obj/O = A
@@ -383,21 +401,24 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 					if ((O.submerged_images && length(O.submerged_images)) && (O.is_submerged != 0))
 						O.show_submerged_image(0)
 
+
 /// Returns a list of created fluid tiles.
 /obj/fluid/proc/update()
 	if(!group || group.disposed) //uh oh
 		removed()
 		return
+
 	var/list/updated_fluids = list()
+	var/turf/target_turf
 
 	last_spread_was_blocked = TRUE
 	touched_channel = null
 	blocked_dirs = null
 	spawned_any = FALSE
 
-	var/turf/target_turf
 	if(!waterflow_enabled)
 		return
+
 	for(var/dir in cardinal)
 		blocked_perspective_objects["[dir]"] = 0
 		target_turf = get_step(src, dir)
@@ -440,8 +461,8 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 
 			if(succ && group && !group.disposed) // Group went missing? ok im doin a check here lol
 				spawned_any = TRUE
-				src.icon_state = "15"
-				var/obj/fluid/new_fluid = new /obj/fluid
+				icon_state = "15"
+				var/obj/fluid/new_fluid = new()
 				new_fluid.set_up(target_turf, FALSE)
 				if (!new_fluid || !group || group.disposed)
 					continue // set_up may decide to remove new_fluid
@@ -462,7 +483,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 					group.add(new_fluid, group.amt_per_tile)
 					new_fluid.group = group
 				else
-					var/datum/fluid_group/new_fluid_group = new
+					var/datum/fluid_group/new_fluid_group = new()
 					new_fluid_group.add(new_fluid, group.amt_per_tile)
 					new_fluid.group = new_fluid_group
 				updated_fluids += new_fluid // Store the new fluid in the list of updated fluids.
@@ -487,6 +508,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 
 	return updated_fluids
 
+
 /**
  * Kind of like a breadth-first search.
  *
@@ -510,7 +532,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 	var/list/visited = list()
 	var/turf/target_turf
 
-	var/obj/fluid/current_fluid = null
+	var/obj/fluid/current_fluid
 	var/visited_changed = FALSE
 
 	while(queue.len)
@@ -553,6 +575,8 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 							return 0 //bud nippin
 
 	return connected_fluids
+
+
 /**
  * Sorry for copy paste, this ones a bit diff.
  * Return turfs of members nearby, stop at a number
@@ -612,6 +636,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 				if (stop_at > 0 && length(connected_fluids) >= stop_at)
 					return connected_fluids
 
+
 /obj/fluid/proc/try_connect_to_adjacent()
 	var/turf/target_turf
 	for(var/dir in cardinal)
@@ -669,6 +694,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 					break
 */
 
+
 /obj/fluid/proc/debug_search()
 	var/list/C = get_connected_fluids()
 	var/obj/fluid/F
@@ -679,6 +705,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 		F.finalcolor = c
 		animate( F, color = F.finalcolor, alpha = finalalpha, time = 5 )
 		sleep(0.1 SECONDS)
+
 
 /obj/fluid/proc/admin_clear_fluid()
 	set name = "Clear Fluid"
@@ -693,7 +720,6 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 
 //messy i know, but this works for me and is Optimal to avoid type checking
 
-
 /obj/EnteredFluid(obj/fluid/target_fluid)
 	// Object submerged overlays
 	if (submerged_images && (is_submerged != target_fluid.my_depth_level))
@@ -704,6 +730,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 			show_submerged_image(target_fluid.my_depth_level)
 
 	..()
+
 
 /obj/ExitedFluid(obj/fluid/target_fluid)
 	if (submerged_images && is_submerged != 0)
@@ -721,6 +748,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 			return
 	..()
 
+
 /mob/living/EnteredFluid(obj/fluid/target_fluid, atom/oldloc)
 	//SUBMERGED OVERLAYS
 	if (is_submerged != target_fluid.my_depth_level)
@@ -729,6 +757,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 			I.alpha = target_fluid.finalalpha
 		show_submerged_image(target_fluid.my_depth_level)
 	..()
+
 
 /mob/living/ExitedFluid(obj/fluid/target_fluid)
 	if (is_submerged == FALSE)
@@ -746,6 +775,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 		show_submerged_image(0)
 		return
 	..()
+
 
 /mob/living/carbon/EnteredFluid(obj/fluid/target_fluid, atom/oldloc, do_reagent_reaction = TRUE)
 	/// Did the entering atom cross from a non-fluid to a fluid tile?
@@ -815,6 +845,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 		*/
 
 	..()
+
 
 /mob/living/carbon/human/EnteredFluid(obj/fluid/target_fluid, atom/oldloc)
 	/// Did the entering atom cross from a non-fluid to a fluid tile?

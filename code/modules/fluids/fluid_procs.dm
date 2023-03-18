@@ -269,7 +269,7 @@ turf/simulated/floor/plating/airless/ocean_canpass()
 	for (var/obj/decal/cleanable/C in cleanables)
 		if (C?.reagents)
 			for(var/reagent_id in C.reagents.reagent_list)
-				if (reagent_id in ban_stacking_into_fluid) return
+				if (reagent_id as anything in ban_stacking_into_fluid) return
 			var/datum/reagents/R = new(C.reagents.maximum_volume) //Store reagents, delete cleanable, and then fluid react. prevents recursion
 			C.reagents.copy_to(R)
 			C.clean_forensic()
