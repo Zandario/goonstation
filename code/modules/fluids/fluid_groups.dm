@@ -79,31 +79,34 @@
 		if (i > 8)
 			break
 
-//We use datum/controller/process/fluid_group to do evaporation
-
+//? We use datum/controller/process/fluid_group to do evaporation.
 /datum/fluid_group
 	var/const/group_type = /datum/fluid_group
-	//var/const/object_type = /obj/fluid
+	// var/const/object_type = /obj/fluid
 
 	var/base_evaporation_time = 1500
+
 	/// Ranges from 0 to this value depending on average viscosity.
 	var/bonus_evaporation_time = 9000
 	var/const/max_viscosity = 20
-
 	var/const/max_alpha = 230
 
-	var/list/members = list()
+	var/list/obj/fluid/members = list()
+
 	/// Member that we want to spread from. Should be changed on add amt, displace, etc.
-	var/obj/fluid/spread_member = null
+	var/obj/fluid/spread_member
+
 	/// Already updating? block another loop from being started.
 	var/updating = FALSE
 
+	var/datum/reagents/fluid_group/reagents
 
-	var/datum/reagents/fluid_group/reagents = null
 	/// Total reagent amt including all members.
 	var/contained_amt = 0
+
 	/// Don't pull from this value for group calculations without updating it first.
 	var/amt_per_tile = 0
+
 	var/required_to_spread = 30
 
 	var/last_add_time = 0
@@ -122,9 +125,12 @@
 
 	/// Flag is set to 0 temporarily when doing a split operation.
 	var/can_update = TRUE
+
 	var/draining = FALSE
+
 	/// How many tiles to drain on next update?
 	var/queued_drains = 0
+
 	/// Tile from which we should try to drain from.
 	var/turf/last_drain = 0
 
@@ -133,15 +139,14 @@
 /datum/fluid_group/disposing()
 	can_update = FALSE
 
-	for (var/fluid in members)
-		if(fluid)
-			var/obj/fluid/M = fluid
-			M.group = null
+	for (var/fluid as anything in members)
+		var/obj/fluid/M = fluid
+		M.group = null
 
-	//if (src in processing_fluid_groups)
-	//	processing_fluid_groups.Remove(src)
-	//if (src in processing_fluid_spreads)
-	//	processing_fluid_spreads.Remove(src)
+	// if (src in processing_fluid_groups)
+	// 	processing_fluid_groups.Remove(src)
+	// if (src in processing_fluid_spreads)
+	// 	processing_fluid_spreads.Remove(src)
 
 	processing_fluid_groups -= src
 	processing_fluid_spreads -= src
@@ -173,10 +178,10 @@
 	..()
 
 /datum/fluid_group/New()
-	..()
+	. = ..()
 	last_add_time = world.time
 
-	reagents = new /datum/reagents/fluid_group(90000000) //high number lol.
+	reagents = new(90000000) //high number lol.
 	reagents.my_group = src
 
 	processing_fluid_groups |= src
@@ -443,15 +448,15 @@
 	var/loss = amt_per_tile_added - target_channel.required_to_pass
 	if (jump_turf.active_liquid)
 		if(!jump_turf.active_liquid.group)
-			var/datum/reagents/new_reagent = new /datum/reagents(amt_per_tile_added)
+			var/datum/reagents/new_reagent = new(amt_per_tile_added)
 			reagents.copy_to(new_reagent)
 			jump_turf.fluid_react(new_reagent, amt_per_tile_added)
 		else
-			var/datum/reagents/new_reagent = new /datum/reagents(amt_per_tile_added)
+			var/datum/reagents/new_reagent = new(amt_per_tile_added)
 			reagents.copy_to(new_reagent)
 			jump_turf.fluid_react(new_reagent, amt_per_tile_added)
 	else
-		var/datum/reagents/new_reagent = new /datum/reagents(amt_per_tile_added)
+		var/datum/reagents/new_reagent = new(amt_per_tile_added)
 		reagents.copy_to(new_reagent)
 		jump_turf.fluid_react(new_reagent, amt_per_tile_added)
 
@@ -710,9 +715,9 @@
 				LAGCHECK(LAG_HIGH)
 				if (!C || C.disposed || disposed)
 					continue
-				var/turf/T = C.loc
-				if (istype(T) && drains_floor)
-					T.react_all_cleanables() // bug here regarding fluids doing their whole spread immediately if they're in a patch of cleanables. can't figure it out and its not TERRIBLE, fix later!!!
+				var/turf/simulated/floor/target_floor = C.loc
+				if (istype(target_floor) && drains_floor)
+					target_floor.react_all_cleanables() // bug here regarding fluids doing their whole spread immediately if they're in a patch of cleanables. can't figure it out and its not TERRIBLE, fix later!!!
 				C.amt = amt_per_tile
 
 				//copy blood stuff
@@ -839,8 +844,8 @@
 	var/obj/fluid/split_liq = 0
 	var/removal_key = "[world.time]_[removed_loc.x]_[removed_loc.y]"
 	var/adjacent_amt = -1
-	for( var/dir in cardinal )
-		target_turf = get_step( removed_loc, dir )
+	for(var/dir in cardinal)
+		target_turf = get_step(removed_loc, dir)
 		if (target_turf.active_liquid && target_turf.active_liquid.group == src)
 			target_turf.active_liquid.temp_removal_key = removal_key
 			adjacent_amt++

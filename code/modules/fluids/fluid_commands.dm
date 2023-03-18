@@ -1,14 +1,15 @@
 ///////////////////
 //Admin Commands///
 ///////////////////
-client/proc/enable_waterflow(var/enabled as num)
+/client/proc/enable_waterflow(enabled as num)
 	set name = "Set Fluid Flow Enabled"
 	set desc = "0 to disable, 1 to enable"
 	SET_ADMIN_CAT(ADMIN_CAT_DEBUG)
 	ADMIN_ONLY
 	waterflow_enabled = !!enabled
 
-client/proc/delete_fluids()
+
+/client/proc/delete_fluids()
 	set name = "Delete All Fluids"
 	set desc = "Probably safe to run. Probably."
 	SET_ADMIN_CAT(ADMIN_CAT_DEBUG)
@@ -16,10 +17,10 @@ client/proc/delete_fluids()
 
 	var/exenabled = waterflow_enabled
 	enable_waterflow(0)
-	var/i = 0
 	SPAWN(0)
-		for(var/obj/fluid/fluid in world)
-			if (fluid.disposed) continue
+		for(var/obj/fluid/fluid in global.active_fluids)
+			if (fluid.disposed)
+				continue
 
 			for (var/mob/living/M in fluid.loc)
 				fluid.Uncrossed(M)
@@ -33,17 +34,16 @@ client/proc/delete_fluids()
 			else
 				fluid.turf_remove_cleanup(fluid.loc)
 				fluid.removed()
-			i++
-			if(!(i%30))
-				sleep(0.2 SECONDS)
+			LAGCHECK(LAG_REALTIME)
 
 		enable_waterflow(exenabled)
 
-client/proc/special_fullbright()
+
+/client/proc/special_fullbright()
 	set name = "Static Sea Light"
 	set desc = "Helps when server load is heavy. Doesn't affect trench."
 	SET_ADMIN_CAT(ADMIN_CAT_DEBUG)
-	set hidden = 1
+	set hidden = TRUE
 	ADMIN_ONLY
 
 	message_admins("[key_name(src)] is making all Z1 Sea Lights static...")
@@ -54,7 +54,8 @@ client/proc/special_fullbright()
 			LAGCHECK(LAG_REALTIME)
 		message_admins("Sea Lights are now Static.")
 
-client/proc/replace_space()
+
+/client/proc/replace_space()
 	set name = "Replace All Space Tiles With Ocean"
 	set desc = "uh oh."
 	SET_ADMIN_CAT(ADMIN_CAT_UNUSED)
@@ -97,7 +98,8 @@ client/proc/replace_space()
 		message_admins("Finished space replace!")
 		map_currently_underwater = 1
 
-client/proc/replace_space_exclusive()
+
+/client/proc/replace_space_exclusive()
 	set name = "Oceanify"
 	set desc = "This is the safer one."
 	SET_ADMIN_CAT(ADMIN_CAT_FUN)
@@ -148,7 +150,8 @@ client/proc/replace_space_exclusive()
 
 		map_currently_underwater = 1
 		for(var/turf/space/S in world)
-			if (S.z != 1 || istype(S, /turf/space/fluid/warp_z5)) continue
+			if (S.z != 1 || istype(S, /turf/space/fluid/warp_z5))
+				continue
 
 			var/turf/orig = locate(S.x, S.y, S.z)
 
@@ -169,7 +172,8 @@ client/proc/replace_space_exclusive()
 // catwalks sim water otherwise
 #ifndef UNDERWATER_MAP
 		for(var/turf/simulated/floor/airless/plating/catwalk/C in world)
-			if (C.z != 1 || istype(C, /turf/space/fluid/warp_z5)) continue
+			if (C.z != 1 || istype(C, /turf/space/fluid/warp_z5))
+				continue
 			var/turf/orig = locate(C.x, C.y, C.z)
 			var/turf/space/fluid/T = orig.ReplaceWith(/turf/space/fluid, FALSE, TRUE, FALSE, TRUE)
 			T.color = ocean_color
@@ -180,7 +184,7 @@ client/proc/replace_space_exclusive()
 		map_currently_underwater = 1
 
 
-client/proc/update_ocean_lighting()
+/client/proc/update_ocean_lighting()
 	ADMIN_ONLY
 	SPAWN(0)
 		for(var/turf/space/fluid/S in world)
@@ -189,19 +193,19 @@ client/proc/update_ocean_lighting()
 		message_admins("Finished space light update!!!")
 
 
-client/proc/dereplace_space()
+/client/proc/dereplace_space()
 	set name = "Unoceanify"
 	set desc = "uh oh."
 	SET_ADMIN_CAT(ADMIN_CAT_FUN)
 	ADMIN_ONLY
 
-	var/answer = alert("Replace Z1 only?",,"Yes","No")
+	var/answer = tgui_alert(usr, "Replace Z1 only?",,list("Yes","No"))
 
 	logTheThing(LOG_ADMIN, src, "began to convert all ocean tiles into space.")
 	message_admins("[key_name(src)] began to convert all ocean tiles into space.")
 
 	SPAWN(0)
-		map_currently_underwater = 0
+		map_currently_underwater = FALSE
 
 		if (answer == "Yes")
 			for(var/turf/space/fluid/F in world)

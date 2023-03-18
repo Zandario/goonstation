@@ -2181,7 +2181,7 @@ ABSTRACT_TYPE(/datum/mutantrace)
 			// possibly change the text colour to the gray emote text
 			.= (pick("<B>[src.mob]</B> milk fall out.", "<B>[src.mob]</B> makes a milk puddle on the floor."))
 
-			var/turf/T = get_turf(src.mob)
+			var/turf/simulated/floor/T = get_turf(mob)
 			bleed(src.mob, 10, 3, T)
 			T.react_all_cleanables()
 

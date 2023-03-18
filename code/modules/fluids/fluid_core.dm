@@ -31,6 +31,10 @@ var/list/depth_levels = list(
 
 var/mutable_appearance/fluid_ma
 
+var/global/list/obj/fluid/active_fluids = list()
+
+/obj/event_handler_flags = USE_FLUID_ENTER
+
 ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 
 /**
@@ -141,6 +145,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 			removed()
 			return
 
+	global.active_fluids += src
 	flags |= OPENCONTAINER | UNCRUSHABLE
 	// floated_atoms = list()
 
@@ -202,6 +207,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 		group.members -= src
 
 	group = null
+	global.active_fluids -= src
 
 	/*
 	for (var/atom/A in floated_atoms) // ehh i dont like doing this, but I think we need it.

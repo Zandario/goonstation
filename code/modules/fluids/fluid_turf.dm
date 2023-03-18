@@ -11,6 +11,8 @@
 #define SPAWN_HOSTILE 128
 #define SPAWN_ACID_DOODADS 256
 
+var/global/list/turf/space/fluid/active_fluid_turfss = list()
+
 
 /turf/proc/make_light() //dummyproc so we can inherit
 	.=0
