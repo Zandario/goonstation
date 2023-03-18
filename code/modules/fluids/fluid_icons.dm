@@ -93,14 +93,3 @@
 		ClearAllOverlays()
 	else if(key && wall_overlay_images && wall_overlay_images[key])
 		ClearSpecificOverlays(key)
-
-/obj/fluid/proc/debug_search()
-	var/list/C = get_connected_fluids()
-	var/obj/fluid/F
-	var/c = pick("#0099ff","#dddddd","#ff7700")
-
-	for (var/i = 1, i <= C.len, i++)
-		F = C[i]
-		F.finalcolor = c
-		animate( F, color = F.finalcolor, alpha = finalalpha, time = 5 )
-		sleep(0.1 SECONDS)

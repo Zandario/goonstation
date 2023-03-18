@@ -660,115 +660,23 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 					break
 */
 
-	update_icon(var/neighbor_was_removed = 0)  //BE WARNED THIS PROC HAS A REPLICA UP ABOVE IN FLUID GROUP UPDATE_LOOP. DO NOT CHANGE THIS ONE WITHOUT MAKING THE SAME CHANGES UP THERE OH GOD I HATE THIS
+/obj/fluid/proc/debug_search()
+	var/list/C = get_connected_fluids()
+	var/obj/fluid/F
+	var/c = pick("#0099ff","#dddddd","#ff7700")
 
-		if (!src.group || !src.group.reagents) return
+	for (var/i = 1, i <= C.len, i++)
+		F = C[i]
+		F.finalcolor = c
+		animate( F, color = F.finalcolor, alpha = finalalpha, time = 5 )
+		sleep(0.1 SECONDS)
 
-
-		src.name = src.group.master_reagent_name ? src.group.master_reagent_name : src.group.reagents.get_master_reagent_name() //maybe obscure later?
-
-		var/color_changed = 0
-		var/datum/color/average = src.group.average_color ? src.group.average_color : src.group.reagents.get_average_color()
-		src.finalalpha = max(25, (average.a / 255) * src.group.max_alpha)
-		src.finalcolor = rgb(average.r, average.g, average.b)
-		if (src.color != finalcolor)
-			color_changed = 1
-		animate( src, color = finalcolor, alpha = finalalpha, time = 5 )
-
-		if (neighbor_was_removed)
-			last_spread_was_blocked = 0
-			src.clear_overlay()
-
-		var/last_icon = icon_state
-
-		if (last_spread_was_blocked || (src.group && src.group.amt_per_tile > src.group.required_to_spread))
-			icon_state = "15"
-		else
-			var/dirs = 0
-			for (var/dir in cardinal)
-				var/turf/simulated/T = get_step(src, dir)
-				if (T && T.active_liquid && T.active_liquid.group == src.group)
-					dirs |= dir
-			icon_state = num2text(dirs)
-
-			if (src.overlay_refs && length(src.overlay_refs))
-				src.clear_overlay()
-
-		if ((color_changed || last_icon != icon_state) && last_spread_was_blocked)
-			src.update_perspective_overlays()
-
-	proc/update_perspective_overlays() // fancy perspective overlaying
-		if (icon_state != "15") return
-		var/blocked = 0
-		for( var/dir in cardinal )
-			if (dir == SOUTH) //No south perspective
-				continue
-
-			if (blocked_perspective_objects["[dir]"])
-				blocked = 1
-				if (dir == NORTH)
-					display_overlay("[dir]",0,32)
-				else
-					display_overlay("[dir]",(dir == EAST) ? 32 : -32,0)
-			else
-				clear_overlay("[dir]")
-
-		if (!blocked) //Nothing adjacent!
-			clear_overlay()
-
-		if (src.overlay_refs && length(src.overlay_refs))
-			if (src.overlay_refs["1"] && src.overlay_refs["8"]) //north, east
-				display_overlay("9",-32,32) //northeast
-			else
-				clear_overlay("9")  //northeast
-			if (src.overlay_refs["1"] && src.overlay_refs["4"]) //north, west
-				display_overlay("5",32,32) //northwest
-			else
-				clear_overlay("5") //northwest
-
-	//perspective overlays
-	proc/display_overlay(var/overlay_key, var/pox, var/poy)
-		var/image/overlay = 0
-		if (!wall_overlay_images)
-			wall_overlay_images = list()
-
-		if (wall_overlay_images[overlay_key])
-			overlay = wall_overlay_images[overlay_key]
-		else
-			overlay = image('icons/obj/fluid.dmi', "blank")
-
-		var/over_obj = !(istype(src.loc, /turf/simulated/wall) || istype(src.loc,/turf/unsimulated/wall/)) //HEY HEY MBC THIS SMELLS THINK ABOUT IT LATER
-		overlay.layer = over_obj ? 4 : src.layer
-		overlay.icon_state = "wall_[overlay_key]_[last_depth_level]"
-		overlay.pixel_x = pox
-		overlay.pixel_y = poy
-		wall_overlay_images[overlay_key] = overlay
-
-		src.UpdateOverlays(overlay, overlay_key)
-
-	proc/clear_overlay(var/key = 0)
-		if (!key)
-			src.ClearAllOverlays()
-		else if(key && wall_overlay_images && wall_overlay_images[key])
-			src.ClearSpecificOverlays(key)
-
-	proc/debug_search()
-		var/list/C = src.get_connected_fluids()
-		var/obj/fluid/F
-		var/c = pick("#0099ff","#dddddd","#ff7700")
-
-		for (var/i = 1, i <= C.len, i++)
-			F = C[i]
-			F.finalcolor = c
-			animate( F, color = F.finalcolor, alpha = finalalpha, time = 5 )
-			sleep(0.1 SECONDS)
-
-	proc/admin_clear_fluid()
-		set name = "Clear Fluid"
-		if(src.group)
-			src.group.evaporate()
-		else
-			qdel(src)
+/obj/fluid/proc/admin_clear_fluid()
+	set name = "Clear Fluid"
+	if(src.group)
+		src.group.evaporate()
+	else
+		qdel(src)
 
 
 
