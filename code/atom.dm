@@ -440,8 +440,8 @@ TYPEINFO(/atom)
 
 
 //some more of these event handler flag things are handled in set_loc far below . . .
-/atom/movable/New()
-	..()
+/atom/movable/New(atom/newLoc)
+	. = ..()
 	src.last_turf = isturf(src.loc) ? src.loc : null
 	//hey this is mbc, there is probably a faster way to do this but i couldnt figure it out yet
 	if (isturf(src.loc))

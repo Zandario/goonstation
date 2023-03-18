@@ -22,7 +22,12 @@ var/list/ban_stacking_into_fluid = list(
 
 var/global/waterflow_enabled = TRUE
 
-var/list/depth_levels = list(2,50,100,200)
+var/list/depth_levels = list(
+	2,
+	50,
+	100,
+	200,
+)
 
 var/mutable_appearance/fluid_ma
 
@@ -61,12 +66,14 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 
 	/// Max slowdown we can experience per slowdown type.
 	var/const/max_speed_mod = 3
+
 	/// Highest movement_speed_mod allowed.
 	var/const/max_speed_mod_total = 5
+
 	/// Scales with viscosity + depth.
 	var/movement_speed_mod = 0
 
-	//Amt req to push an item as we spread
+	// Amt req to push an item as we spread
 	var/const/push_tiny_req  = 1
 	var/const/push_small_req = 10
 	var/const/push_med_req   = 25
@@ -75,25 +82,29 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 	var/datum/fluid_group/group = 0
 	var/obj/fluid/touched_other_group = 0
 
-	//var/float_anim = 0
+	// var/float_anim = 0
 	var/step_sound = 0
 
 	var/last_spread_was_blocked = FALSE
+
 	/// Inf fluid_groups/add() is called, if this is not equal to our depth_level, we'll set it.
 	var/last_depth_level = 0
+
 	/// Stores a /obj/channel when update() is called.
 	var/obj/channel/touched_channel = null
 
 	/// A cache for the overlays we slap onto walls to make the fluid look deep.
 	var/list/wall_overlay_images = 0
+
 	/**
 	 * A list of atoms we triggered a float anim on.
 	 * Cleans up later on qdel()
 	 */
-	//var/list/floated_atoms = 0
+	// var/list/floated_atoms = 0
 
 	/// Have we finished setting up this fluid.
 	var/is_setup = FALSE
+
 	/**
 	 * Amount of cardinal directions that this fluid was blocked by in last update().
 	 * Cache this to skip updates on 'inner' fluid tiles of a group.
@@ -122,16 +133,15 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 
 	var/spawned_any = FALSE
 
-/obj/fluid/New(atom/location = null)
-	..(location)
-	if(location) // New starts this thing without a loc. if none is defined, don't immediate delete.
+/obj/fluid/New(atom/newLoc)
+	. = ..()
+	if (!isnull(newLoc)) // New starts this thing without a loc. if none is defined, don't immediate delete.
 		if (!waterflow_enabled)
-			src.removed()
+			removed()
 			return
 
 	flags |= OPENCONTAINER | UNCRUSHABLE
-
-	// src.floated_atoms = list()
+	// floated_atoms = list()
 
 	for (var/dir in cardinal)
 		blocked_perspective_objects["[dir]"] = 0
@@ -140,21 +150,20 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 		fluid_ma = new(src)
 
 
-/obj/fluid/proc/set_up(newloc, do_enters = TRUE)
-	if (is_setup)
-		return
-	if (!newloc)
+/obj/fluid/proc/set_up(atom/newLoc, do_enters = TRUE)
+	if (is_setup || isnull(newLoc))
 		return
 
 	is_setup = TRUE
-	if(!isturf(newloc) || !waterflow_enabled)
+
+	if (isturf(newLoc) && waterflow_enabled)
+		var/turf/turf_loc = newLoc
+		set_loc(turf_loc)
+		turf_loc.active_liquid = src
+	else
 		removed()
 		return
 
-	set_loc(newloc)
-	loc = newloc
-	//TODO: See if we can do this without : @Zandario
-	loc:active_liquid = src //the dreaded :
 
 /obj/fluid/proc/done_init()
 	. = FALSE
@@ -175,7 +184,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 	*/
 
 /obj/fluid/proc/trigger_fluid_enter()
-	for (var/atom/A in loc)
+	for (var/atom/A as anything in loc)
 		if (group && !group.disposed && A.event_handler_flags & USE_FLUID_ENTER)
 			A.EnteredFluid(src, loc)
 	if (group && !group.disposed)
@@ -409,7 +418,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 		if(!target_turf.density)
 			var/succ = TRUE
 			var/push_thing = FALSE
-			for(var/obj/thing in target_turf.contents)
+			for(var/obj/thing as anything in target_turf.contents)
 				var/found = FALSE
 				if (IS_SOLID_TO_FLUID(thing))
 					found = TRUE
@@ -673,13 +682,10 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 
 /obj/fluid/proc/admin_clear_fluid()
 	set name = "Clear Fluid"
-	if(src.group)
-		src.group.evaporate()
+	if(group)
+		group.evaporate()
 	else
 		qdel(src)
-
-
-
 
 
 //HASENTERED CLLAS
@@ -688,7 +694,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 //messy i know, but this works for me and is Optimal to avoid type checking
 
 
-/obj/EnteredFluid(obj/fluid/target_fluid as obj)
+/obj/EnteredFluid(obj/fluid/target_fluid)
 	// Object submerged overlays
 	if (submerged_images && (is_submerged != target_fluid.my_depth_level))
 		for (var/image/I in submerged_images)
@@ -699,7 +705,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 
 	..()
 
-/obj/ExitedFluid(obj/fluid/target_fluid as obj)
+/obj/ExitedFluid(obj/fluid/target_fluid)
 	if (submerged_images && is_submerged != 0)
 		if (target_fluid.disposed)
 			show_submerged_image(0)
@@ -715,7 +721,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 			return
 	..()
 
-/mob/living/EnteredFluid(obj/fluid/target_fluid as obj, atom/oldloc)
+/mob/living/EnteredFluid(obj/fluid/target_fluid, atom/oldloc)
 	//SUBMERGED OVERLAYS
 	if (is_submerged != target_fluid.my_depth_level)
 		for (var/image/I in submerged_images)
@@ -724,8 +730,8 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 		show_submerged_image(target_fluid.my_depth_level)
 	..()
 
-/mob/living/ExitedFluid(obj/fluid/target_fluid as obj)
-	if (is_submerged == 0)
+/mob/living/ExitedFluid(obj/fluid/target_fluid)
+	if (is_submerged == FALSE)
 		return
 
 	if (target_fluid.disposed)
@@ -741,11 +747,11 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 		return
 	..()
 
-/mob/living/carbon/EnteredFluid(obj/fluid/target_fluid as obj, atom/oldloc, do_reagent_reaction = TRUE)
+/mob/living/carbon/EnteredFluid(obj/fluid/target_fluid, atom/oldloc, do_reagent_reaction = TRUE)
 	/// Did the entering atom cross from a non-fluid to a fluid tile?
 	var/entered_group = TRUE
-	//SLIPPING
-	//only slip if edge tile
+	// SLIPPING
+	//? Only slip if edge tile.
 	var/turf/target_turf = get_turf(oldloc)
 	if (target_turf?.active_liquid)
 		entered_group = FALSE
@@ -810,19 +816,19 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 
 	..()
 
-/mob/living/carbon/human/EnteredFluid(obj/fluid/target_fluid as obj, atom/oldloc)
+/mob/living/carbon/human/EnteredFluid(obj/fluid/target_fluid, atom/oldloc)
 	/// Did the entering atom cross from a non-fluid to a fluid tile?
 	var/entered_group = TRUE
-	//SLIPPING
-	//only slip if edge tile
+	// SLIPPING
+	//? Only slip if edge tile.
 	var/turf/target_turf = get_turf(oldloc)
 	if (target_turf?.active_liquid)
 		entered_group = FALSE
 
-	//BLOODSTAINS
+	// BLOODSTAINS
 	if (target_fluid.group.master_reagent_id == "blood" || target_fluid.group.master_reagent_id == "bloodc")
 		if (target_fluid.group.master_reagent_id == "blood")
-			//if (ishuman(M))
+			// if (ishuman(M))
 			if (lying)
 				if (wear_suit)
 					wear_suit.add_blood(target_fluid)

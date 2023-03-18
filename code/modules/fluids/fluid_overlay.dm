@@ -87,12 +87,12 @@
 /obj/submachine/flags = FPRINT | FLUID_SUBMERGE
 
 
-/obj/New()
-	..()
+/obj/New(atom/newLoc)
+	. = ..()
 	if (IS_VALID_SUBMERGE_OBJ(src))
-		if (src.density)
+		if (density)
 			submerged_images = list()
-			src.create_submerged_images()
+			create_submerged_images()
 
 /obj/proc/create_submerged_images()
 	submerged_images.len = 0
