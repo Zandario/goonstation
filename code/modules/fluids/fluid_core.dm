@@ -184,7 +184,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 	*/
 
 /obj/fluid/proc/trigger_fluid_enter()
-	for (var/atom/A as anything in loc)
+	for (var/atom/A in loc)
 		if (group && !group.disposed && A.event_handler_flags & USE_FLUID_ENTER)
 			A.EnteredFluid(src, loc)
 	if (group && !group.disposed)
