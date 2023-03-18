@@ -73,15 +73,16 @@ datum
 			transparency = 30
 			addiction_prob = 10//50
 			addiction_min = 15
-			overdose = 20
+			overdose = 15
 			var/counter = 1 //Data is conserved...so some jerkbag could inject a monkey with this, wait for data to build up, then extract some instant KO juice.  Dumb.
+			depletion_rate = 0.4
 			value = 5
 			threshold = THRESHOLD_INIT
 
 			cross_threshold_over()
 				if(ismob(holder?.my_atom))
 					var/mob/M = holder.my_atom
-					APPLY_ATOM_PROPERTY(M, PROP_MOB_STAMINA_REGEN_BONUS, "r_morphine", -3)
+					APPLY_ATOM_PROPERTY(M, PROP_MOB_STAMINA_REGEN_BONUS, "r_morphine", -2)
 					APPLY_MOVEMENT_MODIFIER(M, /datum/movement_modifier/reagent/morphine, src.type)
 				..()
 
@@ -98,16 +99,22 @@ datum
 				M.jitteriness = max(M.jitteriness-25,0)
 				if(M.hasStatus("stimulants"))
 					M.changeStatus("stimulants", -7.5 SECONDS * mult)
-
+				if(M.hasStatus("recent_trauma"))
+					M.changeStatus("recent_trauma", -5 SECONDS * mult)
+				if(probmult(7)) M.emote("yawn")
+				..()
 				switch(counter += 1 * mult)
-					if(1 to 15)
-						if(probmult(7)) M.emote("yawn")
-					if(16 to 35)
+					if(16 to 36)
+						if(probmult(10)) M.setStatus("drowsy", 10 SECONDS)
+					if(36 to INFINITY)
+						if(probmult(20)) M.setStatus("drowsy", 40 SECONDS)
+			do_overdose(var/severity, var/mob/M, var/mult = 1)
+				switch(counter)
+					if(16 to 36)
 						M.setStatus("drowsy", 40 SECONDS)
 					if(36 to INFINITY)
 						M.setStatusMin("paralysis", 3 SECONDS * mult)
 						M.setStatus("drowsy", 40 SECONDS)
-
 				..()
 				return
 
@@ -154,7 +161,6 @@ datum
 					if(36 to INFINITY)
 						M.setStatusMin("paralysis", 3 SECONDS * mult)
 						M.setStatus("drowsy", 40 SECONDS)
-
 				..()
 				return
 
@@ -263,6 +269,8 @@ datum
 				..()
 
 			on_mob_life(var/mob/M, var/mult = 1)
+				if(M.hasStatus("recent_trauma"))
+					M.changeStatus("recent_trauma", -2.5 SECONDS * mult)
 				if(!M) M = holder.my_atom
 				if(prob(55))
 					M.HealDamage("All", 2 * mult, 0)
@@ -1294,7 +1302,7 @@ datum
 			var/total_misstep = 0
 			value = 18 // 5 4 5 3 1
 			threshold = THRESHOLD_INIT
-			var/list/flushed_reagents = list("sarin")
+			var/list/flushed_reagents = list("saxitoxin")
 
 			cross_threshold_over()
 				if(ismob(holder?.my_atom))

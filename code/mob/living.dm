@@ -142,7 +142,7 @@
 
 	SPAWN(0)
 		src.get_static_image()
-		sleep_bubble.appearance_flags = RESET_TRANSFORM
+		sleep_bubble.appearance_flags = RESET_TRANSFORM | PIXEL_SCALE
 		if(!ishuman(src))
 			init_preferences?.apply_post_new_stuff(src)
 
@@ -171,7 +171,7 @@
 		E.cancel_camera()
 
 	if (src.static_image)
-		mob_static_icons.Remove(src.static_image)
+		get_image_group(CLIENT_IMAGE_GROUP_GHOSTDRONE).remove_image(src.static_image)
 		src.static_image = null
 
 	if(src.ai_active)
@@ -439,21 +439,6 @@
 		else
 			. = ..()
 
-//gross are we tg or something with all of these /s
-// i'd like to hear your suggestion for better searching for procs!!! - cirr
-/mob/living/Click(location,control,params)
-	if(istype(usr, /mob/dead/observer) && usr.client && !usr.client.keys_modifier && !usr:in_point_mode)
-		var/mob/dead/observer/O = usr
-#ifdef HALLOWEEN
-		//when spooking, clicking on a mob doesn't put us in them.
-		var/datum/abilityHolder/ghost_observer/GH = O:abilityHolder
-		if (GH.spooking)
-			return ..()
-#endif
-		O.insert_observer(src)
-	else
-		. = ..()
-
 /mob/living/click(atom/target, params, location, control)
 	. = ..()
 	if (. == 100)
@@ -463,21 +448,20 @@
 		src.swap_hand()
 		return
 
-	if (location != "map")
-		if (src.hibernating && istype(src.loc, /obj/cryotron))
-			var/obj/cryotron/cryo = src.loc
-			if (cryo.exit_prompt(src))
-				return
-
-		if (src.client && src.client.check_key(KEY_EXAMINE))
-			src.examine_verb(target)
+	if (src.hibernating && istype(src.loc, /obj/cryotron))
+		var/obj/cryotron/cryo = src.loc
+		if (cryo.exit_prompt(src))
 			return
 
-		if (src.in_point_mode || (src.client && src.client.check_key(KEY_POINT)))
-			src.point_at(target, text2num(params["icon-x"]), text2num(params["icon-y"]))
-			if (src.in_point_mode)
-				src.toggle_point_mode()
-			return
+	if (src.client && src.client.check_key(KEY_EXAMINE))
+		src.examine_verb(target)
+		return
+
+	if (src.in_point_mode || (src.client && src.client.check_key(KEY_POINT)))
+		src.point_at(target, text2num(params["icon-x"]), text2num(params["icon-y"]))
+		if (src.in_point_mode)
+			src.toggle_point_mode()
+		return
 
 	if (src.restrained())
 		if (src.hasStatus("handcuffed"))
@@ -512,7 +496,6 @@
 					for(var/obj/item/grab/gunpoint/G in grabbed_by)
 						G.shoot()
 
-				.= 0
 				return
 		else
 			var/reach = can_reach(src, target)
@@ -611,6 +594,9 @@
 	if (istype(target, /obj/decal/point))
 		return
 
+	if(!IN_RANGE(src, target, 12)) // don't point through cameras
+		return
+
 	var/obj/item/gun/G = src.equipped()
 	if(!istype(G) || !ismob(target))
 		src.visible_message("<span class='emote'><b>[src]</b> points to [target].</span>")
@@ -700,7 +686,12 @@
 		if (phrase_log.is_sussy(message))
 			// var/turf/T = get_turf(src)
 			// var/turf/M = locate(T.x, max(world.maxy, T.y + 8), T.z)
-			arcFlash(src, src, 5000)
+			arcFlash(src, src, forced_desussification)
+			if (issilicon(src))
+				src.apply_flash(20, weak = 2, stamina_damage = 20, disorient_time = 3)
+			if (forced_desussification_worse)
+				forced_desussification *= 1.1
+
 
 	if (reverse_mode) message = reverse_text(message)
 
@@ -895,11 +886,11 @@
 
 	if(src.client)
 		if(singing)
-			phrase_log.log_phrase("sing", message)
+			phrase_log.log_phrase("sing", message, user = src)
 		else if(message_mode)
-			phrase_log.log_phrase("radio", message)
+			phrase_log.log_phrase("radio", message, user = src)
 		else
-			phrase_log.log_phrase("say", message)
+			phrase_log.log_phrase("say", message, user = src)
 
 	if (src.stuttering)
 		message = stutter(message)
@@ -1249,7 +1240,7 @@
 	if (!islist(default_mob_static_icons))
 		return
 	if (src.static_image)
-		mob_static_icons.Remove(src.static_image)
+		get_image_group(CLIENT_IMAGE_GROUP_GHOSTDRONE).remove_image(src.static_image)
 	var/checkpath = src.static_type_override ? src.static_type_override : src.type
 	if (ishuman(src))
 		var/mob/living/carbon/human/H = src
@@ -1263,7 +1254,7 @@
 				src.static_image.override = 1
 				src.static_image.loc = src
 				src.static_image.plane = PLANE_LIGHTING
-				mob_static_icons.Add(src.static_image)
+				get_image_group(CLIENT_IMAGE_GROUP_GHOSTDRONE).add_image(src.static_image)
 				generate_static = 0
 		if (generate_static)
 			if (ispath(checkpath, /datum/mutantrace) && ishuman(src))
@@ -1277,7 +1268,7 @@
 				src.static_image.override = 1
 				src.static_image.loc = src
 				src.static_image.plane = PLANE_LIGHTING
-				mob_static_icons.Add(src.static_image)
+				get_image_group(CLIENT_IMAGE_GROUP_GHOSTDRONE).add_image(src.static_image)
 		return src.static_image
 
 /proc/check_static_defaults()
@@ -1687,7 +1678,8 @@ var/global/icon/human_static_base_idiocy_bullshit_crap = icon('icons/mob/human.d
 							var/mob/M = A
 							//if they're lying, pull em slower, unless you have anext_move gang and they are in your gang.
 							if(M.lying)
-								if (src.mind?.gang && (src.mind.gang == M.mind?.gang))
+								var/datum/gang/gang = src.get_gang()
+								if (gang && (gang == M.get_gang()))
 									. *= 1		//do nothing
 								else
 									. *= lerp(1, max(A.p_class, 1), mob_pull_multiplier)
@@ -1803,17 +1795,6 @@ var/global/icon/human_static_base_idiocy_bullshit_crap = icon('icons/mob/human.d
 	SHOULD_CALL_PARENT(TRUE)
 	.= 0
 
-//left this here to standardize into living later
-/mob/living/critter/was_harmed(var/mob/M as mob, var/obj/item/weapon = 0, var/special = 0, var/intent = null)
-	if (src.ai)
-		src.ai.was_harmed(weapon,M)
-		if(src.is_hibernating)
-			if (src.registered_area)
-				src.registered_area.wake_critters(M)
-			else
-				src.wake_from_hibernation()
-	..()
-
 /mob/living/bullet_act(var/obj/projectile/P)
 	log_shot(P,src)
 	if (ismob(P.shooter))
@@ -1835,9 +1816,9 @@ var/global/icon/human_static_base_idiocy_bullshit_crap = icon('icons/mob/human.d
 
 	if (!P.was_pointblank && HAS_ATOM_PROPERTY(src, PROP_MOB_REFLECTPROT))
 		var/obj/item/equipped = src.equipped()
-		var/obj/projectile/Q = shoot_reflected_to_sender(P, src)
+		var/obj/projectile/Q = shoot_reflected_bounce(P, src)
 		if (!Q)
-			CRASH("Failed to initialize reflected projectile from original projectile [P] ([P.type]) hitting mob [src] (src.type)")
+			CRASH("Failed to initialize reflected projectile from original projectile [identify_object(P)] hitting mob [identify_object(src)]")
 		else
 			P.die()
 			src.visible_message("<span class='alert'>[src] reflects [Q.name] with [equipped]!</span>")
@@ -1863,7 +1844,7 @@ var/global/icon/human_static_base_idiocy_bullshit_crap = icon('icons/mob/human.d
 		if (!IN_RANGE(src,V, 6))
 			continue
 		if(prob(8) && src)
-			if(src != V)
+			if(src != V && !V.reagents?.has_reagent("CBD"))
 				V.emote("scream")
 				V.changeStatus("stunned", 2 SECONDS)
 
@@ -1882,6 +1863,26 @@ var/global/icon/human_static_base_idiocy_bullshit_crap = icon('icons/mob/human.d
 			armor_msg = ", but your armor softens the hit!"
 		else if(rangedprot_base > 1)
 			armor_msg = ", but [P] pierces through your armor!"
+
+
+		var/list/shield_amt = list()
+		var/shield_multiplier = 1
+
+		switch(P.proj_data.damage_type)
+			if(D_KINETIC, D_SLASHING, D_TOXIC)
+				shield_multiplier = 0.5
+			if(D_ENERGY, D_RADIOACTIVE)
+				shield_multiplier = 2
+
+		SEND_SIGNAL(src, COMSIG_MOB_SHIELD_ACTIVATE, P.power * shield_multiplier, shield_amt)
+		damage *= max(0, (1-shield_amt["shield_strength"]))
+		stun *= max(0, (1-shield_amt["shield_strength"]))
+
+
+		if (P.proj_data.damage_type & (D_KINETIC | D_PIERCING | D_SLASHING))
+			if (P.proj_data.hit_type & (DAMAGE_CUT | DAMAGE_STAB | DAMAGE_CRUSH))
+				take_bleeding_damage(src, null, round(damage / 3 * rangedprot_mod), P.proj_data.hit_type)
+			src.changeStatus("staggered", clamp(P.power/8, 5, 1) SECONDS)
 
 		switch(P.proj_data.damage_type)
 			if (D_KINETIC)
@@ -2113,5 +2114,11 @@ var/global/icon/human_static_base_idiocy_bullshit_crap = icon('icons/mob/human.d
 		src.TakeDamage("All",0,20*clamp(actual_dose/4.0, 0, 1)) //a 2Sv dose all at once will badly burn you
 		if(!ON_COOLDOWN(src,"radiation_feel_message_burn",5 SECONDS))
 			src.show_message("<span class='alert'>[pick("Your skin blisters!","It hurts!","Oh god, it burns!")]</span>") //definitely get a message for that
-	else if((!src.radiation_dose || prob(10)) && !ON_COOLDOWN(src,"radiation_feel_message",10 SECONDS))
+	else if((actual_dose > 0) && (!src.radiation_dose || prob(10)) && !ON_COOLDOWN(src,"radiation_feel_message",10 SECONDS))
 		src.show_message("<span class='alert'>[pick("Your skin prickles.","You taste iron.","You smell ozone.","You feel a wave of pins and needles.","Is it hot in here?")]</span>")
+
+/mob/living/get_hud()
+	return src.vision
+
+///Init function for adding life processes. Called on New() and when being revived. The counterpart to reduce_lifeprocess_on_death
+/mob/living/proc/restore_life_processes()

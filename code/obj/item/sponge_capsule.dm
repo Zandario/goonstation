@@ -14,10 +14,10 @@
 	color = "#FF0000"
 	var/colors = list("#FF0000", "#0000FF", "#00FF00", "#FFFF00")
 	var/obj/critter/animal_to_spawn = null
-	var/animals = list(/obj/critter/cat,
+	var/animals = list(/mob/living/critter/small_animal/cat,
 						/obj/critter/bat,
 						/obj/critter/domestic_bee,
-						/obj/critter/mouse,
+						/mob/living/critter/small_animal/mouse,
 						/obj/critter/opossum,
 						/obj/critter/parrot/eclectus,
 						/obj/critter/pig,
@@ -28,7 +28,7 @@
 	animals = list(/obj/critter/microman,
 					/obj/critter/bear,
 					/mob/living/critter/spider,
-					/obj/critter/brullbar,
+					/mob/living/critter/brullbar,
 					/obj/critter/bat/buff,
 					/mob/living/critter/spider/ice,
 					/obj/critter/townguard/passive,

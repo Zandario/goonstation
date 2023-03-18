@@ -13,6 +13,8 @@ ABSTRACT_TYPE(/obj/item/storage/secure)
 	var/locked = TRUE
 	var/code = ""
 	var/guess = ""
+	/// Associative list of ckeys to the number of incorrect guesses they have made
+	var/number_of_guesses = list()
 	// What msg show on the keypad, non-null overrides guess in the UI
 	var/pad_msg = null
 	var/code_len = 4
@@ -237,7 +239,11 @@ ABSTRACT_TYPE(/obj/item/storage/secure)
 		src.overlays = src.locked ? null : list(image('icons/obj/items/storage.dmi', icon_open))
 		boutput(user, "<span class='alert'>[src]'s lock mechanism clicks [src.locked ? "locked" : "unlocked"].</span>")
 		playsound(src.loc, 'sound/items/Deconstruct.ogg', 65, 1)
+		if (!src.locked)
+			logTheThing(LOG_STATION, src, "at [log_loc(src)] has been unlocked by [key_name(user)] after [src.number_of_guesses[user.key] || "0"] incorrect guesses. Contents: [src.contents.Join(", ")]")
+		src.number_of_guesses = list()
 	else
+		src.number_of_guesses[user.key]++
 		if (length(guess) == src.code_len)
 			var/desctext = src.gen_hint(guess)
 			if (desctext)
@@ -253,6 +259,9 @@ ABSTRACT_TYPE(/obj/item/storage/secure)
 
 // SECURE BRIEFCASE
 
+TYPEINFO(/obj/item/storage/secure/sbriefcase)
+	mats = 8
+
 /obj/item/storage/secure/sbriefcase
 	name = "secure briefcase"
 	icon = 'icons/obj/items/storage.dmi'
@@ -265,9 +274,11 @@ ABSTRACT_TYPE(/obj/item/storage/secure)
 	throw_speed = 1
 	throw_range = 4
 	w_class = W_CLASS_BULKY
-	mats = 8
 	spawn_contents = list(/obj/item/paper,\
 	/obj/item/pen)
+
+TYPEINFO(/obj/item/storage/secure/ssafe)
+	mats = 8
 
 /obj/item/storage/secure/ssafe
 	name = "secure safe"
@@ -281,7 +292,6 @@ ABSTRACT_TYPE(/obj/item/storage/secure)
 	w_class = W_CLASS_BULKY
 	anchored = 1
 	density = 0
-	mats = 8
 	desc = "A extremely tough secure safe."
 	mechanics_type_override = /obj/item/storage/secure/ssafe
 

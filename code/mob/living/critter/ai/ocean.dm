@@ -28,7 +28,7 @@
 	name = "attack"
 	minimum_task_ticks = 7
 	maximum_task_ticks = 20
-	var/weight = 15
+	weight = 15
 	target_range = 8
 	frustration_threshold = 3
 	var/last_seek = 0
@@ -84,7 +84,6 @@
 			else
 				owncritter.set_a_intent(INTENT_HARM)
 
-			owncritter.hud.update_intent()
 			owncritter.set_dir(get_dir(owncritter, M))
 
 			var/list/params = list()
@@ -166,7 +165,7 @@
 	name = "attack"
 	minimum_task_ticks = 7
 	maximum_task_ticks = 20
-	var/weight = 15
+	weight = 15
 	target_range = 7
 	frustration_threshold = 3
 	var/last_seek
@@ -213,7 +212,6 @@
 
 		owncritter.set_a_intent(INTENT_HARM)
 
-		owncritter.hud.update_intent()
 		owncritter.set_dir(get_dir(owncritter, holder.target))
 
 		var/list/params = list()
@@ -266,7 +264,7 @@
 	name = "attack"
 	minimum_task_ticks = 7
 	maximum_task_ticks = 26
-	var/weight = 15
+	weight = 15
 	target_range = 8
 	frustration_threshold = 5
 	var/last_seek = 0
@@ -319,7 +317,6 @@
 					return ..() // try again next tick
 			if (dist <= 1)
 				owncritter.set_a_intent(INTENT_GRAB)
-				owncritter.hud.update_intent()
 				owncritter.set_dir(get_dir(owncritter, M))
 
 				var/list/params = list()

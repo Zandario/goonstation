@@ -73,7 +73,7 @@
 	var/variant_b_active = FALSE
 	var/warning_active = FALSE
 
-	anchored = 1
+	anchored = 2
 	density = 1
 
 	var/datum/pump_ui/ui
@@ -575,7 +575,7 @@ datum/pump_ui/circulator_ui
 	name = "generator"
 	desc = "A high efficiency thermoelectric generator."
 	icon_state = "teg"
-	anchored = 1
+	anchored = 2
 	density = 1
 	//var/lightsbusted = 0
 
@@ -676,6 +676,7 @@ datum/pump_ui/circulator_ui
 
 	New()
 		..()
+		AddComponent(/datum/component/mechanics_holder)
 
 		//List init
 		history = list()
@@ -709,7 +710,7 @@ datum/pump_ui/circulator_ui
 			src.transformation_mngr.generator = src
 
 			//furnaces
-			for(var/obj/machinery/power/furnace/F in orange(15, src.loc))
+			for_by_tcl(F, /obj/machinery/power/furnace)
 				src.furnaces += F
 
 			src.generate_variants()
@@ -720,12 +721,15 @@ datum/pump_ui/circulator_ui
 			UpdateIcon()
 
 	disposing()
+		src.furnaces = null
 		src.circ1?.generator = null
 		src.circ1 = null
 		src.circ2?.generator = null
 		src.circ2 = null
 		qdel(transformation_mngr)
+		src.transformation_mngr = null
 		src.active_form = null
+		src.semiconductor = null
 		..()
 
 	get_desc(dist, mob/user)
@@ -877,6 +881,7 @@ datum/pump_ui/circulator_ui
 		if(cold_air) src.circ2.circulate_gas(cold_air)
 
 		desc = "Current Output: [engineering_notation(lastgen)]W [warning_light_desc]"
+		SEND_SIGNAL(src,COMSIG_MECHCOMP_TRANSMIT_SIGNAL, "power=[lastgen]&powerfmt=[engineering_notation(lastgen)]W")
 		var/genlev = clamp(round(26*lastgen / 4000000), 0, 26) // raised 2MW toplevel to 3MW, dudes were hitting 2mw way too easily
 		var/warnings = src.circ1?.warning_active | src.circ2?.warning_active
 
@@ -901,6 +906,9 @@ datum/pump_ui/circulator_ui
 
 		src.transformation_mngr.check_material_transformation()
 
+		if(lastgenlev >= 18 && !ON_COOLDOWN(src, "warning sound", rand(2 MINUTES, 8 MINUTES)))
+			playsound(src, 'sound/vox/warning.ogg', 30, vary=FALSE, extrarange=10, pitch=rand(70, 90))
+
 	proc/get_efficiency_scale(delta_temperature, heat_capacity, cold_capacity)
 		var/efficiency_scale = efficiency_controller
 
@@ -915,7 +923,7 @@ datum/pump_ui/circulator_ui
 			else if(src.generator_flags & TEG_LOW_TEMP)
 				efficiency_scale += clamp(46.5 + -6.33 * log(src.conductor_temp), -15, 15)
 
-		return efficiency_scale * 0.01
+		return (efficiency_scale * 0.01)
 
 	attackby(obj/item/W, mob/user)
 		// Weld > Crowbar > Rods > Weld
@@ -948,7 +956,6 @@ datum/pump_ui/circulator_ui
 				if(istype(W,/obj/item/teg_semiconductor))
 					actions.start(new /datum/action/bar/icon/teg_semiconductor_replace(src, W, 5 SECONDS), user)
 					return
-
 		..()
 
 	proc/process_grump(mult)
@@ -958,7 +965,8 @@ datum/pump_ui/circulator_ui
 			grump += mult
 
 		for(var/obj/machinery/power/furnace/F as anything in src.furnaces)
-			if( F.active ) stoked_sum += F.stoked
+			if(F?.active)
+				stoked_sum += F.stoked
 
 		if(stoked_sum > 10)
 			if(probmult(50)) grump -= mult
@@ -1405,13 +1413,15 @@ Present 	Unscrewed  Connected 	Unconnected		Missing
 				network.update = 1
 		return 1
 
+TYPEINFO(/obj/machinery/power/furnace/thermo)
+	mats = 20
+
 /obj/machinery/power/furnace/thermo
 	name = "Zaojun-1 Furnace"
 	desc = "The venerable XIANG|GIESEL model '灶君' combustion furnace. This version lacks the thermocouple and is designed to heat larger thermo-electric gas circulator systems."
 	icon_state = "furnace"
 	anchored = 1
 	density = 1
-	mats = 20
 	deconstruct_flags = DECON_WRENCH | DECON_CROWBAR | DECON_WELDER
 
 	var/obj/machinery/atmospherics/unary/furnace_connector/f_connector = null

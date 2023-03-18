@@ -13,7 +13,7 @@
 	col_b = 0.8
 	var/sparks = 7
 	var/burn_state = 0
-	var/burnt = false
+	var/burnt = FALSE
 	var/light_ticks = 60
 
 	New()
@@ -22,7 +22,7 @@
 	attack_self(mob/user)
 		if (src.on)
 			src.visible_message("<span class='notice'>[user] blows on [src], its eyes emit a threatening glow!</span>")
-			for(var/mob/wraith/W in orange(4, user))
+			for(var/mob/living/intangible/wraith/W in orange(4, user))
 				//Small grace period to run away after being manifested if you managed to survive so you dont get chain-manifested
 				if ((W.last_spirit_candle_time + (W.forced_haunt_duration + 6 SECONDS)) < TIME)
 					W.last_spirit_candle_time = TIME
@@ -77,7 +77,7 @@
 			src.put_out()
 			return
 		var/turf/T = get_turf(src)
-		for_by_tcl(W, /mob/wraith)
+		for_by_tcl(W, /mob/living/intangible/wraith)
 			if (IN_RANGE(W, T, WIDE_TILE_WIDTH / 2))
 				W.changeStatus("spirit_candle", 5 SECONDS)
 
@@ -91,7 +91,7 @@
 		if (!src) return
 		if (burnt) return
 		if (!src.on)
-			logTheThing("combat", user, null, "lights the [src] at [log_loc(src)].")
+			logTheThing(LOG_COMBAT, user, "lights the [src] at [log_loc(src)].")
 			src.on = 1
 			src.hit_type = DAMAGE_BURN
 			src.force = 3
@@ -116,7 +116,7 @@
 					src.icon_state = "smelted-unlit"
 				if(2)
 					src.icon_state = "melted-unlit"
-			src.burnt = true
+			src.burnt = TRUE
 			light.disable()
 			processing_items -= src
 			if(user)

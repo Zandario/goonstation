@@ -4,7 +4,8 @@ ABSTRACT_TYPE(/obj/item/parts/robot_parts)
 	icon = 'icons/obj/robot_parts.dmi'
 	inhand_image_icon = 'icons/mob/inhand/hand_tools.dmi'
 	item_state = "buildpipe"
-	flags = FPRINT | ONBELT | TABLEPASS | CONDUCT
+	flags = FPRINT | TABLEPASS | CONDUCT
+	c_flags = ONBELT
 	streak_decal = /obj/decal/cleanable/oil
 	streak_descriptor = "oily"
 	var/appearanceString = "generic"
@@ -200,7 +201,7 @@ ABSTRACT_TYPE(/obj/item/parts/robot_parts/head)
 			if ( !(B.owner && B.owner.key) && !istype(W, /obj/item/organ/brain/latejoin) )
 				boutput(user, "<span class='alert'>This brain doesn't look any good to use.</span>")
 				return
-			else if ( B.owner  &&  (jobban_isbanned(B.owner.current,"Cyborg") || B.owner.dnr) ) //If the borg-to-be is jobbanned or has DNR set
+			else if ( B.owner  &&  (jobban_isbanned(B.owner.current,"Cyborg") || B.owner.get_player().dnr) ) //If the borg-to-be is jobbanned or has DNR set
 				boutput(user, "<span class='alert'>The brain disintigrates in your hands!</span>")
 				user.drop_item()
 				qdel(B)
@@ -894,6 +895,7 @@ ABSTRACT_TYPE(/obj/item/parts/robot_parts/leg/right)
 	var/obj/item/parts/robot_parts/l_leg = null
 	var/obj/item/parts/robot_parts/r_leg = null
 	var/obj/item/organ/brain/brain = null
+	appearance_flags = KEEP_TOGETHER
 
 	New()
 		..()
@@ -1066,25 +1068,47 @@ ABSTRACT_TYPE(/obj/item/parts/robot_parts/leg/right)
 			return
 
 	update_icon()
-		src.overlays = null
-		if(src.chest) src.overlays += image('icons/mob/robots.dmi', "body-" + src.chest.appearanceString, OBJ_LAYER, 2)
-		if(src.head) src.overlays += image('icons/mob/robots.dmi', "head-" + src.head.appearanceString, OBJ_LAYER, 2)
+		if(src.chest)
+			src.UpdateOverlays(image('icons/mob/robots.dmi', "body-" + src.chest.appearanceString, FLOAT_LAYER, 2),"chest")
+		else
+			src.UpdateOverlays(null,"chest")
+
+		if(src.head)
+			src.UpdateOverlays(image('icons/mob/robots.dmi', "head-" + src.head.appearanceString, FLOAT_LAYER, 2),"head")
+		else
+			src.UpdateOverlays(null,"head")
 
 		if(src.l_leg)
-			if(src.l_leg.slot == "leg_both") src.overlays += image('icons/mob/robots.dmi', "leg-" + src.l_leg.appearanceString, OBJ_LAYER, 2)
-			else src.overlays += image('icons/mob/robots.dmi', "l_leg-" + src.l_leg.appearanceString, OBJ_LAYER, 2)
+			if(src.l_leg.slot == "leg_both")
+				src.UpdateOverlays(image('icons/mob/robots.dmi', "leg-" + src.l_leg.appearanceString, FLOAT_LAYER, 2),"l_leg")
+			else
+				src.UpdateOverlays(image('icons/mob/robots.dmi', "l_leg-" + src.l_leg.appearanceString, FLOAT_LAYER, 2),"l_leg")
+		else
+			src.UpdateOverlays(null,"l_leg")
 
 		if(src.r_leg)
-			if(src.r_leg.slot == "leg_both") src.overlays += image('icons/mob/robots.dmi', "leg-" + src.r_leg.appearanceString, OBJ_LAYER, 2)
-			else src.overlays += image('icons/mob/robots.dmi', "r_leg-" + src.r_leg.appearanceString, OBJ_LAYER, 2)
+			if(src.r_leg.slot == "leg_both")
+				src.UpdateOverlays(image('icons/mob/robots.dmi', "leg-" + src.r_leg.appearanceString, FLOAT_LAYER, 2),"r_leg")
+			else
+				src.UpdateOverlays(image('icons/mob/robots.dmi', "r_leg-" + src.r_leg.appearanceString, FLOAT_LAYER, 2),"r_leg")
+		else
+			src.UpdateOverlays(null,"r_leg")
 
 		if(src.l_arm)
-			if(src.l_arm.slot == "arm_both") src.overlays += image('icons/mob/robots.dmi', "arm-" + src.l_arm.appearanceString, OBJ_LAYER, 2)
-			else src.overlays += image('icons/mob/robots.dmi', "l_arm-" + src.l_arm.appearanceString, OBJ_LAYER, 2)
+			if(src.l_arm.slot == "arm_both")
+				src.UpdateOverlays(image('icons/mob/robots.dmi', "arm-" + src.l_arm.appearanceString, FLOAT_LAYER, 2),"l_arm")
+			else
+				src.UpdateOverlays(image('icons/mob/robots.dmi', "l_arm-" + src.l_arm.appearanceString, FLOAT_LAYER, 2),"l_arm")
+		else
+			src.UpdateOverlays(null,"l_arm")
 
 		if(src.r_arm)
-			if(src.r_arm.slot == "arm_both") src.overlays += image('icons/mob/robots.dmi', "arm-" + src.r_arm.appearanceString, OBJ_LAYER, 2)
-			else src.overlays += image('icons/mob/robots.dmi', "r_arm-" + src.r_arm.appearanceString, OBJ_LAYER, 2)
+			if(src.r_arm.slot == "arm_both")
+				src.UpdateOverlays(image('icons/mob/robots.dmi', "arm-" + src.r_arm.appearanceString, FLOAT_LAYER, 2),"r_arm")
+			else
+				src.UpdateOverlays(image('icons/mob/robots.dmi', "r_arm-" + src.r_arm.appearanceString, FLOAT_LAYER, 2),"r_arm")
+		else
+			src.UpdateOverlays(null,"r_arm")
 
 	proc/check_completion()
 		if (src.chest && src.head)
@@ -1107,7 +1131,7 @@ ABSTRACT_TYPE(/obj/item/parts/robot_parts/leg/right)
 
 		if (!src.head)
 			// how the fuck did you even do this
-			stack_trace("Attempted to finish a cyborg from borg frame [src] (\ref[src]) without a head. That's bad.")
+			stack_trace("Attempted to finish a cyborg from borg frame [identify_object(src)] without a head. That's bad.")
 			borg.death()
 			qdel(src)
 			return
@@ -1143,7 +1167,7 @@ ABSTRACT_TYPE(/obj/item/parts/robot_parts/leg/right)
 			boutput(usr, "<span class='notice'>You activate the frame and a audible beep emanates from the head.</span>")
 			playsound(src, 'sound/weapons/radxbow.ogg', 40, 1)
 		else
-			stack_trace("We finished cyborg [borg] (\ref[borg]) from frame [src] (\ref[src]) with a brain, but somehow lost the brain??? Where did it go")
+			stack_trace("We finished cyborg [identify_object(borg)] from frame [identify_object(src)] with a brain, but somehow lost the brain??? Where did it go")
 			borg.death()
 			qdel(src)
 			return
@@ -1179,7 +1203,7 @@ ABSTRACT_TYPE(/obj/item/parts/robot_parts/leg/right)
 
 		// final check to guarantee the icon shows up for everyone
 		if(borg.mind && (ticker?.mode && istype(ticker.mode, /datum/game_mode/revolution)))
-			if ((borg.mind in ticker.mode:revolutionaries) || (borg.mind in ticker.mode:head_revolutionaries))
+			if ((borg.mind?.get_antagonist(ROLE_REVOLUTIONARY)) || (borg.mind?.get_antagonist(ROLE_HEAD_REVOLUTIONARY)))
 				ticker.mode:update_all_rev_icons() //So the icon actually appears
 		borg.update_appearance()
 

@@ -14,8 +14,8 @@
 	var/next_spawn = 5 SECONDS
 	var/total_mob_value = 0	//Total point value of all linked mobs
 	var/obj/mob_type = null
-	var/random_mode = true
-	var/mob/wraith/master = null
+	var/random_mode = TRUE
+	var/mob/living/intangible/wraith/master = null
 	var/datum/light/light
 	var/datum/light/portal_light
 	var/list/obj/critter/default_mobs = list(/obj/critter/crunched,	//Useful for random mode or when we dont have a mob_type on spawn
@@ -27,7 +27,7 @@
 								/obj/critter/lion,
 								/obj/critter/wraithskeleton,
 								/obj/critter/bear,
-								/obj/critter/brullbar,
+								/mob/living/critter/brullbar,
 								/obj/critter/gunbot/heavy)
 
 	New(var/mob_type_chosen = null)
@@ -158,7 +158,7 @@
 				return 3
 			if (/obj/critter/lion)
 				return 5
-			if (/obj/critter/brullbar)
+			if (/mob/living/critter/brullbar)
 				return 15
 			if (/obj/critter/gunbot/heavy)
 				return 15

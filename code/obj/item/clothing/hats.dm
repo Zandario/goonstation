@@ -680,7 +680,7 @@ proc/filter_trait_hats(var/type)
 
 	New()
 		..()
-		src.name = "[pick("fancy", "suave", "manly", "sexerific", "sextacular", "intellectual", "majestic", "euphoric")] fedora"
+		src.name = "[pick("fancy", "suave", "manly", "sectacular", "intellectual", "majestic", "euphoric")] fedora"
 
 /obj/item/clothing/head/cowboy
 	name = "cowboy hat"
@@ -1022,6 +1022,7 @@ proc/filter_trait_hats(var/type)
 
 	unequipped(mob/user)
 		..()
+		logTheThing(LOG_COMBAT, user, "unequipped [src] at [log_loc(src)].")
 		processing_items.Remove(src)
 		processing = 0
 		return
@@ -1029,7 +1030,7 @@ proc/filter_trait_hats(var/type)
 
 	equipped(var/mob/user, var/slot)
 		..()
-		logTheThing(LOG_COMBAT, user, "equipped [src].")
+		logTheThing(LOG_COMBAT, user, "equipped [src] at [log_loc(src)].")
 		if (!src.processing)
 			src.processing++
 			processing_items |= src
@@ -1646,12 +1647,6 @@ ABSTRACT_TYPE(/obj/item/clothing/head/hairbow)
 		icon_state = "hbow-yellowpolkadot"
 		item_state = "hbow-yellowpolkadot"
 
-/obj/item/clothing/head/rafflesia
-	name = "rafflesia"
-	desc = "Usually reffered to as corpseflower due to its horrid odor, perfect for masking the smell of your stinky head."
-	icon_state = "rafflesiahat"
-	item_state = "rafflesiahat"
-
 /obj/item/clothing/head/deerstalker
 	name = "deerstalker hat"
 	desc = "A hat for hunting space deer or solving a mystery."
@@ -1835,12 +1830,26 @@ ABSTRACT_TYPE(/obj/item/clothing/head/basecap)
 	icon_state = "pirate_brn"
 	item_state = "pirate_brn"
 
+/obj/item/clothing/head/pirate_captain
+	name = "pirate captain's hat"
+	desc = "A traditional pirate tricorne, adorned with a crimson feather, just to tell everyone who's boss."
+	icon_state = "pirate_captain"
+	item_state = "pirate_captain"
+
+/obj/item/clothing/head/pirate_first_mate
+	name = "pirate first mate's hat"
+	desc = "Who needs a fancy red feather to show authority?"
+	icon_state = "pirate_first_mate"
+	item_state = "pirate_first_mate"
+
 //Lesbian Hat
+
+TYPEINFO(/obj/item/clothing/head/lesbian_hat)
+	mats = list("FAB-1"=5, "honey"=5)
 
 /obj/item/clothing/head/lesbian_hat
 	name = "very lesbian hat"
 	desc = "And they say subtlety is dead."
-	mats = list("FAB-1"=5, "honey"=5)
 	icon_state = "lesbeean"
 	item_state = "lesbeean"
 
@@ -1934,4 +1943,4 @@ ABSTRACT_TYPE(/obj/item/clothing/head/basecap)
 	icon_state = "space_replica"
 	item_state = "space_replica"
 	desc = "A replica of an old space helmet. Looks spaceworthy regardless."
-	hides_from_examine = C_EARS|C_MASK|C_GLASSES
+

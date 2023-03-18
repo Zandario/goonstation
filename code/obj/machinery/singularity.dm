@@ -26,14 +26,16 @@ Contains:
 // I'm sorry
 //////////////////////////////////////////////////// Singularity generator /////////////////////
 
-/obj/machinery/the_singularitygen/
+TYPEINFO(/obj/machinery/the_singularitygen)
+	mats = 250
+
+/obj/machinery/the_singularitygen
 	name = "Gravitational Singularity Generator"
 	desc = "An Odd Device which produces a Black Hole when set up."
 	icon = 'icons/obj/singularity.dmi'
 	icon_state = "TheSingGen"
 	anchored = 0 // so it can be moved around out of crates
 	density = 1
-	mats = 250
 	var/bhole = 0 // it is time. we can trust people to use the singularity For Good - cirr
 
 /obj/machinery/the_singularitygen/process()
@@ -238,11 +240,10 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 	if (selfmove)
 		var/dir = pick(cardinal)
 
-		var/checkloc = get_step(src.get_center(), dir)
-		for (var/dist = 0, dist < max(2,radius+1), dist ++)
+		for (var/dist = max(0,radius-1), dist <= radius+1, dist++)
+			var/turf/checkloc = get_ranged_target_turf(src.get_center(), dir, dist)
 			if (locate(/obj/machinery/containment_field) in checkloc)
 				return
-			checkloc = get_step(checkloc, dir)
 
 		step(src, dir)
 
@@ -273,6 +274,7 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 			if (H.unkillable)
 				H.unkillable = 0
 			if (H.mind && H.mind.assigned_role)
+				logTheThing(LOG_COMBAT, H, "is spaghettified by \the [src] at [log_loc(src)].")
 				switch (H.mind.assigned_role)
 					if ("Clown")
 						// Hilarious.
@@ -306,13 +308,23 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 		if (istype(A, /obj/decal/cleanable)) //MBC : this check sucks, but its far better than cleanables doing hard-delete at the whims of the singularity. replace ASAP when i figure out cleanablessssss
 			qdel(A)
 			gain = 2
+		else if (istype(A, /obj/machinery/nuclearbomb))
+			gain = 5000 //ten clowns
+			playsound_global(clients, 'sound/machines/singulo_start.ogg', 50)
+			SPAWN(1 SECOND)
+				src.maxradius += 5
+				for (var/i in 1 to 5)
+					src.grow()
+					sleep(0.5 SECONDS)
+			qdel(A)
 		else
 			var/obj/O = A
+			gain = 2
+			gain += length(O.contents) * 2
 			O.set_loc(src.get_center())
 			O.ex_act(1)
 			if (O)
 				qdel(O)
-			gain = 2
 
 	else if (isturf(A))
 		var/turf/T = A
@@ -327,7 +339,6 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 
 /obj/machinery/the_singularity/proc/get_center()
 	return src.loc
-
 
 /obj/machinery/the_singularity/attackby(var/obj/item/I, var/mob/user)
 	if (istype(I, /obj/item/clothing/mask/cigarette))
@@ -450,6 +461,9 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 
 //////////////////////////////////////// Field generator /////////////////////////////////////////
 
+TYPEINFO(/obj/machinery/field_generator)
+	mats = 14
+
 /obj/machinery/field_generator
 	name = "Field Generator"
 	desc = "Projects an energy field when active"
@@ -473,7 +487,6 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 	//Remote control stuff
 	var/net_id = null
 	var/obj/machinery/power/data_terminal/link = null
-	mats = 14
 	var/active_dirs = 0
 	var/shortestlink = 0
 
@@ -481,9 +494,9 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 		if (src.active != act)
 			src.active = act
 			if (src.active)
-				event_handler_flags |= IMMUNE_SINGULARITY
+				event_handler_flags |= IMMUNE_SINGULARITY_INACTIVE
 			else
-				event_handler_flags &= ~IMMUNE_SINGULARITY
+				event_handler_flags &= ~IMMUNE_SINGULARITY_INACTIVE
 
 /obj/machinery/field_generator/attack_hand(mob/user)
 	if(state == WELDED)
@@ -536,8 +549,7 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 	active = FALSE
 	. = ..()
 
-/obj/machinery/field_generator/process()
-
+/obj/machinery/field_generator/process(var/mult)
 	if(src.Varedit_start == 1)
 		if(src.active == 0)
 			src.set_active(1)
@@ -558,7 +570,7 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 		src.set_active(2)
 	src.power = clamp(src.power, 0, src.max_power)
 	if(src.active >= 1)
-		src.power -= 1
+		src.power -= 1 * mult
 		if(Varpower == 0)
 			if(src.power <= 0)
 				src.visible_message("<span class='alert'>The [src.name] shuts down due to lack of power!</span>")
@@ -814,6 +826,7 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 	desc = "An energy field."
 	icon = 'icons/obj/singularity.dmi'
 	icon_state = "Contain_F"
+	pass_unstable = TRUE
 	anchored = 1
 	density = 1
 	event_handler_flags = USE_FLUID_ENTER | IMMUNE_SINGULARITY
@@ -880,7 +893,7 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 		shock_damage = min(rand(10,20),rand(10,20))*prot
 
 	// Added (Convair880).
-	logTheThing(LOG_COMBAT, user, "was shocked by a containment field at [log_loc(src)].")
+	logTheThing(LOG_COMBAT, user, "was shocked by a containment field at [log_loc(src)] and received [shock_damage] damage.")
 
 	if (user?.bioHolder)
 		if (user.bioHolder.HasEffect("resist_electric_heal"))
@@ -902,8 +915,8 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 		var/mob/living/L = user
 		L.Virus_ShockCure(100)
 		L.shock_cyberheart(100)
-	if(user.getStatusDuration("stunned") < shock_damage * 10)	user.changeStatus("stunned", shock_damage SECONDS)
-	if(user.getStatusDuration("weakened") < shock_damage * 10)	user.changeStatus("weakened", shock_damage SECONDS)
+	if(user.getStatusDuration("stunned") < shock_damage * 10)	user.changeStatus("stunned", shock_damage/4 SECONDS)
+	if(user.getStatusDuration("weakened") < shock_damage * 10)	user.changeStatus("weakened", shock_damage/4 SECONDS)
 
 	if(user.get_burn_damage() >= 500) //This person has way too much BURN, they've probably been shocked a lot! Let's destroy them!
 		user.visible_message("<span style=\"color:red;font-weight:bold;\">[user.name] was disintegrated by the [src.name]!</span>")
@@ -943,6 +956,9 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 		shock(AM)
 
 /////////////////////////////////////////// Emitter ///////////////////////////////
+TYPEINFO(/obj/machinery/emitter)
+	mats = 10
+
 /obj/machinery/emitter
 	name = "Emitter"
 	desc = "Shoots a high power laser when active"
@@ -964,7 +980,6 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 	var/net_id = null
 	var/obj/machinery/power/data_terminal/link = null
 	var/datum/projectile/current_projectile = new/datum/projectile/laser/heavy
-	mats = 10
 
 /obj/machinery/emitter/New()
 	..()
@@ -1058,6 +1073,7 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 			src.dir &= 12 // Cardinalize
 		src.visible_message("<span class='alert'><b>[src]</b> fires a bolt of energy!</span>")
 		shoot_projectile_DIR(src, current_projectile, dir)
+		use_power(current_projectile.power)
 
 		if(prob(35))
 			elecflash(src)
@@ -1223,6 +1239,9 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 	secured = 2
 	icon_state = "dbox"
 
+TYPEINFO(/obj/machinery/power/collector_array)
+	mats = 20
+
 /obj/machinery/power/collector_array
 	name = "Radiation Collector Array"
 	desc = "A device which uses Hawking Radiation and plasma to produce power."
@@ -1236,7 +1255,6 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 	var/obj/item/tank/plasma/P = null
 	var/obj/machinery/power/collector_control/CU = null
 	deconstruct_flags = DECON_WELDER | DECON_MULTITOOL | DECON_CROWBAR | DECON_WRENCH
-	mats = 20
 
 /obj/machinery/power/collector_array/New()
 	..()
@@ -1342,6 +1360,9 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 	secured = 2
 	icon_state = "dbox"
 
+TYPEINFO(/obj/machinery/power/collector_control)
+	mats = 25
+
 /obj/machinery/power/collector_control
 	name = "Radiation Collector Control"
 	desc = "A device which uses Hawking Radiation and Plasma to produce power."
@@ -1367,11 +1388,11 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 	var/obj/machinery/power/collector_array/CAW = null
 	var/list/obj/machinery/the_singularity/S = null
 	deconstruct_flags = DECON_WELDER | DECON_MULTITOOL | DECON_CROWBAR | DECON_WRENCH
-	mats = 25
 
 /obj/machinery/power/collector_control/New()
 	..()
 	START_TRACKING
+	AddComponent(/datum/component/mechanics_holder)
 	SPAWN(1 SECOND)
 		updatecons()
 
@@ -1495,6 +1516,7 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 			power_a = power_p*power_s*50
 			src.lastpower = power_a
 			add_avail(power_a)
+			SEND_SIGNAL(src,COMSIG_MECHCOMP_TRANSMIT_SIGNAL, "power=[power_a]&powerfmt=[engineering_notation(power_a)]W")
 			..()
 	else
 		var/power_a = 0
@@ -1550,7 +1572,10 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 ///////////////////////////////////////// Singularity bomb /////////////////////////////
 
 // Thing thing had zero logging despite being overhauled recently. I corrected that oversight (Convair880).
-/obj/machinery/the_singularitybomb/
+TYPEINFO(/obj/machinery/the_singularitybomb)
+	mats = 14
+
+/obj/machinery/the_singularitybomb
 	name = "\improper Singularity Bomb"
 	desc = "A WMD that creates a singularity."
 	icon = 'icons/obj/power.dmi'
@@ -1563,7 +1588,6 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 	var/last_tick = null
 	var/mob/activator = null // For logging purposes.
 	is_syndicate = 1
-	mats = 14
 	var/bhole = 1
 
 /obj/machinery/the_singularitybomb/attackby(obj/item/W, mob/user)
@@ -1712,7 +1736,7 @@ for some reason I brought it back and tried to clean it up a bit and I regret ev
 
 /obj/machinery/the_singularitybomb/attack_hand(mob/user)
 	..()
-	if(src.state != 3)
+	if(src.state != WELDED)
 		boutput(user, "The bomb needs to be firmly secured to the floor first.")
 		return
 	if (user.stat || user.restrained() || user.lying)

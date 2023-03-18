@@ -1609,38 +1609,47 @@ Returns:
 					argcopy[r] = X
 			call(procpath)(arglist(argcopy))
 
-/datum/admins/proc/pixelexplosion()
+/datum/admins/proc/pixelexplosion(mode="explode" in list("explode", "pixelate"))
 	SET_ADMIN_CAT(ADMIN_CAT_FUN)
 	set name = "Pixel explosion mode"
 	set desc = "Enter pixel explosion mode."
 	alert("Clicking on things will now explode them into pixels!")
-	pixelmagic()
+	pixelmagic(mode == "explode")
 
 /datum/targetable/pixelpicker
 	target_anything = 1
 	targeted = 1
 	max_range = 3000
+	var/explode = TRUE
 
 	castcheck(var/mob/M)
 		if (M.client && M.client.holder)
 			return 1
 
 	handleCast(var/atom/selected)
-		dothepixelthing(selected)
+		if(src.explode)
+			dothepixelthing(selected)
+		else
+			dothepixelthing(selected, /obj/item/apixel, FALSE)
 		var/mob/M = usr
 		var/datum/targetable/pixelpicker/R = new()
+		R.explode = src.explode
 		M.targeting_ability = R
 		M.update_cursor()
 		return 1
 
-/proc/pixelmagic()
+/proc/pixelmagic(explode=TRUE)
 	var/mob/M = usr
 	var/datum/targetable/pixelpicker/R = new()
+	R.explode = explode
 	M.targeting_ability = R
 	M.update_cursor()
 
-/proc/dothepixelthing(var/atom/A)
+/proc/dothepixelthing(var/atom/A, pixel_type=/obj/apixel, explode=TRUE)
 	if (isturf(A)) //deleting turfs is bad!
+		return
+
+	if(istype(A, /obj/item/apixel) || istype(A, /obj/apixel))
 		return
 
 	if (ismob(A)) //deleting mobs crashes them - lets transfer their client to a ghost first
@@ -1651,28 +1660,28 @@ Returns:
 	var/icon/I = getFlatIcon(A)
 	var/atom/movable/AT = A.loc
 
-	playsound(AT, 'sound/effects/ExplosionFirey.ogg', 75, 1)
+	if(explode)
+		playsound(AT, 'sound/effects/ExplosionFirey.ogg', 75, 1)
 	for(var/y = 1, y <= I.Height(), y++)
 		for(var/x = 1, x <= I.Width(), x++)
 			var/color = I.GetPixel(x, y)
 			if(color != null)
-				var/actX = A.pixel_x + x - 1
-				var/actY = A.pixel_y + y - 1
-				var/obj/apixel/P = new /obj/apixel
-				P.set_loc(A.loc)
+				var/actX = A.pixel_x + x - 1 - 16
+				var/actY = A.pixel_y + y - 1 - 16
+				var/obj/P = new pixel_type(A.loc, A)
 				P.pixel_x = actX
 				P.pixel_y = actY
 				P.color = color
 				P.layer = 15
-				animate_explode_pixel(P)
+				if(explode)
+					animate_explode_pixel(P)
 				pixels += P
 
 	qdel(A)
-	SPAWN(7 SECONDS)
-		for(var/datum/D in pixels)
-			qdel(D)
-
-	return
+	if(explode)
+		SPAWN(7 SECONDS)
+			for(var/datum/D in pixels)
+				qdel(D)
 
 /obj/apixel
 	name = ""
@@ -1682,6 +1691,34 @@ Returns:
 	anchored = 1
 	density = 0
 	opacity = 0
+	pixel_z = 16
+	pixel_w = 16
+
+/obj/item/apixel
+	name = ""
+	desc = "This is a single pixel. Wow."
+	icon = 'icons/effects/1x1.dmi'
+	icon_state = "pixel"
+	pixel_z = 16
+	pixel_w = 16
+	var/got_renamed = FALSE
+
+	New(loc, atom/original)
+		..(loc)
+		src.name = original.name
+		src.desc = "This is a single pixel of [original.name]. Wow."
+
+	pickup(mob/user)
+		. = ..()
+		icon = 'icons/effects/white.dmi'
+		if(!got_renamed)
+			got_renamed = TRUE
+			name = "pixel of [name]"
+
+	dropped(mob/user)
+		. = ..()
+		src.icon = initial(icon)
+
 
 /datum/admins/proc/turn_off_pixelexplosion()
 	SET_ADMIN_CAT(ADMIN_CAT_FUN)
@@ -2766,7 +2803,7 @@ Returns:
 	Bumped(atom/movable/AM)
 		if(target && istype(target))
 			if(ismob(AM))
-				logTheThing(LOG_COMBAT, AM, "entered [src] at [log_loc(src)] and teleported to [log_loc(target)]")
+				logTheThing(LOG_STATION, AM, "entered [src] at [log_loc(src)] and teleported to [log_loc(target)]")
 			AM.set_loc(target)
 		else
 			src.visible_message("<span style='color: red; font-weight: bold'>The portal collapses in on itself!</span>")
@@ -3063,8 +3100,8 @@ var/list/lag_list = new/list()
 	desc = "Places a Conveyor belt - facing the direction you are facing."
 	used(atom/user, atom/target)
 		var/obj/machinery/conveyor/L = new/obj/machinery/conveyor(get_turf(target))
-		L.dir1 = user.dir
-		L.dir2 = turn(user.dir, 180)
+		L.dir_in = user.dir
+		L.dir_out = turn(user.dir, 180)
 		return
 
 /datum/engibox_mode/poddoor

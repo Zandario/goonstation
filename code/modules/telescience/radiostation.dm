@@ -144,7 +144,7 @@
 		src.accents = list()
 		for(var/bio_type in concrete_typesof(/datum/bioEffect/speech, FALSE))
 			var/datum/bioEffect/speech/effect = new bio_type()
-			if(!effect.acceptable_in_mutini || !effect.occur_in_genepools)
+			if(!effect.acceptable_in_mutini || !effect.occur_in_genepools || !effect.mixingdesk_allowed)
 				continue
 			var/name = effect.id
 			if(length(name) >= 7 && copytext(name, 1, 8) == "accent_")
@@ -1028,7 +1028,7 @@ ABSTRACT_TYPE(/obj/item/record/random/notaquario)
 	icon = 'icons/obj/large/64x64.dmi'
 	icon_state = "gannets_machine1"
 	bound_width = 64
-	bound_height = 64
+	bound_height = 32
 	anchored = 1
 	density = 1
 

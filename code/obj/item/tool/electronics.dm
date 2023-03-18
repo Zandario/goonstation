@@ -279,15 +279,22 @@
 		src.remove_dialog(usr)
 	return
 
+/obj/item/electronics/frame/Exited(Obj, newloc)
+	. = ..()
+	var/atom/movable/AM = Obj
+	if(AM == deconstructed_thing && !QDELETED(AM))
+		src.visible_message("<span class='notice'>[src] vanishes in a puff of logic!</span>", "<span class='notice'>You hear a mild poof.</span>", "frame_poof")
+		qdel(src)
+
 /obj/item/electronics/frame/proc/deploy(mob/user)
 	var/turf/T = get_turf(src)
 	var/obj/O = null
 	if (deconstructed_thing)
 		O = deconstructed_thing
+		deconstructed_thing = null
 		O.set_loc(T)
 		O.set_dir(src.dir)
 		O.was_built_from_frame(user, 0)
-		deconstructed_thing = null
 	else
 		O = new store_type(T)
 		O.set_dir(src.dir)
@@ -446,7 +453,7 @@
 
 	New()
 		. = ..()
-		RegisterSignal(src, list(COMSIG_ITEM_ATTACKBY_PRE), .proc/pre_attackby)
+		RegisterSignal(src, COMSIG_ITEM_ATTACKBY_PRE, .proc/pre_attackby)
 
 	get_desc()
 		// We display this on a separate line and with a different color to show emphasis
@@ -786,12 +793,11 @@
 					match_check = 1
 					break
 			if (!match_check)
-				var/obj/tempobj = new X (src)
-				var/datum/electronics/scanned_item/O = ruck_controls.scan_in(tempobj.name,tempobj.type,tempobj.mats)
+				var/typeinfo/obj/typeinfo = get_type_typeinfo(X)
+				var/obj/typedummy = X
+				var/datum/electronics/scanned_item/O = ruck_controls.scan_in(initial(typedummy.name), X, typeinfo.mats)
 				if(O)
 					upload_blueprint(O, "TRANSRKIT", 1)
-					SPAWN(4 SECONDS)
-						qdel(tempobj)
 				S.scanned -= X
 				add_count++
 		if (add_count==  1)
@@ -905,7 +911,8 @@
 	hitsound = 'sound/machines/chainsaw.ogg'
 	hit_type = DAMAGE_CUT
 	tool_flags = TOOL_SAWING
-	flags = ONBELT | FPRINT | TABLEPASS
+	flags = FPRINT | TABLEPASS
+	c_flags = ONBELT
 	w_class = W_CLASS_NORMAL
 
 	proc/finish_decon(atom/target,mob/user) // deconstructing work
@@ -924,6 +931,9 @@
 			qdel(O)
 		else
 			F.deconstructed_thing = target
+			if(ismob(O.loc))
+				var/mob/M = O.loc
+				M.u_equip(O)
 			O.set_loc(F)
 		// move frame to the location after object is gone, so crushers do not crusher themselves
 		F.set_loc(target_loc)
@@ -952,6 +962,9 @@
 			boutput(user, "<span class='alert'>[target] cannot be deconstructed.</span>")
 			if (O.deconstruct_flags & DECON_NULL_ACCESS)
 				boutput(user, "<span class='alert'>[target] is under an access lock and must have its access requirements removed first.</span>")
+			return
+		if (istext(decon_complexity))
+			boutput(user, "<span class='alert'>[decon_complexity]</span>")
 			return
 		if (issilicon(user) && (O.deconstruct_flags & DECON_NOBORG))
 			boutput(user, "<span class='alert'>Cyborgs cannot deconstruct this [target].</span>")

@@ -16,7 +16,10 @@
 		/obj/item/clothing/under/misc/neapolitan = 20,\
 		/obj/item/clothing/under/misc/mint_chip = 20,\
 		/obj/item/clothing/under/misc/mimefancy = 10,\
-		/obj/item/clothing/under/misc/mimedress = 10,
+		/obj/item/clothing/under/misc/mimedress = 10,\
+		/obj/item/clothing/suit/torncloak/random = 20,\
+		/obj/item/clothing/suit/scarfcape/random = 20,\
+		/obj/item/clothing/suit/fakebeewings = 10,
 	// station
 	)
 	var/list/department = list(
@@ -58,7 +61,8 @@
 		/obj/item/device/flyswatter = 20,\
 		/obj/critter/bear = 20,\
 		/obj/item/clothing/shoes/jetpack = 20,\
-		/obj/item/reagent_containers/food/snacks/ingredient/egg/critter/nicespider = 20,
+		/obj/item/reagent_containers/food/snacks/ingredient/egg/critter/nicespider = 20, \
+		/obj/item/gun/kinetic/foamdartshotgun = 20,
 	)
 
 var/global/datum/loot_crate_manager/loot_crate_manager = new /datum/loot_crate_manager
@@ -400,7 +404,7 @@ var/global/datum/loot_crate_manager/loot_crate_manager = new /datum/loot_crate_m
 		playsound(holder.loc, 'sound/machines/engine_grump1.ogg', 60, 1)
 
 		for (var/obj/I in holder.contents)
-			if (istype(I,/obj/critter/cat/))
+			if (istype(I,/mob/living/critter/small_animal/cat))
 				continue // absolutely fucking not >=I
 			new /obj/item/scrap(holder)
 			qdel(I)

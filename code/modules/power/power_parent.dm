@@ -46,16 +46,8 @@
 	powernet?.newavail += amount
 
 #ifdef MACHINE_PROCESSING_DEBUG
-	var/area/A = get_area(src)
-	var/list/machines = detailed_machine_power[A]
-	if(!machines)
-		detailed_machine_power[A] = list()
-		machines = detailed_machine_power[A]
-	var/list/machine = machines[src]
-	if(!machine)
-		machines[src] = list()
-		machine = machines[src]
-	machine += amount
+	if(!detailed_power_data) detailed_power_data = new
+	detailed_power_data.log_machine(src, amount)
 #endif
 
 /obj/machinery/power/proc/add_load(var/amount)
@@ -119,7 +111,7 @@ var/makingpowernetssince = 0
 			var/datum/powernet/PN = powernets[C.netnum]
 			PN.cables += C
 		else
-			stack_trace("Tried to add cable [C] \ref[C] to the cables of powernet [C.netnum], but that powernet number was larger than the powernets list length of [length(powernets)]")
+			stack_trace("Tried to add cable [identify_object(C)] to the cables of powernet [C.netnum], but that powernet number was larger than the powernets list length of [length(powernets)]")
 
 	for(var/obj/machinery/power/M as anything in machine_registry[MACHINES_POWER])
 		if(M.netnum <= 0)		// APCs have netnum=-1 so they don't count as network nodes directly

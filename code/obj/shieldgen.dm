@@ -150,7 +150,7 @@ Shield and graivty well generators
 
 		..()
 	proc/update_nearby_tiles(need_rebuild)
-		var/turf/simulated/source = loc
+		var/turf/source = src.loc
 		if (istype(source))
 			return source.update_nearby_tiles(need_rebuild)
 
@@ -166,12 +166,14 @@ Shield and graivty well generators
 	anchored = 1
 
 
+TYPEINFO(/obj/gravity_well_generator)
+	mats = 14
+
 /obj/gravity_well_generator
 	name = "gravity well generator"
 	desc = "A complex piece of machinery that alters gravity."
 	icon = 'icons/obj/stationobjs.dmi'
 	icon_state = "gravgen-off"
-	mats = 14
 
 	density = 1
 	opacity = 0
