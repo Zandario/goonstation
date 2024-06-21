@@ -2,14 +2,14 @@
 	name = "Clowncar Race track - Entry"
 	icon_state = "green"
 	luminosity = 1
-	force_fullbright = 1
+	force_fullbright = TRUE
 	requires_power = 0
 
 /area/sim/racing_track
 	name = "Clowncar Race track"
 	icon_state = "yellow"
 	luminosity = 1
-	force_fullbright = 1
+	force_fullbright = TRUE
 	requires_power = 0
 
 /obj/racing_boosterstrip

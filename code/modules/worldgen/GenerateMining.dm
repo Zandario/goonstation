@@ -80,7 +80,7 @@ TYPEINFO(/turf/variableTurf/clear)
 	trench
 		name = "Trench"
 		sound_group = "trench"
-		force_fullbright = 0
+		force_fullbright = FALSE
 		requires_power = 0
 		luminosity = 0
 		sound_environment = 22

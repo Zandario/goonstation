@@ -21,9 +21,10 @@
 
 
 /area
-	var
-		force_fullbright = 0
-		ambient_light = null //rgb(0.025 * 255, 0.025 * 255, 0.025 * 255)
+	/// If TRUE, all turfs in the area will be fullbright.
+	var/force_fullbright = FALSE
+	/// Color of the ambient light in the area. If null, no ambient light is applied.
+	var/ambient_light = null //rgb(0.025 * 255, 0.025 * 255, 0.025 * 255)
 
 	New()
 		..()

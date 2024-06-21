@@ -25,7 +25,7 @@ meaty thoughts from cogwerks to his spacepal aibm:
 
 /area/meat_derelict
 	icon_state = "red"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	sound_group = "meat"
 	sound_loop = 'sound/ambience/spooky/Meatzone_BreathingSlow.ogg'
 	sound_loop_vol = 60

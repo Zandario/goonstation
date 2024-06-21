@@ -12,7 +12,7 @@ Turfs and decal for the space rift
 /area/timewarp
 	requires_power = 0
 	luminosity = 1
-	force_fullbright = 1
+	force_fullbright = TRUE
 	name = "Strange Place"
 	icon_state = "shuttle2"
 	sound_group = "timeship"
@@ -22,7 +22,7 @@ Turfs and decal for the space rift
 /area/timewarp/ship
 	name = "Strange Craft"
 	icon_state = "shuttle"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	sound_loop = 'sound/ambience/industrial/Timeship_Tones.ogg'
 
 /area/timewarp/ship/New()

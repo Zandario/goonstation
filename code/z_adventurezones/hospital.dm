@@ -43,7 +43,7 @@
 	icon_state = "green"
 	requires_power = 0
 	luminosity = 0
-	force_fullbright = 0
+	force_fullbright = FALSE
 	sound_group = "samostrel"
 
 /area/adventure/channel
@@ -52,7 +52,7 @@
 	icon_state = "purple"
 	requires_power = 0
 	luminosity = 1
-	force_fullbright = 1
+	force_fullbright = TRUE
 
 	flingy
 		name = "Unstable Channel"

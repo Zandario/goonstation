@@ -47,26 +47,28 @@ datum/controller/process/lighting
 
 			if (L && L.dirty_flags != 0)
 
-				if (L.dirty_flags & D_ENABLE)
+				if (HAS_FLAG(L.dirty_flags, D_ENABLE))
 					if (L.enabled)
 						L.disable(queued_run = 1)
-						L.dirty_flags &= ~D_ENABLE
+						REMOVE_FLAG(L.dirty_flags, D_ENABLE)
 
-				if (L.dirty_flags & D_BRIGHT)
+				if (HAS_FLAG(L.dirty_flags, D_BRIGHT))
 					L.set_brightness(L.brightness_des, queued_run = 1)
-				if (L.dirty_flags & D_COLOR)
+
+				if (HAS_FLAG(L.dirty_flags, D_COLOR))
 					L.set_color(L.r_des,L.g_des,L.b_des, queued_run = 1)
-				if (L.dirty_flags & D_HEIGHT)
+
+				if (HAS_FLAG(L.dirty_flags, D_HEIGHT))
 					L.set_height(L.height_des, queued_run = 1)
 
-				if (L.dirty_flags & D_MOVE)
+				if (HAS_FLAG(L.dirty_flags, D_MOVE))
 					L.move(L.x_des,L.y_des,L.z_des,L.dir_des, queued_run = 1)
 
 
-				if (L.dirty_flags & D_ENABLE)
+				if (HAS_FLAG(L.dirty_flags, D_ENABLE))
 					if (!L.enabled)
 						L.enable(queued_run = 1)
-						L.dirty_flags &= ~D_ENABLE
+						REMOVE_FLAG(L.dirty_flags, D_ENABLE)
 
 				L.dirty_flags = 0
 

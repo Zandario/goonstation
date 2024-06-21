@@ -491,7 +491,7 @@ TYPEINFO(/area)
 	icon_state = "cordonarea"
 	invisibility = INVIS_ALWAYS
 	teleport_blocked = 2
-	force_fullbright = 1
+	force_fullbright = TRUE
 	expandable = 0//oh god i know some fucker would try this
 	requires_power = FALSE
 
@@ -518,13 +518,13 @@ TYPEINFO(/area)
 		return
 
 	dark
-		force_fullbright = 0
+		force_fullbright = FALSE
 		luminosity = 0
 
 /area/titlescreen
 	name = "The Title Screen"
 	teleport_blocked = 2
-	force_fullbright = 0
+	force_fullbright = FALSE
 	expandable = 0
 	ambient_light = rgb(79, 164, 184)
 	dont_log_combat = TRUE
@@ -532,7 +532,7 @@ TYPEINFO(/area)
 
 	fullbright
 		ambient_light = null
-		force_fullbright = 1
+		force_fullbright = TRUE
 
 	dark
 		ambient_light = null
@@ -542,7 +542,7 @@ TYPEINFO(/area)
 	icon_state = "purple"
 	skip_sims = 1
 	sims_score = 50
-	force_fullbright = 0
+	force_fullbright = FALSE
 	sound_environment = 8
 	teleport_blocked = 1
 	sound_group = "tinycave"
@@ -552,7 +552,7 @@ TYPEINFO(/area)
 	icon_state = "purple"
 	skip_sims = 1
 	sims_score = 50
-	force_fullbright = 0
+	force_fullbright = FALSE
 	teleport_blocked = 1
 
 /area/area_that_kills_you_if_you_enter_it //People entering VR or exiting VR with stupid exploits are jerks.
@@ -642,7 +642,7 @@ TYPEINFO(/area)
 	sims_score = 25
 	requires_power = 0
 	teleport_blocked = 1
-	force_fullbright = 1
+	force_fullbright = TRUE
 	filler_turf = "/turf/unsimulated/nicegrass/random"
 
 /** Shuttle Areas
@@ -656,11 +656,11 @@ ABSTRACT_TYPE(/area/shuttle)
 	alpha = 128
 	icon = 'icons/effects/dark.dmi'
 #elif defined(UNDERWATER_MAP)
-	force_fullbright = 0
+	force_fullbright = FALSE
 	luminosity = 0
 #else
 	luminosity = 1
-	force_fullbright = 0
+	force_fullbright = FALSE
 #endif
 	requires_power = FALSE
 	sound_environment = 2
@@ -793,7 +793,7 @@ ABSTRACT_TYPE(/area/shuttle)
 	name = "Chasm Lift Upper Section"
 	icon_state = "shuttle"
 	filler_turf = "/turf/simulated/floor/arctic/abyss"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	sound_group = "ice_moon"
 	area_parallax_render_source_group = /datum/parallax_render_source_group/area/ice_moon
 	occlude_foreground_parallax_layers = TRUE
@@ -802,28 +802,28 @@ ABSTRACT_TYPE(/area/shuttle)
 	name = "Chasm Lift Lower Section"
 	icon_state = "shuttle2"
 	filler_turf = "/turf/simulated/floor/arctic/snow/ice"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	sound_group = "ice_moon"
 
 /area/shuttle/biodome_elevator/upper
 	name = "Biodome Lift Upper Section"
 	icon_state = "shuttle"
-	force_fullbright = 0
+	force_fullbright = FALSE
 
 /area/shuttle/biodome_elevator/lower
 	name = "Biodome Lift Lower Section"
 	icon_state = "shuttle2"
-	force_fullbright = 0
+	force_fullbright = FALSE
 
 /area/shuttle/centcom_elevator/upper
 	name = "Centcom Lift Upper Section"
 	icon_state = "shuttle"
-	force_fullbright = 0
+	force_fullbright = FALSE
 
 /area/shuttle/centcom_elevator/lower
 	name = "Centcom Lift Lower Section"
 	icon_state = "shuttle2"
-	force_fullbright = 0
+	force_fullbright = FALSE
 
 /area/shuttle/recovery_shuttle
 	name = "Recovery Shuttle Dock"
@@ -983,7 +983,7 @@ ABSTRACT_TYPE(/area/shuttle_particle_spawn)
 /area/otherdimesion //moved from actuallyKeelinsStuff.dm
 	requires_power = 0
 	luminosity = 1
-	force_fullbright = 1
+	force_fullbright = TRUE
 	name = "Somewhere"
 	icon_state = "shuttle2"
 
@@ -993,7 +993,7 @@ ABSTRACT_TYPE(/area/shuttle_particle_spawn)
 	filler_turf = "/turf/unsimulated/floor/void"
 	requires_power = 0
 	luminosity = 1
-	force_fullbright = 1
+	force_fullbright = TRUE
 	skip_sims = 1
 	sims_score = 15
 	expandable = 0
@@ -1006,7 +1006,7 @@ ABSTRACT_TYPE(/area/shuttle_particle_spawn)
 	filler_turf = "/turf/unsimulated/floor/void"
 	requires_power = 0
 	luminosity = 1
-	force_fullbright = 1
+	force_fullbright = TRUE
 	skip_sims = 1
 	sims_score = 15
 	sound_group = "some place hot"
@@ -1074,7 +1074,7 @@ ABSTRACT_TYPE(/area/adventure)
 /area/adventure
 	name = "Adventure Zone"
 	icon_state = "purple"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	sound_environment = 31
 	skip_sims = 1
 	sims_score = 30
@@ -1096,7 +1096,7 @@ ABSTRACT_TYPE(/area/adventure)
 /area/space_hive
 	name = "Space Bee Hive"
 	icon_state = "yellow"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	sound_environment = 20
 	teleport_blocked = 1
 	skip_sims = 1
@@ -1257,7 +1257,7 @@ ABSTRACT_TYPE(/area/adventure)
 	icon_state = "derelict"
 	occlude_foreground_parallax_layers = TRUE
 #ifdef SUBMARINE_MAP
-	force_fullbright = 1
+	force_fullbright = TRUE
 #endif
 #ifdef UNDERWATER_MAP
 	requires_power = FALSE
@@ -1268,7 +1268,7 @@ ABSTRACT_TYPE(/area/adventure)
 	icon_state = "derelict"
 	occlude_foreground_parallax_layers = TRUE
 #ifdef SUBMARINE_MAP
-	force_fullbright = 1
+	force_fullbright = TRUE
 #endif
 #ifdef UNDERWATER_MAP
 	requires_power = FALSE
@@ -1291,7 +1291,7 @@ ABSTRACT_TYPE(/area/adventure)
 /area/spacehabitat/beach
 	name = "Habitat Dome Beach"
 	icon_state = "yellow"
-	force_fullbright = 1
+	force_fullbright = TRUE
 
 /area/salyut
 	name = "Soviet derelict"
@@ -1673,7 +1673,7 @@ ABSTRACT_TYPE(/area/sim)
 	name = "Sim"
 	icon_state = "purple"
 	luminosity = 1
-	force_fullbright = 1
+	force_fullbright = TRUE
 	requires_power = 0
 	teleport_blocked = 1
 	virtual = 1
@@ -1719,7 +1719,7 @@ ABSTRACT_TYPE(/area/sim/gunsim)
 	icon_state = "toxtest"
 	virtual = 1
 	sound_group = "toxtest"
-	force_fullbright = 1
+	force_fullbright = TRUE
 
 /area/sim/tdome
 	name = "Thunderdome"
@@ -2836,7 +2836,7 @@ TYPEINFO(/area/station/engine/substation)
 	name = "Prototype Gangway"
 	icon_state = "green"
 	luminosity = 1
-	force_fullbright = 1
+	force_fullbright = TRUE
 	requires_power = 0
 
 
@@ -4073,7 +4073,7 @@ ABSTRACT_TYPE(/area/mining)
 	teleport_blocked = 1
 	mouse_opacity = 1
 	luminosity = 1
-	force_fullbright = 1
+	force_fullbright = TRUE
 	CanEnter(var/atom/movable/A)
 		if(ismob(A) && A:client && A:client:player && A:client:player:shamecubed)
 			return 1
@@ -4087,7 +4087,7 @@ ABSTRACT_TYPE(/area/mining)
 	sanctuary = 0
 	mouse_opacity = 0
 	luminosity = 0
-	force_fullbright = 0
+	force_fullbright = FALSE
 	CanEnter()
 		return 1
 
@@ -4873,17 +4873,17 @@ area/station/crewquarters/cryotron
 /area/station2/com_dish/comdish
 	name = "Communications Dish"
 	icon_state = "yellow"
-	force_fullbright = 1 // ????
+	force_fullbright = TRUE // ????
 
 /area/station2/com_dish/auxdish
 	name = "Auxilary Communications Dish"
 	icon_state = "yellow"
-	force_fullbright = 1
+	force_fullbright = TRUE
 
 /area/station2/com_dish/research_outpost
 	name = "Research Outpost Communications Dish"
 	icon_state = "yellow"
-	force_fullbright = 1
+	force_fullbright = TRUE
 
 /area/station2/engine
 	sound_environment = 5
@@ -5013,7 +5013,7 @@ area/station/crewquarters/cryotron
 	name = "Prototype Gangway"
 	icon_state = "green"
 	luminosity = 1
-	force_fullbright = 1
+	force_fullbright = TRUE
 	requires_power = 0
 
 /area/station2/hangar
@@ -5271,7 +5271,7 @@ area/station/security/visitation
 /area/station2/solar
 	requires_power = 0
 	luminosity = 1
-	force_fullbright = 1
+	force_fullbright = TRUE
 	workplace = 1
 	do_not_irradiate = TRUE
 
@@ -5425,7 +5425,7 @@ area/station/security/visitation
 	icon_state = "toxtest"
 	virtual = 1
 	sound_group = "toxtest"
-	force_fullbright = 1
+	force_fullbright = TRUE
 
 /area/station2/chapel/main
 	name = "Chapel"
@@ -5566,7 +5566,7 @@ area/station/security/visitation
 	icon_state = "aviary"
 	sound_environment = 15
 	do_not_irradiate = TRUE
-	force_fullbright = 1
+	force_fullbright = TRUE
 
 /area/station2/zen
 	name = "Zen Garden"
@@ -5576,7 +5576,7 @@ area/station/security/visitation
 
 /area/station2/catwalk
 	icon_state = "yellow"
-	force_fullbright = 1
+	force_fullbright = TRUE
 
 /area/station2/catwalk/north
 	name = "North Maintenance Catwalk"
@@ -5657,7 +5657,7 @@ area/station/security/visitation
 	icon_state = "yellow"
 	requires_power = 0
 	luminosity = 1
-	force_fullbright = 1
+	force_fullbright = TRUE
 
 // // // // // // // // // // // //
 

@@ -25,7 +25,7 @@ SYNDICATE DRONE FACTORY AREAS
 /area/crater
 	name = "Cenote"  // renamed, crater doesn't make any sense here
 	icon_state = "yellow"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	sound_environment = 18
 	skip_sims = 1
 	sims_score = 30
@@ -34,7 +34,7 @@ SYNDICATE DRONE FACTORY AREAS
 /area/crater/biodome
 	name = "Botanical Research Outpost Gamma"
 	icon_state = "green"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	sound_environment = 1
 	skip_sims = 1
 	sims_score = 30
@@ -70,7 +70,7 @@ SYNDICATE DRONE FACTORY AREAS
 /area/crater/cave
 	name = "Moist Caves"
 	icon_state = "purple"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	sound_environment = 8
 	skip_sims = 1
 	sims_score = 30
@@ -78,7 +78,7 @@ SYNDICATE DRONE FACTORY AREAS
 /area/crater/cave/lower
 	name = "Lower Moist Caves"
 	icon_state = "purple"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	skip_sims = 1
 	sims_score = 30
 
@@ -97,7 +97,7 @@ SYNDICATE DRONE FACTORY AREAS
 /area/swampzone
 	name = "X-05 Fatuus"
 	icon_state = "green"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	filler_turf = "/turf/unsimulated/floor/auto/dirt"
 	ambient_light = rgb(75, 100, 100)
 	sound_environment = 15
@@ -283,7 +283,7 @@ SYNDICATE DRONE FACTORY AREAS
 /area/crypt/graveyard
 	name = "Graveyard"
 	icon_state = "green"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	filler_turf = "/turf/unsimulated/dirt"
 	sound_environment = 15
 	skip_sims = 1
@@ -318,7 +318,7 @@ SYNDICATE DRONE FACTORY AREAS
 /area/crypt/mausoleum
 	name = "Mausoleum"
 	icon_state = "purple"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	sound_environment = 5
 	skip_sims = 1
 	sims_score = 0
@@ -362,7 +362,7 @@ SYNDICATE DRONE FACTORY AREAS
 /area/catacombs
 	name = "Catacombs"
 	icon_state = "purple"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	sound_environment = 13
 	skip_sims = 1
 	sims_score = 0

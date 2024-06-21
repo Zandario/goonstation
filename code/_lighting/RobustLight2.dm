@@ -1,9 +1,9 @@
-var/RL_Generation = 0
-var/RL_Started = 0
-var/RL_Suspended = 0
+var/global/RL_Generation = 0
+var/global/RL_Started = FALSE
+var/global/RL_Suspended = FALSE
 
 proc/RL_Start()
-	global.RL_Started = 1
+	global.RL_Started = TRUE
 	for (var/datum/light/light)
 		if (light.enabled)
 			light.apply()
@@ -12,14 +12,14 @@ proc/RL_Start()
 		RL_UPDATE_LIGHT(T)
 
 proc/RL_Suspend()
-	global.RL_Suspended = 1
+	global.RL_Suspended = TRUE
 #ifdef DEBUG_LIGHT_STRIP_APPLY
 	logTheThing(LOG_DEBUG, src, "<b>Light:</b> Suspended lighting.")
 #endif
 	//TODO
 
 proc/RL_Resume()
-	global.RL_Suspended = 0
+	global.RL_Suspended = FALSE
 #ifdef DEBUG_LIGHT_STRIP_APPLY
 	logTheThing(LOG_DEBUG, src, "<b>Light:</b> Unsuspended lighting.")
 #endif
@@ -42,14 +42,27 @@ proc/get_moving_lights_stats()
 	boutput(usr, json_encode(color_changing_lights_stats_by_first_attached))
 #endif
 
-#define D_BRIGHT 1
-#define D_COLOR 2
-#define D_HEIGHT 4
-#define D_ENABLE 8
-#define D_MOVE 16
-						//only if lag				OR we already have stuff queued  OR lighting is suspeded 	also game needs to be started lol		and not doing a queue process currently
+#define D_BRIGHT (1<<0) /*! Set to update the light's brightness next update. */
+#define D_COLOR (1<<1)  /*! Set to update the light's color next update. */
+#define D_HEIGHT (1<<2) /*! Set to update the light's color next update. */
+#define D_ENABLE (1<<3) /*! Set to update the light's color next update. */
+#define D_MOVE (1<<4) /*! Set to update the light's color next update. */
+
+/**
+ * ### IF
+ * * There's lag
+ * ---
+ * ### OR
+ * * we already have stuff queued
+ * ---
+ * ### OR
+ * * lighting is suspeded
+ * * also game needs to be started lol
+ * * and not doing a queue process currently
+ */
+#define SHOULD_QUEUE (( light_update_queue.cur_size || APPROX_TICK_USE > LIGHTING_MAX_TICKUSAGE || global.RL_Suspended) && !queued_run && current_state > GAME_STATE_SETTING_UP)
 //#define SHOULD_QUEUE ((APPROX_TICK_USE > LIGHTING_MAX_TICKUSAGE || light_update_queue.cur_size) && current_state > GAME_STATE_SETTING_UP && !queued_run)
-#define SHOULD_QUEUE (( light_update_queue.cur_size || APPROX_TICK_USE > LIGHTING_MAX_TICKUSAGE || RL_Suspended) && !queued_run && current_state > GAME_STATE_SETTING_UP)
+
 /datum/light
 	var/x
 	var/y
@@ -124,7 +137,7 @@ proc/get_moving_lights_stats()
 	if (src.enabled)
 		if (SHOULD_QUEUE)
 			light_update_queue.queue(src)
-			dirty_flags |= D_BRIGHT
+			ADD_FLAG(src.dirty_flags, D_BRIGHT)
 			return
 
 		var/strip_gen = ++global.RL_Generation
@@ -154,7 +167,7 @@ proc/get_moving_lights_stats()
 	if (src.enabled)
 		if (SHOULD_QUEUE)
 			global.light_update_queue.queue(src)
-			src.dirty_flags |= D_COLOR
+			ADD_FLAG(src.dirty_flags, D_COLOR)
 			src.r_des = red
 			src.g_des = green
 			src.b_des = blue
@@ -187,7 +200,7 @@ proc/get_moving_lights_stats()
 	if (src.enabled)
 		if (SHOULD_QUEUE)
 			global.light_update_queue.queue(src)
-			src.dirty_flags |= D_HEIGHT
+			ADD_FLAG(src.dirty_flags, D_HEIGHT)
 			return
 
 		var/strip_gen = ++global.RL_Generation
@@ -207,12 +220,12 @@ proc/get_moving_lights_stats()
 
 /datum/light/proc/enable(queued_run = FALSE)
 	if (src.enabled)
-		src.dirty_flags &= ~D_ENABLE
+		REMOVE_FLAG(src.dirty_flags, D_ENABLE)
 		return
 
 	if (SHOULD_QUEUE)
 		global.light_update_queue.queue(src)
-		src.dirty_flags |= D_ENABLE
+		ADD_FLAG(src.dirty_flags, D_ENABLE)
 		return
 
 	src.enabled = TRUE
@@ -221,12 +234,12 @@ proc/get_moving_lights_stats()
 
 /datum/light/proc/disable(queued_run = FALSE)
 	if (!src.enabled)
-		src.dirty_flags &= ~D_ENABLE
+		REMOVE_FLAG(src.dirty_flags, D_ENABLE)
 		return
 
 	if (SHOULD_QUEUE)
 		global.light_update_queue.queue(src)
-		src.dirty_flags |= D_ENABLE
+		ADD_FLAG(src.dirty_flags, D_ENABLE)
 		return
 
 	src.enabled = FALSE
@@ -310,7 +323,7 @@ proc/get_moving_lights_stats()
 
 	if (SHOULD_QUEUE)
 		global.light_update_queue.queue(src)
-		src.dirty_flags |= D_MOVE
+		ADD_FLAG(src.dirty_flags, D_MOVE)
 		return
 
 	src.remove_from_turf()
@@ -355,7 +368,7 @@ proc/get_moving_lights_stats()
 /datum/light/point
 
 /datum/light/point/apply_to(turf/T)
-	RL_APPLY_LIGHT(T, src.x, src.y, src.brightness, src.height ** 2, r, g, b)
+	RL_APPLY_LIGHT(T, src.x, src.y, src.brightness, src.height ** 2, src.r, src.g, src.b)
 
 /datum/light/point/apply_internal(generation, r, g, b)
 	. = list()
@@ -427,7 +440,7 @@ proc/get_moving_lights_stats()
 	RL_APPLY_LIGHT_LINE(T, src.x, src.y, src.dir, dist_cast, src.brightness, src.height**2, r, g, b)
 
 /datum/light/line/apply_internal(generation, r, g, b)
-	. = list()
+	var/list/turf/turfs_to_update = list()
 	var/height2 = src.height ** 2
 
 	var/vx = 0
@@ -453,9 +466,9 @@ proc/get_moving_lights_stats()
 		RL_APPLY_LIGHT_LINE(T, src.x, src.y, src.dir, src.dist_cast, src.brightness, height2, r, g, b)
 		T.RL_ApplyGeneration = generation
 		T.RL_UpdateGeneration = generation
-		. += T
+		turfs_to_update += T
 
-	for (var/turf/T as anything in .)
+	for (var/turf/T as anything in turfs_to_update)
 
 		var/turf/E = get_step(T, EAST)
 		if (E && E.RL_ApplyGeneration < generation)
@@ -516,10 +529,10 @@ proc/get_moving_lights_stats()
 	var/inner_radius = 1
 
 /datum/light/cone/apply_to(turf/T)
-	RL_APPLY_LIGHT(T, src.x, src.y, src.brightness, src.height**2, r, g, b)
+	RL_APPLY_LIGHT(T, src.x, src.y, src.brightness, src.height**2, src.r, src.g, src.b)
 
 /datum/light/cone/apply_internal(generation, r, g, b)
-	. = list()
+	var/list/turf/turfs_to_update = list()
 	var/height2 = src.height ** 2
 	var/turf/middle = locate(src.x, src.y, src.z)
 	var/atten
@@ -548,9 +561,9 @@ proc/get_moving_lights_stats()
 			continue
 		T.RL_ApplyGeneration = generation
 		T.RL_UpdateGeneration = generation
-		. += T
+		turfs_to_update += T
 
-	for (var/turf/T as anything in .)
+	for (var/turf/T as anything in turfs_to_update)
 		var/E_new = FALSE
 		var/turf/E = get_step(T, EAST)
 		if (E && E.RL_ApplyGeneration < generation && ANGLE_CHECK(E))
@@ -689,7 +702,7 @@ proc/get_moving_lights_stats()
 	src.RL_NeedsAdditive = (src.RL_AddLumR > 0) || (src.RL_AddLumG > 0) || (src.RL_AddLumB > 0)
 
 /turf/proc/RL_UpdateLight() // use the RL_UPDATE_LIGHT macro instead if at all possible!!!!
-	if (!RL_Started)
+	if (!global.RL_Started)
 		return
 #ifdef DEBUG_LIGHTING_UPDATES
 	if (!src.counter)
@@ -740,7 +753,7 @@ proc/get_moving_lights_stats()
 			src.RL_MulOverlay = new /obj/overlay/tile_effect/lighting/mul(src)
 			src.RL_MulOverlay.icon = src.RL_OverlayIcon
 			src.RL_MulOverlay.icon_state = src.RL_OverlayState
-		if (RL_Started)
+		if (global.RL_Started)
 			RL_UPDATE_LIGHT(src)
 	else
 		if (src.RL_MulOverlay)
@@ -751,7 +764,7 @@ proc/get_moving_lights_stats()
 			src.RL_AddOverlay = null
 
 /atom
-	var/RL_Attached = null
+	var/list/datum/light/RL_Attached = null
 	var/old_dir = null //rl only right now
 	var/next_light_dir_update = 0
 
@@ -780,6 +793,13 @@ proc/get_moving_lights_stats()
 				light.move(src.x + light.attach_x, src.y + light.attach_y, src.z, src.dir)
 
 
+	/**
+	 * this handles RL_Lighting for luminous atoms and some child types override it for extra stuff
+	 * like the 2x2 pod camera. fixes that bug where you go through a warp portal but your camera doesn't update
+	 *
+	 * there are lots of old places in the code that set loc directly.
+	 * ignore them they'll be fixed later, please use this proc in the future
+	 */
 	set_loc(atom/target)
 		if (opacity)
 			var/list/datum/light/lights = list()
@@ -795,6 +815,7 @@ proc/get_moving_lights_stats()
 			var/turf/OL = src.loc
 			if (istype(OL))
 				--OL.opaque_atom_count
+
 			var/turf/NL = target
 			if (istype(NL))
 				++NL.opaque_atom_count
@@ -804,7 +825,7 @@ proc/get_moving_lights_stats()
 			for (var/datum/light/light as anything in lights)
 				if (light.enabled)
 					affected |= light.apply()
-			if (RL_Started)
+			if (global.RL_Started)
 				for (var/turf/T as anything in affected)
 					RL_UPDATE_LIGHT(T)
 		else
@@ -822,7 +843,7 @@ proc/get_moving_lights_stats()
 				// Detach the light from its holder so that it gets cleaned up right if
 				// needed.
 				attached.detach()
-			src.RL_Attached:len = 0
+			src.RL_Attached.len = 0
 			src.RL_Attached = null
 		if (opacity)
 			set_opacity(0)

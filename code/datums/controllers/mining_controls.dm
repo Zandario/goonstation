@@ -162,7 +162,7 @@ var/list/asteroid_blocked_turfs = list()
 /area/mining/magnet
 	name = "Magnet Area"
 	icon_state = "purple"
-	force_fullbright = 1
+	force_fullbright = TRUE
 	requires_power = 0
 	luminosity = 1
 	expandable = 0

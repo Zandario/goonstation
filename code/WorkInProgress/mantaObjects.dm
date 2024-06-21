@@ -1406,7 +1406,7 @@ var/obj/manta_speed_lever/mantaLever = null
 /area/supply/spawn_point/manta
 	color = OCEAN_COLOR
 	requires_power = 0
-	force_fullbright = 0
+	force_fullbright = FALSE
 	luminosity = 0
 
 	Entered(atom/movable/Obj,atom/OldLoc)

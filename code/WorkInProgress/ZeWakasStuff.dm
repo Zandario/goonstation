@@ -50,7 +50,7 @@ atoms can be rendered by reference in browser
 /area/greek/beach
 	name = "Strange Beach"
 	icon_state = "yellow"
-	force_fullbright = 1
+	force_fullbright = TRUE
 	sound_environment = 19
 
 /turf/unsimulated/greek/grass
@@ -95,7 +95,7 @@ atoms can be rendered by reference in browser
 	name = "Strange Cliffs"
 	icon_state = "blue"
 	sound_environment = 8
-	force_fullbright = 1
+	force_fullbright = TRUE
 
 /turf/unsimulated/greek/cave
 	name = "rock"

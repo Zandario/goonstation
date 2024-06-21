@@ -552,7 +552,7 @@
 
 /area/football
 	name = "Space American Football Stadium"
-	force_fullbright = 1
+	force_fullbright = TRUE
 	icon_state = "purple"
 	dont_log_combat = TRUE
 

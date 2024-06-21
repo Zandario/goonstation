@@ -228,14 +228,14 @@
 	name = "Strange Forest"
 	icon_state = "null"
 	luminosity = 1
-	force_fullbright = 1
+	force_fullbright = TRUE
 	requires_power = 0
 
 /area/forest/entrance
 	name = "Strange Forest - Entrance"
 	icon_state = "null"
 	luminosity = 1
-	force_fullbright = 1
+	force_fullbright = TRUE
 	requires_power = 0*/
 
 
@@ -489,5 +489,3 @@ var/reverse_mode = 0
 		steps++
 
 	return 1
-
-

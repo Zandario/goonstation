@@ -26,10 +26,10 @@ Right Mouse Button                     = Attempt to fix Lighting on selected til
 		var/area/A = T.loc
 		if(on)
 			A.luminosity = 1
-			A.force_fullbright = 1
+			A.force_fullbright = TRUE
 		else
 			A.luminosity = 0
-			A.force_fullbright = 0
+			A.force_fullbright = FALSE
 		A.update_fullbright()
 
 		if (RL_Started)

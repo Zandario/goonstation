@@ -15,7 +15,7 @@ Contents:
 	icon_state = "blue"
 	filler_turf = "/turf/unsimulated/floor/lunar"
 	requires_power = 0
-	force_fullbright = 0
+	force_fullbright = FALSE
 	ambient_light = rgb(0.9 * 255, 0.9 * 255, 0.9 * 255)
 	sound_group = "moon"
 
@@ -54,22 +54,22 @@ Contents:
 
 /area/shuttle/lunar_elevator/museum/upper
 	icon_state = "shuttle"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	name = "Elevator"
 
 /area/shuttle/lunar_elevator/museum/lower
 	icon_state = "shuttle2"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	name = "Elevator"
 
 /area/shuttle/lunar_elevator/hemera/upper
 	icon_state = "shuttle"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	name = "Elevator"
 
 /area/shuttle/lunar_elevator/hemera/lower
 	icon_state = "shuttle2"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	name = "Elevator"
 
 /area/moon/museum/west

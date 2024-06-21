@@ -20,7 +20,7 @@
 	name = "swap zone"
 	icon_state = "purple"
 	requires_power = 0
-	force_fullbright = 0
+	force_fullbright = FALSE
 	luminosity = 0
 	teleport_blocked = 1
 

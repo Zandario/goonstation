@@ -10,7 +10,7 @@ CONTENTS:
 /area/solarium
 	name = "Solarium"
 	icon_state = "yellow"
-	force_fullbright = 0
+	force_fullbright = FALSE
 	sound_environment = 5
 	may_eat_here_in_restricted_z = 1
 	skip_sims = 1

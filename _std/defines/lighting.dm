@@ -81,13 +81,13 @@
 
 #define APPLY_AND_UPDATE if (RL_Started) { for (var/turf in src.apply()) { var/turf/T = turf; RL_UPDATE_LIGHT(T) } }
 
-#define RL_Atten_Quadratic 2.2 // basically just brightness scaling atm
-#define RL_Atten_Constant -0.11 // constant subtracted at every point to make sure it goes <0 after some distance
-#define RL_Atten_Threshold 2/256 // imperceptible change
-#define RL_Rad_QuadConstant 0.9 //Subtracted from the quadratic constant for light.radius
-#define RL_Rad_ConstConstant 0.03 //Added to the -linear constant for light.radius
-#define RL_MaxRadius 6 // maximum allowed light.radius value. if any light ends up needing more than this it'll cap and look screwy
-#define DLL 0 //Darkness Lower Limit, at 0 things can get absolutely pitch black.
+#define RL_Atten_Quadratic 2.2 //! basically just brightness scaling atm
+#define RL_Atten_Constant -0.11 //! constant subtracted at every point to make sure it goes <0 after some distance
+#define RL_Atten_Threshold 2/256 //! imperceptible change
+#define RL_Rad_QuadConstant 0.9 //! Subtracted from the quadratic constant for light.radius
+#define RL_Rad_ConstConstant 0.03 //! Added to the -linear constant for light.radius
+#define RL_MaxRadius 6 //! maximum allowed light.radius value. if any light ends up needing more than this it'll cap and look screwy
+#define DLL 0 //! Darkness Lower Limit, at 0 things can get absolutely pitch black.
 
 #ifdef UPSCALED_MAP
 #undef DLL
