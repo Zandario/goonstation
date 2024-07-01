@@ -32,13 +32,13 @@
 			if(T.active_liquid)
 				T.active_liquid.blocked_dirs = 0
 				if(T.active_liquid.group && !T.active_liquid.group.updating)
-					T.active_liquid.group.update_loop()
+					T.active_liquid.group.add_spread_process()
 					break
 
 			if(T.active_airborne_liquid)
 				T.active_airborne_liquid.blocked_dirs = 0
 				if(T.active_airborne_liquid.group && !T.active_airborne_liquid.group.updating)
-					T.active_airborne_liquid.group.update_loop()
+					T.active_airborne_liquid.group.add_spread_process()
 					break
 
 	return ..()
@@ -48,11 +48,11 @@
 	if(src.active_liquid)
 		src.active_liquid.blocked_dirs = 0
 		if (src.active_liquid.group && !src.active_liquid.group.updating)
-			src.active_liquid.group.update_loop()
+			src.active_liquid.group.add_spread_process()
 	if(src.active_airborne_liquid)
 		src.active_airborne_liquid.blocked_dirs = 0
 		if (src.active_airborne_liquid.group && !src.active_airborne_liquid.group.updating)
-			src.active_airborne_liquid.group.update_loop()
+			src.active_airborne_liquid.group.add_spread_process()
 	return ..()
 
 
@@ -124,7 +124,7 @@
 	// Normally `volume` isn't set until the fluid group process procs, but we sometimes need it right away for mob reactions etc.
 	// We know the puddle starts as a single tile, so until then just set `volume` as the total reacted reagent volume.
 	F.volume = FG.reagents.total_volume
-	F.UpdateIcon()
+	F.UpdateIcon(FALSE, FALSE)
 
 	if(!airborne && !processing_cleanables)
 		var/turf/simulated/floor/T = src

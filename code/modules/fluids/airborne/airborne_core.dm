@@ -329,7 +329,6 @@
 	return
 
 
-//BE WARNED THIS PROC HAS A REPLICA UP ABOVE IN FLUID GROUP UPDATE_LOOP. DO NOT CHANGE THIS ONE WITHOUT MAKING THE SAME CHANGES UP THERE OH GOD I HATE THIS
 /obj/fluid/airborne/update_icon(neighbor_was_removed = FALSE)
 	if(QDELETED(src.group?.reagents))
 		return

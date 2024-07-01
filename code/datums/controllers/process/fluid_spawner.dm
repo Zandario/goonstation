@@ -90,7 +90,7 @@ var/global/obj/fluid/ocean_fluid_obj = null
 
 			if(t.active_liquid && t.active_liquid.group)
 				t.active_liquid.group.reagents.add_reagent(ocean_reagent_id,add_reagent_amount)
-				t.active_liquid.group.update_loop()
+				t.active_liquid.group.add_spread_process()
 			else
 				var/obj/fluid/F = t.fluid_react_single(ocean_reagent_id, add_reagent_amount)
 				if(F)

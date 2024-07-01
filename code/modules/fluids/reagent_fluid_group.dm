@@ -1,7 +1,7 @@
 /datum/reagents/fluid_group
 	var/datum/fluid_group/my_group = null
-	var/last_reaction_loc = 0
-	var/skip_next_update = 0
+	// var/last_reaction_loc = 0
+	var/skip_next_update = FALSE
 
 
 /datum/reagents/fluid_group/covered_turf()

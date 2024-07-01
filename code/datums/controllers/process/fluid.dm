@@ -35,18 +35,6 @@
 	// Process spreads
 	src.process_spreads()
 
-	// Determine schedule interval based on viscosity and last run time
-	switch(main.last_run_time[src])
-		if(0 to 5)
-			min_schedule_interval = 0.5 SECONDS
-		if(6 to 13)
-			min_schedule_interval = 1 SECOND
-		if(14 to 20)
-			min_schedule_interval = 2.6 SECONDS
-		else
-			min_schedule_interval = max_schedule_interval
-
-	schedule_interval = max(min_schedule_interval, avg_viscosity)
 
 	//if interval time has passed, do evaporation + temperature processing
 	if(world.time > src.last_group_update + src.group_update_interval)
@@ -106,20 +94,18 @@
 
 					FG.evaporate()
 
+
 /datum/controller/process/fluid_group/proc/process_drains()
 	for(var/datum/fluid_group/FG as anything in processing_fluid_drains)
 		if(FG.queued_drains)
 			FG.reagents.skip_next_update = TRUE
 			var/obj/fluid/drain_source = FG.last_turf_drained.active_liquid ? FG.last_turf_drained.active_liquid : pick(FG.members)
 			FG.drain(drain_source, FG.queued_drains) //420 drain it
-
-			if(QDELETED(FG))
-				continue
-
 			FG.queued_drains = 0
 			FG.last_turf_drained = null
 			FG.draining = FALSE
 			processing_fluid_drains.Remove(FG)
+
 
 /datum/controller/process/fluid_group/proc/process_spreads()
 	var/avg_viscosity = 0
@@ -134,3 +120,16 @@
 			avg_viscosity += FG.avg_viscosity
 
 	avg_viscosity /= processing_fluid_spreads.len ? processing_fluid_spreads.len : 1
+
+	// Determine schedule interval based on viscosity and last run time
+	switch(main.last_run_time[src])
+		if(0 to 5)
+			min_schedule_interval = 0.5 SECONDS
+		if(6 to 13)
+			min_schedule_interval = 1 SECOND
+		if(14 to 20)
+			min_schedule_interval = 2.6 SECONDS
+		else
+			min_schedule_interval = max_schedule_interval
+
+	schedule_interval = max(min_schedule_interval, avg_viscosity)

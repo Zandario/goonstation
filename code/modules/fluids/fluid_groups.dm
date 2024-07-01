@@ -107,7 +107,7 @@
 	..()
 
 
-/datum/fluid_group/proc/update_volume_per_tile()
+/datum/fluid_group/proc/update_volume_per_tile() as null
 	src.contained_volume = src.reagents.total_volume
 
 	if(length(members))
@@ -125,14 +125,14 @@
 	for(var/obj/fluid/F as anything in src.members)
 		if(QDELETED(F))
 			continue
-		src.remove(F, 0, 1, 1)
+		src.remove(F, FALSE, 1, TRUE)
 
 	if(!QDELETED(src))
 		qdel(src)
 
 
 /datum/fluid_group/proc/add(obj/fluid/F, gained_fluid = 0, do_update = TRUE, guarantee_is_member = 0)
-	if(QDELETED(F) || QDELETED(src) || !src.members)
+	if(QDELETED(src) || !src.members || QDELETED(F))
 		return
 
 	if(gained_fluid)
@@ -149,14 +149,14 @@
 
 	// This makes no sense?
 	if(length(src.members) == 1)
-		F.UpdateIcon() //update icon of the very first fluid in this group
+		F.UpdateIcon(FALSE, FALSE) //update icon of the very first fluid in this group
 
 	src.last_add_time = world.time
 
 	if(!do_update)
 		return
 
-	src.update_loop()
+	src.add_spread_process()
 
 	// recalculate depth level based on fluid amount
 	// to account for change to fluid until fluid_core
@@ -179,11 +179,11 @@
  * Use 'lightweight' in evaporation procedure cause we dont need icon updates / try split / update loop checks at that point.
  * If 'lightweight' parameter is 2, invoke an update loop but still ignore icon updates.
  */
-/datum/fluid_group/proc/remove(obj/fluid/F, lost_fluid = 1, lightweight = 0, allow_zero = FALSE)
+/datum/fluid_group/proc/remove(obj/fluid/F, lost_fluid = TRUE, lightweight = 0, allow_zero = FALSE)
 	if(QDELETED(F))
 		return FALSE
 
-	if(!members || !length(src.members) || !(F in src.members))
+	if(!length(src.members) || !(F in src.members))
 		return FALSE
 
 	var/turf/neighbor
@@ -195,7 +195,7 @@
 			if(lightweight)
 				continue
 
-			neighbor.active_liquid.UpdateIcon(TRUE, FALSE)
+			neighbor.active_liquid.UpdateIcon(TRUE, TRUE)
 
 	src.volume_per_tile = length(src.members) ? (src.contained_volume / length(src.members)) : 0
 	src.members.Remove(F) //remove after volume per tile ok? otherwise bad thing could happen
@@ -207,7 +207,7 @@
 
 	F.group = null
 
-	var/turf/removed_loc = F.our_turf || F.loc
+	var/turf/removed_loc = F.our_turf || get_turf(F) || F.loc
 	if(removed_loc)
 		F.turf_remove_cleanup(removed_loc)
 
@@ -215,9 +215,9 @@
 
 	if(lightweight == 2)
 		if(!src.try_split(removed_loc))
-			src.update_loop()
+			src.add_spread_process()
 
-	if((length(src.members) == 0) && !allow_zero)
+	if((!src.members || length(src.members) == 0) && !allow_zero)
 		qdel(src)
 
 	return TRUE
@@ -245,7 +245,7 @@
 			if(lightweight)
 				continue
 
-			neighbor.active_liquid.UpdateIcon(TRUE)
+			neighbor.active_liquid.UpdateIcon(TRUE, TRUE)
 
 	src.volume_per_tile = length(src.members) ? (src.contained_volume / length(src.members)) : 0
 	var/volume_to_remove = min(src.volume_per_tile, vol_max)
@@ -269,9 +269,9 @@
 			src.contained_volume = src.reagents.total_volume
 	qdel(F)
 
-	if(!lightweight || lightweight == 2)
-		if(!src.try_split(F.our_turf || get_turf(F)))
-			src.update_loop()
+	// if(!lightweight || lightweight == 2)
+	// 	if(!src.try_split(F.our_turf || get_turf(F)))
+	// 		src.add_spread_process()
 
 	if((length(src.members) == 0) && !allow_zero)
 		qdel(src)
@@ -281,7 +281,7 @@
 
 /// Fluid has been displaced from its tile - delete this object and try to move my contents to adjacent tiles.
 /datum/fluid_group/proc/displace(obj/fluid/F)
-	if(QDELETED(F) || !length(src.members))
+	if(QDELETED(F) || !src.members)
 		return
 
 	if(length(src.members) == 1)
@@ -294,7 +294,7 @@
 				continue
 
 			if(T.Enter(src))
-				if(T.active_liquid && T.active_liquid.group)
+				if(T.active_liquid?.group)
 					T.active_liquid.group.join(src)
 				else
 					F.turf_remove_cleanup(F.loc)
@@ -305,16 +305,16 @@
 				blocked++
 
 		if(blocked == length(global.cardinal)) // failed
-			src.remove(F, 0, 2)
+			src.remove(F, FALSE, 2)
 	else
 		var/turf/T
 		for(var/dir in global.cardinal)
 			T = get_step(F, dir)
-			if (T.active_liquid && T.active_liquid.group == src)
+			if (T.active_liquid?.group == src)
 				src.spread_member = T.active_liquid
 				break
 
-		src.remove(F,0,2)
+		src.remove(F, FALSE, 2)
 	return
 
 
@@ -382,15 +382,14 @@
 
 	src.draining = TRUE
 	global.processing_fluid_drains |= src
-	return
 
-/datum/fluid_group/proc/update_loop()
+
+/datum/fluid_group/proc/add_spread_process()
 	if(QDELETED(src))
 		return
 
 	src.updating = TRUE
 	global.processing_fluid_spreads |= src
-	return
 
 
 /datum/fluid_group/proc/update_required_to_spread()
@@ -472,6 +471,9 @@
 			src.displace_channel(get_dir(F, F.touched_channel), F, F.touched_channel)
 			F.touched_channel = null
 
+		if(QDELETED(src) || QDELETED(F))
+			continue
+
 		//We update objects manually here because they don't move. A mob that moves around will call HasEntered on its own, so let that case happen naturally
 
 		depth_changed = FALSE
@@ -493,11 +495,9 @@
 
 		//end of ancient inline.
 
+	// Needs to be it's own so we can prevent invalid icon updates.
 	for(var/obj/fluid/F as anything in src.members)
 		F.UpdateIcon(TRUE, depth_changed)
-
-	if(QDELETED(src))
-		return TRUE
 
 	src.last_contained_volume = src.contained_volume
 	src.last_members_length = length(src.members)
@@ -520,7 +520,7 @@
 			continue
 
 		F = src.members[i]
-		if(F?.group != src)
+		if(!F || F.group != src)
 			continue //This can happen if a fluid is deleted/caught with its pants down during an update loop.
 
 		if (F.blocked_dirs < 4) //skip that update if we were blocked (not an edge tile)
@@ -560,9 +560,9 @@
 
 	return fluids_created
 
-
+// TODO: Make sure there is always a fluid obj ontop of the drain until it has no more connections. Preventing isolated drops.
 /// Basically a reverse spread with drain_source as the center.
-/datum/fluid_group/proc/drain(obj/fluid/drain_source, fluids_to_remove, atom/transfer_to, remove_reagent = TRUE)
+/datum/fluid_group/proc/drain(obj/fluid/drain_source, fluids_to_remove, atom/transfer_to, remove_reagent = TRUE) as num
 	if(drain_source?.group != src)
 		return 0
 
@@ -576,24 +576,25 @@
 		else if(remove_reagent)
 			src.reagents.remove_any(fluids_to_remove * src.volume_per_tile)
 
-		src.update_loop()
+		src.add_spread_process()
 		return src.avg_viscosity
 
 	if (length(members) && src.members[1] != drain_source)
 		if(length(src.members) <= 30)
-			var/list/L = drain_source.get_connected_fluids()
-			if(length(L) == length(src.members))
+			var/list/obj/fluid/Flist = drain_source.get_connected_fluids()
+			if(length(Flist) == length(src.members))
 				// This is a bit of an ouch, but drains need to be able to finish off smallish puddles properly.
-				src.members = L.Copy()
+				src.members = Flist.Copy()
 
 	var/list/obj/fluid/fluids_removed = list()
 	var/fluids_removed_avg_viscosity = 0
 
-	if(QDELETED(src))
-		return
-
-	for(var/obj/fluid/F as anything in src.members)
-		if(QDELETED(F) || F.group != src)
+	// TODO: Redo this whole loop.
+	for(var/i = length(members), i > 0, i--)
+		if((i > length(src.members)) || !members[i])
+			continue
+		var/obj/fluid/F = members[i] // todo fix error // What error?
+		if(!F || F.group != src)
 			continue
 
 		fluids_removed.Add(F)
@@ -607,21 +608,21 @@
 	src.reagents.skip_next_update = TRUE
 
 	if(transfer_to?.reagents && src.reagents)
-		src.reagents.trans_to_direct(transfer_to.reagents,src.volume_per_tile * removed_len)
+		src.reagents.trans_to_direct(transfer_to.reagents, (src.volume_per_tile * removed_len))
 	else if(src.reagents && remove_reagent)
 		src.reagents.remove_any(src.volume_per_tile * removed_len)
 
 	src.contained_volume = src.reagents.total_volume
 
 	for(var/obj/fluid/F as anything in fluids_removed)
-		src.remove(F, 0, src.updating)
+		src.remove(F, FALSE, src.updating)
 
 	//fluids_removed_avg_viscosity = fluids_removed ? (fluids_removed_avg_viscosity / fluids_removed) : 1
 	return src.avg_viscosity
 
 
-/datum/fluid_group/proc/join(datum/fluid_group/join_with) //join a fluid group into this one
-	if(src == join_with || QDELETED(src) || QDELETED(join_with))
+/datum/fluid_group/proc/join(datum/fluid_group/join_with) as num //join a fluid group into this one
+	if(QDELETED(join_with) || QDELETED(src) || src == join_with)
 		return FALSE
 
 	for(var/obj/fluid/F as anything in join_with.members)
@@ -636,7 +637,7 @@
 	join_with.evaporate()
 	join_with = null
 
-	src.update_loop() //just in case one wasn't running already
+	src.add_spread_process() //just in case one wasn't running already
 	//src.last_add_time = world.time
 	volume_per_tile = length(members) ? contained_volume / length(members) : 0
 	return TRUE
@@ -646,10 +647,11 @@
  * Called when a fluid is removed.
  * Check if the removal causes a split, and proceed from there.
  */
-/datum/fluid_group/proc/try_split(turf/removed_loc)
+/datum/fluid_group/proc/try_split(turf/removed_loc) as num
 	if(!removed_loc || QDELETED(src))
 		return FALSE
 	var/list/obj/fluid/connected
+	var/obj/fluid/splitting_fluid
 
 	var/turf/neighbor
 
@@ -661,13 +663,14 @@
 		if(neighbor?.active_liquid?.group == src)
 			neighbor.active_liquid.temp_removal_key = removal_key
 			adjacent_volume++
+			splitting_fluid = neighbor.active_liquid
 
 	// (adjacent_volume > 0) means that we won't even try searching if the removal point is only connected to 1 fluid (could not possibly be a split)
-	if(neighbor.active_liquid && adjacent_volume > 0)
+	if(splitting_fluid && adjacent_volume > 0)
 		// Pass in adjacent_volume: get_connected will check the removal_key of each fluid, which will trigger an early abort if we determine no split is necessary
-		connected = neighbor.active_liquid.get_connected_fluids(adjacent_volume)
+		connected = splitting_fluid.get_connected_fluids(adjacent_volume)
 
-	if(length(connected) == length(src.members))
+	if(!connected || length(connected) == length(src.members))
 		return FALSE
 
 	// Trying to stop the weird bug were a bunch of simultaneous splits removes all reagents.
@@ -705,13 +708,13 @@
 		if(length(FG.members))
 			FG.last_spread_member = FG.members[1]
 
-		FG.update_loop()
+		FG.add_spread_process()
 
 	src.can_update = TRUE
 	src.last_contained_volume = 0
 	src.last_members_length = 0
 
-	src.update_loop()
+	src.add_spread_process()
 
 	// src.last_add_time = world.time
 

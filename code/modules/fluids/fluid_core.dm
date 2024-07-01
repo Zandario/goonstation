@@ -2,8 +2,6 @@
 ////Fluid Object///
 ///////////////////
 
-#warn FIX FLUID SPLITS
-
 var/global/waterflow_enabled = TRUE
 
 var/global/list/depth_levels = list(2, 50, 100, 200)
@@ -356,7 +354,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
 
 
 
-	for(var/atom/A as anything in our_turf || get_turf(src))
+	for(var/atom/A as anything in (our_turf || get_turf(src)))
 		if(A?.flags & FLUID_SUBMERGE)
 			var/mob/living/M = A
 			var/obj/O = A
@@ -502,7 +500,7 @@ ADMIN_INTERACT_PROCS(/obj/fluid, proc/admin_clear_fluid)
  *
  * (Used to early detect when a split fails)
  */
-/obj/fluid/proc/get_connected_fluids(adjacent_match_quit = 0)
+/obj/fluid/proc/get_connected_fluids(adjacent_match_quit = 0) as /list // We can't do /list/obj/fluid atm :(
 	if(!src.group)
 		return list(src)
 

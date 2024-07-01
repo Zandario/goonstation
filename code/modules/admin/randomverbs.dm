@@ -1586,7 +1586,7 @@
 
 	if(istype(A, /obj/fluid))
 		var/obj/fluid/fluid = A
-		fluid.group?.update_loop()
+		fluid.group?.add_spread_process()
 
 
 /client/proc/flushreagents(var/atom/A in world)
