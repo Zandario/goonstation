@@ -1021,9 +1021,9 @@ TYPEINFO(/obj/item/handheld_vacuum)
 			else
 				var/obj/fluid/airborne/F = T.active_airborne_liquid
 				F.group.reagents.skip_next_update = TRUE
-				F.group.update_amt_per_tile()
-				var/amt = min(F.group.amt_per_tile, src.bucket.reagents.maximum_volume - src.bucket.reagents.total_volume)
-				F.group.drain(F, amt / max(1, F.group.amt_per_tile), src.bucket)
+				F.group.update_volume_per_tile()
+				var/amt = min(F.group.volume_per_tile, src.bucket.reagents.maximum_volume - src.bucket.reagents.total_volume)
+				F.group.drain(F, amt / max(1, F.group.volume_per_tile), src.bucket)
 				if(src.bucket.reagents.is_full())
 					boutput(user, SPAN_NOTICE("[src]'s [src.bucket] is now full."))
 				success = TRUE

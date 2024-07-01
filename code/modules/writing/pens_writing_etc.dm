@@ -139,7 +139,7 @@
 			G.color = src.reagents.get_average_rgb()
 			G.sample_reagent = src.reagents.get_master_reagent_id()
 			var/datum/reagent/master_reagent = src.reagents.reagent_list[G.sample_reagent]
-			G.sample_amt = master_reagent.volume
+			G.sample_volume = master_reagent.volume
 			src.reagents.clear_reagents()
 
 			src.remove_filter("reagent_coloration")
@@ -170,10 +170,10 @@
 			if (istype(target, /obj/fluid) && !istype(target, /obj/fluid/airborne))
 				var/obj/fluid/F = target
 				F.group.reagents.skip_next_update = TRUE
-				F.group.update_amt_per_tile()
-				var/amt = min(F.group.amt_per_tile, src.reagents.maximum_volume - src.reagents.total_volume)
+				F.group.update_volume_per_tile()
+				var/amt = min(F.group.volume_per_tile, src.reagents.maximum_volume - src.reagents.total_volume)
 				boutput(user, SPAN_NOTICE("You fill [src] with [amt] units of [target]."))
-				F.group.drain(F, amt / F.group.amt_per_tile, src) // drain uses weird units
+				F.group.drain(F, amt / F.group.volume_per_tile, src) // drain uses weird units
 			else if (target.reagents && src.can_dip)
 				if (target.reagents.total_volume)
 					boutput(user, SPAN_HINT("You dip [src] in [target]."))

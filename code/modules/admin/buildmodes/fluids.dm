@@ -68,10 +68,10 @@ Right Mouse Button + Ctrl              = Delete whole group of fluid / smoke<br>
 			F.admin_clear_fluid()
 		else
 			var/datum/fluid_group/group = F.group
-			var/amt_removed = group.amt_per_tile
+			var/amt_removed = group.volume_per_tile
 			qdel(F)
 			if(!QDELETED(group))
 				group.reagents.skip_next_update = TRUE
 				group.reagents.remove_any(amt_removed)
-				group.contained_amt = group.reagents.total_volume
+				group.contained_volume = group.reagents.total_volume
 				group.update_once()

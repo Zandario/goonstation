@@ -66,7 +66,7 @@
 
 
 
-/mob/living/proc/show_submerged_image(var/depth) //depth from 0 - 4
+/mob/living/proc/show_submerged_image(depth = 0) //depth from 0 - 4
 	if (!submerged_images.len) return
 	if (src.is_submerged == depth) return
 	depth = min(depth,submerged_images.len)
@@ -80,8 +80,8 @@
 
 	src.is_submerged = depth
 
-/obj/var/tmp/list/submerged_images = 0
-/obj/var/tmp/is_submerged = 0
+/obj/var/tmp/list/image/submerged_images = null
+/obj/var/tmp/is_submerged = FALSE
 
 //submachine - i cant find the parents for these. just define here ok
 /obj/submachine/flags = FLUID_SUBMERGE
@@ -112,7 +112,7 @@
 		submerged_image.appearance = ma
 		submerged_images += submerged_image
 
-/obj/proc/show_submerged_image(var/depth) //depth from 0 - 4
+/obj/proc/show_submerged_image(depth = 0) //depth from 0 - 4
 	if (depth == 1) depth = 0
 	if (!submerged_images || !length(submerged_images)) return
 	if (src.is_submerged == depth) return

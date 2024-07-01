@@ -849,7 +849,7 @@ proc/debug_map_apc_count(delim,zlim)
 				var/datum/fluid_group/G = F.group
 				img.app.color = debug_color_of(G)
 				if(!(G in processed_groups))
-					img.app.overlays = list(src.makeText(round(G.amt_per_tile, 0.1), align_left=TRUE))
+					img.app.overlays = list(src.makeText(round(G.volume_per_tile, 0.1), align_left=TRUE))
 					processed_groups += G
 				num_fluids++
 

@@ -710,7 +710,7 @@ TYPEINFO(/obj/vehicle/floorbuffer)
 
 					if (T.active_liquid.group)
 						T.active_liquid.group.queued_drains += rand(2,4)
-						T.active_liquid.group.last_drain = T
+						T.active_liquid.group.last_turf_drained = T
 						if (!T.active_liquid.group.draining)
 							T.active_liquid.group.add_drain_process()
 					//T.active_liquid.group.drain(T.active_liquid, rand(2,4))

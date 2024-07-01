@@ -92,7 +92,7 @@ particles/rain
 					R.reaction(AM, TOUCH)
 			if(!ON_COOLDOWN(T, "precipitation_cd_\ref[src]", src.cooldown))
 				var/fluid_ok = TRUE
-				if(T.active_liquid?.group.amt_per_tile >= max_pool_depth)
+				if(T.active_liquid?.group.volume_per_tile >= max_pool_depth)
 					fluid_ok = FALSE
 				src.reagents.copy_to(R)
 				R.reaction(T, TOUCH, can_spawn_fluid = fluid_ok)
@@ -304,7 +304,3 @@ obj/effects/precipitation/snow
 
 			light
 				particle_type = /particles/snow/grey/tile/light
-
-
-
-

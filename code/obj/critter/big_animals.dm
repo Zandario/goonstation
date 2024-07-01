@@ -196,10 +196,10 @@
 			var/obj/fluid/F = target
 			if (F.group)
 				F.group.queued_drains += 1
-				F.group.last_drain = get_turf(F)
+				F.group.last_turf_drained = get_turf(F)
 				if (!F.group.draining)
 					F.group.add_drain_process()
-			blood_volume += max(blood_sip_amt, F.group.amt_per_tile)
+			blood_volume += max(blood_sip_amt, F.group.volume_per_tile)
 			src.health ++
 
 		else return 0

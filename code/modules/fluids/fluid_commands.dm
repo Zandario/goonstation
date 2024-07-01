@@ -1,7 +1,7 @@
 ///////////////////
 //Admin Commands///
 ///////////////////
-client/proc/enable_waterflow(var/enabled as num)
+/client/proc/enable_waterflow(var/enabled as num)
 	set name = "Set Fluid Flow Enabled"
 	set desc = "0 to disable, 1 to enable"
 	SET_ADMIN_CAT(ADMIN_CAT_DEBUG)
@@ -9,7 +9,7 @@ client/proc/enable_waterflow(var/enabled as num)
 	SHOW_VERB_DESC
 	waterflow_enabled = !!enabled
 
-client/proc/delete_fluids()
+/client/proc/delete_fluids()
 	set name = "Delete All Fluids"
 	set desc = "Probably safe to run. Probably."
 	SET_ADMIN_CAT(ADMIN_CAT_DEBUG)
@@ -25,11 +25,11 @@ client/proc/delete_fluids()
 
 			for (var/mob/living/M in fluid.loc)
 				fluid.Uncrossed(M)
-				M.show_submerged_image(0)
+				M.show_submerged_image(depth = 0)
 			for(var/obj/O in fluid.loc)
 				if (O.submerged_images)
 					fluid.Uncrossed(O)
-					O.show_submerged_image(0)
+					O.show_submerged_image(depth = 0)
 			if(fluid.group)
 				fluid.group.evaporate()
 			else
@@ -41,7 +41,7 @@ client/proc/delete_fluids()
 
 		enable_waterflow(exenabled)
 
-client/proc/special_fullbright()
+/client/proc/special_fullbright()
 	set name = "Static Sea Light"
 	set desc = "Helps when server load is heavy. Doesn't affect trench."
 	SET_ADMIN_CAT(ADMIN_CAT_DEBUG)
@@ -57,7 +57,7 @@ client/proc/special_fullbright()
 			LAGCHECK(LAG_REALTIME)
 		message_admins("Sea Lights are now Static.")
 
-client/proc/replace_space()
+/client/proc/replace_space()
 	set name = "Replace All Space Tiles With Ocean"
 	set desc = "uh oh."
 	SET_ADMIN_CAT(ADMIN_CAT_UNUSED)
@@ -100,7 +100,7 @@ client/proc/replace_space()
 		message_admins("Finished space replace!")
 		map_currently_underwater = 1
 
-client/proc/replace_space_exclusive()
+/client/proc/replace_space_exclusive()
 	set name = "Oceanify"
 	set desc = "This is the safer one."
 	SET_ADMIN_CAT(ADMIN_CAT_FUN)
@@ -137,15 +137,15 @@ client/proc/replace_space_exclusive()
 		ocean_fluid_obj?.group?.reagents?.clear_reagents()
 		fluid_turf_setup(first_time=FALSE)
 
-#ifdef UNDERWATER_MAP
+	#ifdef UNDERWATER_MAP
 		var/master_reagent_name = R.get_master_reagent_name()
 		if(master_reagent_name == "water")
 			ocean_name = "ocean floor" //normal ocean
 		else
 			ocean_name = master_reagent_name + " ocean floor"
-#else
+	#else // UNDERWATER_MAP
 		ocean_name = "ocean of " + R.get_master_reagent_name()
-#endif
+	#endif // UNDERWATER_MAP
 
 		ocean_color = R.get_average_color().to_rgb()
 		qdel(R)
@@ -156,29 +156,29 @@ client/proc/replace_space_exclusive()
 
 			var/turf/orig = locate(S.x, S.y, S.z)
 
-#if defined(MOVING_SUB_MAP)
+	#if defined(MOVING_SUB_MAP)
 			var/turf/space/fluid/manta/T = orig.ReplaceWith(/turf/space/fluid/manta, FALSE, TRUE, FALSE, TRUE)
-#elif defined(UNDERWATER_MAP)
+	#elif defined(UNDERWATER_MAP)
 			var/turf/space/fluid/T = orig.ReplaceWith(/turf/space/fluid, FALSE, TRUE, FALSE, TRUE)
-#else //space map
+	#else //space map
 			var/turf/space/fluid/T = orig.ReplaceWith(/turf/space/fluid, FALSE, TRUE, FALSE, TRUE)
-#endif
+	#endif // defined(MOVING_SUB_MAP)
 
-#ifdef UNDERWATER_MAP
+	#ifdef UNDERWATER_MAP
 			T.name = ocean_name
-#endif
+	#endif // UNDERWATER_MAP
 			T.color = ocean_color
 			LAGCHECK(LAG_REALTIME)
 
-// catwalks sim water otherwise
-#ifndef UNDERWATER_MAP
+	// catwalks sim water otherwise
+	#ifndef UNDERWATER_MAP
 		for(var/turf/simulated/floor/airless/plating/catwalk/C in world)
 			if (C.z != 1 || istype(C, /turf/space/fluid/warp_z5)) continue
 			var/turf/orig = locate(C.x, C.y, C.z)
 			var/turf/space/fluid/T = orig.ReplaceWith(/turf/space/fluid, FALSE, TRUE, FALSE, TRUE)
 			T.color = ocean_color
 			LAGCHECK(LAG_REALTIME)
-#endif
+	#endif // UNDERWATER_MAP
 
 		REMOVE_ALL_PARALLAX_RENDER_SOURCES_FROM_GROUP(Z_LEVEL_STATION)
 		REMOVE_ALL_PARALLAX_RENDER_SOURCES_FROM_GROUP(Z_LEVEL_DEBRIS)
@@ -187,7 +187,7 @@ client/proc/replace_space_exclusive()
 		map_currently_underwater = 1
 
 
-client/proc/update_ocean_lighting()
+/client/proc/update_ocean_lighting()
 	ADMIN_ONLY
 	SPAWN(0)
 		for(var/turf/space/fluid/S in world)
@@ -196,7 +196,7 @@ client/proc/update_ocean_lighting()
 		message_admins("Finished space light update!!!")
 
 
-client/proc/dereplace_space()
+/client/proc/dereplace_space()
 	set name = "Unoceanify"
 	set desc = "uh oh."
 	SET_ADMIN_CAT(ADMIN_CAT_FUN)

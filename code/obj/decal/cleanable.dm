@@ -16,7 +16,7 @@ proc/make_cleanable(var/type,var/loc)
 	anchored = ANCHORED
 	var/can_sample = 0
 	var/sampled = 0
-	var/sample_amt = 10
+	var/sample_volume = 10
 	var/sample_reagent = "water"
 	var/sample_verb = "scoop"
 	var/slippery = 0 // set it to the probability that you want people to slip in the stuff, ie if slippery is 80 so you have an 80% chance to slip on it
@@ -170,12 +170,12 @@ proc/make_cleanable(var/type,var/loc)
 				src.sampled = 1
 				return 1
 
-		else if (src.sample_amt && src.sample_reagent)
-			if (W.reagents.total_volume >= W.reagents.maximum_volume - (src.sample_amt - 1))
+		else if (src.sample_volume && src.sample_reagent)
+			if (W.reagents.total_volume >= W.reagents.maximum_volume - (src.sample_volume - 1))
 				user.show_text("[W] is too full!", "red")
 				return 0
 			else
-				W.reagents.add_reagent(src.sample_reagent, src.sample_amt)
+				W.reagents.add_reagent(src.sample_reagent, src.sample_volume)
 				user.visible_message(SPAN_NOTICE("<b>[user]</b> [src.sample_verb]s some of [src] into [W]."),\
 				SPAN_NOTICE("You [src.sample_verb] some of [src] into [W]."))
 				W.reagents.handle_reactions()
@@ -293,7 +293,7 @@ proc/make_cleanable(var/type,var/loc)
 					if(prob(max(src?.reagents?.total_volume*5, 10)))
 						O.add_blood(src)
 
-	proc/set_sample_reagent_custom(var/reagent_id, var/amt = 10)
+	proc/set_sample_reagent_custom(reagent_id, volume = 10)
 		if(isnull(reagent_id))
 			return
 		if (!src.reagents)
@@ -304,7 +304,7 @@ proc/make_cleanable(var/type,var/loc)
 		if (ling_blood)
 			src.reagents.add_reagent("bloodc", 0.1)
 		src.sample_reagent = reagent_id
-		src.reagents.add_reagent(reagent_id, amt)
+		src.reagents.add_reagent(reagent_id, volume)
 		src.update_color()
 
 	proc/update_color()
@@ -823,7 +823,7 @@ var/list/blood_decal_violent_icon_states = list("floor1", "floor2", "floor3", "f
 	slippery = 90
 	can_sample = 1
 	sample_reagent = "water"
-	sample_amt = 5
+	sample_volume = 5
 	stain = "damp"
 
 	Crossed(atom/movable/O)
@@ -843,7 +843,7 @@ var/list/blood_decal_violent_icon_states = list("floor1", "floor2", "floor3", "f
 	slippery = 30
 	can_dry = 1
 	can_sample = 1
-	sample_amt = 5
+	sample_volume = 5
 	sample_reagent = "vomit"
 	sample_verb = "scrape"
 	stain = "puke-coated"
@@ -868,12 +868,12 @@ var/list/blood_decal_violent_icon_states = list("floor1", "floor2", "floor3", "f
 			user.show_text("There's not enough left of [src] to [src.sample_verb] into [W].", "red")
 			return 0
 
-		if (src.sample_amt && src.sample_reagent)
-			if (W.reagents.total_volume >= W.reagents.maximum_volume - (src.sample_amt - 1))
+		if (src.sample_volume && src.sample_reagent)
+			if (W.reagents.total_volume >= W.reagents.maximum_volume - (src.sample_volume - 1))
 				user.show_text("[W] is too full!", "red")
 				return 0
 			else
-				W.reagents.add_reagent(src.sample_reagent, src.sample_amt)
+				W.reagents.add_reagent(src.sample_reagent, src.sample_volume)
 				user.visible_message(SPAN_NOTICE("<b>[user]</b> is sticking their fingers into [src] and pushing it into [W]. It's probably best not to ask."),\
 				SPAN_NOTICE("You [src.sample_verb] some of the puke into [W]. You are absolutely disgusting."))
 				W.reagents.handle_reactions()
@@ -892,7 +892,7 @@ var/list/blood_decal_violent_icon_states = list("floor1", "floor2", "floor3", "f
 			user.show_text("There's not enough left of [src] to [src.sample_verb] into [W].", "red")
 			return 0
 
-		if (W.reagents.total_volume >= W.reagents.maximum_volume - (src.sample_amt - 1))
+		if (W.reagents.total_volume >= W.reagents.maximum_volume - (src.sample_volume - 1))
 			user.show_text("[W] is too full!", "red")
 			return 0
 		else
@@ -929,7 +929,7 @@ var/list/blood_decal_violent_icon_states = list("floor1", "floor2", "floor3", "f
 	can_dry = 1
 	slippery = 35
 	can_sample = 1
-	sample_amt = 5
+	sample_volume = 5
 	sample_reagent = "gvomit"
 	sample_verb = "scrape"
 	stain = "green-puke-coated"
@@ -954,12 +954,12 @@ var/list/blood_decal_violent_icon_states = list("floor1", "floor2", "floor3", "f
 			user.show_text("There's not enough left of [src] to [src.sample_verb] into [I].", "red")
 			return 0
 
-		if (src.sample_amt && src.sample_reagent)
-			if (I.reagents.total_volume >= I.reagents.maximum_volume - (src.sample_amt - 1))
+		if (src.sample_volume && src.sample_reagent)
+			if (I.reagents.total_volume >= I.reagents.maximum_volume - (src.sample_volume - 1))
 				user.show_text("[I] is too full!", "red")
 				return 0
 			else
-				I.reagents.add_reagent(src.sample_reagent, src.sample_amt)
+				I.reagents.add_reagent(src.sample_reagent, src.sample_volume)
 				user.show_text("You scoop some of the sticky, slimy, stringy green puke into [I]. You are absolutely horrifying.", "blue")
 				for (var/mob/M in AIviewers(user, null))
 					if (M != user)
@@ -993,7 +993,7 @@ var/list/blood_decal_violent_icon_states = list("floor1", "floor2", "floor3", "f
 	random_icon_states = list("egg1", "egg2", "egg3")
 	slippery = 5
 	can_sample = 1
-	sample_amt = 5
+	sample_volume = 5
 	sample_reagent = "egg"
 
 /obj/decal/cleanable/ash
@@ -1157,12 +1157,12 @@ var/list/blood_decal_violent_icon_states = list("floor1", "floor2", "floor3", "f
 		if (!src.can_sample || !W.reagents)
 			return 0
 
-		else if (src.sample_amt && src.sample_reagent)
-			if (W.reagents.total_volume >= W.reagents.maximum_volume - (src.sample_amt - 1))
+		else if (src.sample_volume && src.sample_reagent)
+			if (W.reagents.total_volume >= W.reagents.maximum_volume - (src.sample_volume - 1))
 				user.show_text("[W] is too full!", "red")
 				return 0
 			else
-				W.reagents.add_reagent(src.sample_reagent, src.sample_amt)
+				W.reagents.add_reagent(src.sample_reagent, src.sample_volume)
 				user.visible_message(SPAN_NOTICE("<b>[user]</b> [src.sample_verb]s some of [src] into [W]."),\
 				SPAN_NOTICE("You [src.sample_verb] some of [src] into [W]."))
 				W.reagents.handle_reactions()

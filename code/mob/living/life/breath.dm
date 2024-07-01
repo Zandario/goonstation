@@ -77,10 +77,10 @@
 				if (owner.lying)
 					depth_to_breathe_from = depth_levels.len-1
 
-				if (F.amt >= depth_levels[depth_to_breathe_from])
+				if (F.volume >= depth_levels[depth_to_breathe_from])
 					underwater = F
 					if (owner.is_submerged != 4)
-						owner.show_submerged_image(4)
+						owner.show_submerged_image(depth = 4)
 
 			else if (T.active_airborne_liquid)
 				if (!issmokeimmune(owner))
@@ -267,4 +267,3 @@
 			human_owner?.emote(emote)
 
 		return success
-

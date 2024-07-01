@@ -132,8 +132,8 @@
 			var/datum/fluid_group/FG = source.active_airborne_liquid.group
 			purge_smoke_blacklist(FG.reagents)
 
-			if (FG.contained_amt > diminishing_returns_thingymabob)
-				react_amount = react_amount / (1 + ((FG.contained_amt - diminishing_returns_thingymabob) * 0.1))//MBC MAGIC NUMBERS :)
+			if (FG.contained_volume > diminishing_returns_thingymabob)
+				react_amount = react_amount / (1 + ((FG.contained_volume - diminishing_returns_thingymabob) * 0.1))//MBC MAGIC NUMBERS :)
 				//boutput(world,"[react_amount]")
 
 		var/divisor = howmany

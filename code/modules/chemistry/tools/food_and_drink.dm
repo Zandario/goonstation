@@ -737,10 +737,10 @@ ABSTRACT_TYPE(/obj/item/reagent_containers/food/snacks)
 				//var/transferamt = min(src.reagents.maximum_volume - src.reagents.total_volume, F.amt)
 
 				F.group.reagents.skip_next_update = 1
-				F.group.update_amt_per_tile()
-				var/amt = min(F.group.amt_per_tile, reagents.maximum_volume - reagents.total_volume)
+				F.group.update_volume_per_tile()
+				var/amt = min(F.group.volume_per_tile, reagents.maximum_volume - reagents.total_volume)
 				boutput(user, SPAN_NOTICE("You fill [src] with [amt] units of [F]."))
-				F.group.drain(F, amt / F.group.amt_per_tile, src) // drain uses weird units
+				F.group.drain(F, amt / F.group.volume_per_tile, src) // drain uses weird units
 
 			else //trans_to to the FLOOR of the liquid, not the liquid itself. will call trans_to() for turf which has a little bit that handles turf application -> fluids
 				logTheThing(LOG_CHEMISTRY, user, "transfers chemicals from [src] [log_reagents(src)] to [F] at [log_loc(user)].") // Added reagents (Convair880).
